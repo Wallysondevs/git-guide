@@ -1,115 +1,137 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function Reset() {
-  return (
-    <PageContainer
-      title="Reset e Revert"
-      subtitle="Como desfazer commits e mudanças no Git — com segurança."
-      difficulty="intermediario"
-      timeToRead="12 min"
-    >
-      <p>
-        O Git oferece duas formas principais de desfazer mudanças: <code>git reset</code> (reescreve o histórico) e <code>git revert</code> (cria um novo commit de desfazimento). A escolha entre eles depende de se o commit já foi compartilhado com outros.
-      </p>
+  export default function Reset() {
+    return (
+      <PageContainer
+        title="git reset"
+        subtitle="Desfaça commits, limpe a staging area ou reverta o working directory — com precisão e segurança."
+        difficulty="intermediario"
+        timeToRead="14 min"
+      >
+        <p>
+          O <code>git reset</code> move o HEAD (e opcionalmente o branch atual) para um commit anterior. Dependendo do modo, pode ou não afetar a staging area e o working directory. É uma das ferramentas mais poderosas e potencialmente destrutivas do Git.
+        </p>
 
-      <h2>git reset — Reescrevendo Histórico</h2>
-      <p>
-        O <code>git reset</code> move o ponteiro do branch para um commit anterior, efetivamente "removendo" commits do histórico. Mas atenção: os dados não são apagados imediatamente — o reflog os mantém por um tempo.
-      </p>
+        <AlertBox type="danger" title="git reset é destrutivo em branches públicos">
+          Nunca use <code>git reset</code> em commits que já foram enviados para um repositório compartilhado. Use <code>git revert</code> em vez disso para desfazer de forma segura.
+        </AlertBox>
 
-      <div className="grid grid-cols-1 gap-3 my-6">
-        {[
-          { flag: "--soft", desc: "Move HEAD para o commit alvo. Mantém as mudanças na staging area.", cor: "text-green-400" },
-          { flag: "--mixed", desc: "Move HEAD e limpa a staging area. Mantém as mudanças no working directory. (Padrão)", cor: "text-yellow-400" },
-          { flag: "--hard", desc: "Move HEAD, limpa staging e descarta TODAS as mudanças. IRREVERSÍVEL!", cor: "text-red-400" },
-        ].map((item, i) => (
-          <div key={i} className="p-4 rounded-xl bg-muted/50 border border-border flex gap-3">
-            <code className={`font-bold ${item.cor} shrink-0`}>{item.flag}</code>
-            <p className="text-sm text-muted-foreground m-0">{item.desc}</p>
-          </div>
-        ))}
-      </div>
-
-      <CodeBlock
-        title="git reset — exemplos"
-        code={`# Desfazer o último commit, mantendo mudanças staged
-git reset --soft HEAD~1
-
-# Desfazer o último commit, mover mudanças para working directory
-git reset HEAD~1     # --mixed é o padrão
-
-# Desfazer os últimos 3 commits e descartar tudo (CUIDADO!)
-git reset --hard HEAD~3
-
-# Resetar para um commit específico
-git reset --hard abc1234
-
-# Resetar um arquivo específico da staging area
-git reset HEAD src/app.js    # remove da staging, mantém mudanças`}
-      />
-
-      <AlertBox type="danger" title="git reset --hard é IRREVERSÍVEL">
-        <code>git reset --hard</code> descarta permanentemente as mudanças não commitadas. Depois do hard reset, a única forma de recuperar dados é via <code>git reflog</code> (antes do garbage collector rodar). Use com extremo cuidado.
-      </AlertBox>
-
-      <h2>git revert — Desfazendo com Segurança</h2>
-      <p>
-        O <code>git revert</code> cria um novo commit que desfaz as mudanças de um commit anterior. É seguro para usar em branches públicos pois não reescreve o histórico.
-      </p>
-
-      <CodeBlock
-        title="git revert — exemplos"
-        code={`# Criar um commit que desfaz o commit mais recente
-git revert HEAD
-
-# Desfazer um commit específico (sem criar o commit imediatamente)
-git revert abc1234 --no-commit
-
-# Desfazer vários commits
-git revert HEAD~3..HEAD
-
-# Desfazer um merge commit
-git revert -m 1 abc1234   # -m 1 = manter o primeiro pai`}
-      />
-
-      <h2>Quando usar Reset vs Revert</h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-        <div className="p-4 border border-green-500/20 rounded-xl bg-green-500/5">
-          <h4 className="font-bold text-green-400 mb-2 border-0 mt-0">Use git reset quando:</h4>
-          <ul className="text-sm space-y-1 text-muted-foreground">
-            <li>• Os commits são apenas locais</li>
-            <li>• Você ainda não fez push</li>
-            <li>• Quer "limpar" commits de WIP</li>
-          </ul>
+        <h2>Os três modos do git reset</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+          {[
+            { modo: "--soft", desc: "Move o HEAD para o commit anterior. Mudanças ficam na staging area (prontas para novo commit). Mais seguro.", uso: "Refazer o último commit", cor: "text-green-400" },
+            { modo: "--mixed (padrão)", desc: "Move o HEAD E limpa a staging area. Mudanças voltam para o working directory como não staged.", uso: "Desfazer staging, refazer commits", cor: "text-yellow-400" },
+            { modo: "--hard", desc: "Move o HEAD, limpa staging E descarta mudanças do working directory. Dados podem ser perdidos.", uso: "Descartar completamente mudanças indesejadas", cor: "text-destructive" },
+          ].map((item) => (
+            <div key={item.modo} className="p-4 border border-border rounded-xl bg-card">
+              <code className={"font-bold text-base mb-2 block " + item.cor}>{item.modo}</code>
+              <p className="text-xs text-muted-foreground mb-2">{item.desc}</p>
+              <p className="text-xs"><strong>Uso ideal:</strong> {item.uso}</p>
+            </div>
+          ))}
         </div>
-        <div className="p-4 border border-blue-500/20 rounded-xl bg-blue-500/5">
-          <h4 className="font-bold text-blue-400 mb-2 border-0 mt-0">Use git revert quando:</h4>
-          <ul className="text-sm space-y-1 text-muted-foreground">
-            <li>• O commit já foi publicado</li>
-            <li>• Outros colaboradores têm o commit</li>
-            <li>• Precisa desfazer em branch principal</li>
-          </ul>
+
+        <h2>Exemplos práticos</h2>
+        <CodeBlock
+          title="git reset --soft — refazendo commits"
+          code={`# Desfazer o último commit, mantendo mudanças staged
+  git reset --soft HEAD~1
+
+  # Agora você pode:
+  git status  # mudanças estão staged
+  git commit -m "nova mensagem melhorada"
+
+  # Caso de uso: você commitou mas quer mudar a mensagem
+  # (alternativa: git commit --amend)
+
+  # Combinar 3 últimos commits em um
+  git reset --soft HEAD~3
+  git commit -m "feat: implementa sistema de notificações"`}
+        />
+
+        <CodeBlock
+          title="git reset --mixed — limpando staging"
+          code={`# Desfazer git add (mais comum)
+  git reset HEAD src/app.js
+  # equivale a: git restore --staged src/app.js
+
+  # Desfazer o último commit, mudanças voltam para working dir
+  git reset HEAD~1  # --mixed é o padrão
+
+  # Desfazer múltiplos commits
+  git reset HEAD~3  # 3 commits atrás
+
+  # Após reset --mixed:
+  git status  # arquivos aparecem como "Changes not staged for commit"`}
+        />
+
+        <CodeBlock
+          title="git reset --hard — descartando tudo"
+          code={`# Descartar TODAS as mudanças não commitadas
+  git reset --hard HEAD
+
+  # Voltar para um commit específico, descartando tudo depois
+  git reset --hard abc1234
+
+  # CUIDADO: isso apaga mudanças do working directory
+  # Mas ainda é recuperável via reflog (por ~30 dias):
+  git reflog
+  # HEAD@{1}: commit: o que você perdeu
+  git reset --hard HEAD@{1}  # recuperar!`}
+        />
+
+        <h2>Reset vs Revert vs Restore</h2>
+        <div className="overflow-x-auto my-6">
+          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
+            <thead className="bg-muted">
+              <tr>
+                <th className="p-3 text-left">Comando</th>
+                <th className="p-3 text-left">O que faz</th>
+                <th className="p-3 text-left">Seguro em público?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["git reset", "Move HEAD para trás — reescreve histórico", "❌ Não"],
+                ["git revert", "Cria novo commit que desfaz mudanças — histórico preservado", "✅ Sim"],
+                ["git restore", "Desfaz mudanças em arquivos individuais (não muda commits)", "✅ Sim (sem commits)"],
+                ["git restore --staged", "Remove arquivo da staging area sem alterar arquivo", "✅ Sim (sem commits)"],
+              ].map(([cmd, oque, seg], i) => (
+                <tr key={i} className="border-t border-border">
+                  <td className="p-3 font-mono text-primary text-xs">{cmd}</td>
+                  <td className="p-3 text-muted-foreground text-sm">{oque}</td>
+                  <td className="p-3 text-sm">{seg}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
 
-      <h2>git restore — Descartando Mudanças</h2>
-      <CodeBlock
-        title="Descartando mudanças específicas"
-        code={`# Descartar mudanças em um arquivo no working directory
-git restore src/app.js
+        <AlertBox type="success" title="Regra de ouro: use revert em branches públicos">
+          Se você precisa desfazer algo que já foi para o <code>main</code> ou está em um PR revisado por outros, use <code>git revert</code>. Ele cria um novo commit que desfaz o anterior, sem reescrever o histórico.
+        </AlertBox>
 
-# Descartar todas as mudanças no working directory
-git restore .
+        <CodeBlock
+          title="Casos de uso do dia a dia"
+          code={`# Remover arquivo do stage (esqueceu de adicionar ao .gitignore)
+  git reset HEAD segredo.env
+  # ou modernamente:
+  git restore --staged segredo.env
 
-# Remover arquivo da staging area (manter no working dir)
-git restore --staged src/app.js
+  # Desfazer o último commit (mantendo mudanças)
+  git reset --soft HEAD~1
 
-# Restaurar arquivo para a versão de um commit específico
-git restore --source=abc1234 src/app.js`}
-      />
-    </PageContainer>
-  );
-}
+  # Limpar TUDO e voltar ao estado limpo do main
+  git fetch origin
+  git reset --hard origin/main
+
+  # Desfazer reset acidental (reflog ao resgate)
+  git reflog
+  git reset --hard HEAD@{2}`}
+        />
+      </PageContainer>
+    );
+  }
+  
