@@ -1,132 +1,145 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function Configuracao() {
-  return (
-    <PageContainer
-      title="Configurações do Git"
-      subtitle="Personalize o Git para se adaptar ao seu fluxo de trabalho com configurações avançadas."
-      difficulty="intermediario"
-      timeToRead="10 min"
-    >
-      <p>
-        O Git é altamente configurável. Conhecer as principais opções de configuração pode tornar seu trabalho muito mais eficiente.
-      </p>
+  export default function Configuracao() {
+    return (
+      <PageContainer
+        title="Configuração do Git"
+        subtitle="Configure o Git do jeito certo desde o início — identidade, editor, aliases e comportamentos."
+        difficulty="iniciante"
+        timeToRead="12 min"
+      >
+        <p>
+          Antes de usar o Git, você precisa configurar no mínimo seu nome e e-mail — eles são incluídos em cada commit que você cria. Mas há muito mais configurações que tornam o Git significativamente mais eficiente.
+        </p>
 
-      <h2>Estrutura do arquivo .gitconfig</h2>
-      <CodeBlock
-        title="~/.gitconfig completo"
-        language="ini"
-        code={`[user]
-    name = Seu Nome Completo
+        <h2>Configuração inicial obrigatória</h2>
+        <CodeBlock
+          title="Configurações mínimas"
+          code={`# Nome e e-mail (aparecem em cada commit)
+  git config --global user.name "Seu Nome Completo"
+  git config --global user.email "seu@email.com"
+
+  # Editor padrão para mensagens de commit
+  git config --global core.editor "code --wait"  # VS Code
+  git config --global core.editor "nano"          # nano
+  git config --global core.editor "vim"           # vim
+
+  # Branch padrão (recomendado: main)
+  git config --global init.defaultBranch main
+
+  # Ver configuração atual
+  git config --global --list
+  git config user.name  # ver valor específico`}
+        />
+
+        <h2>Níveis de configuração</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+          {[
+            { nivel: "--system", arquivo: "/etc/gitconfig", desc: "Todos os usuários do sistema. Raramente usado.", prioridade: "Menor" },
+            { nivel: "--global", arquivo: "~/.gitconfig", desc: "Seu usuário em todos os repositórios. Configurações pessoais.", prioridade: "Média" },
+            { nivel: "--local", arquivo: ".git/config", desc: "Apenas o repositório atual. Sobrescreve global.", prioridade: "Maior" },
+          ].map((item) => (
+            <div key={item.nivel} className="p-4 border border-border rounded-xl bg-card">
+              <code className="text-primary font-bold text-sm">{item.nivel}</code>
+              <p className="text-xs text-muted-foreground mt-1 mb-1">{item.arquivo}</p>
+              <p className="text-xs text-foreground">{item.desc}</p>
+              <span className="text-xs bg-muted px-2 py-0.5 rounded mt-2 inline-block">Prioridade: {item.prioridade}</span>
+            </div>
+          ))}
+        </div>
+
+        <h2>Configurações recomendadas</h2>
+        <CodeBlock
+          title="O arquivo .gitconfig ideal"
+          code={`[user]
+    name = Seu Nome
     email = seu@email.com
-    signingkey = SEU_ID_GPG   # para commits assinados
 
-[core]
-    editor = code --wait     # VS Code como editor padrão
-    autocrlf = input         # Linux/Mac: input | Windows: true
-    fileMode = false         # ignora mudanças de permissão de arquivo
+  [core]
+    editor = code --wait
+    autocrlf = input     # Linux/Mac: normaliza line endings
+    # autocrlf = true    # Windows: converte CRLF automaticamente
 
-[init]
-    defaultBranch = main     # branch padrão ao criar repos
+  [init]
+    defaultBranch = main
 
-[pull]
-    rebase = false           # git pull usa merge (padrão) | true para rebase
+  [pull]
+    rebase = true        # git pull faz rebase em vez de merge
 
-[push]
-    default = current        # git push envia o branch atual
+  [push]
+    autoSetupRemote = true  # não precisa de -u na primeira vez
 
-[color]
-    ui = auto                # colorir saída automaticamente
+  [fetch]
+    prune = true         # remove refs de branches deletados automaticamente
 
-[diff]
-    tool = vscode
+  [merge]
+    conflictstyle = diff3  # mostra contexto em conflitos (muito útil!)
 
-[merge]
-    tool = vscode
+  [diff]
+    algorithm = histogram  # diff mais legível
 
-[credential]
-    helper = store           # salva credenciais em texto plano
-    # helper = manager       # Windows (Git Credential Manager)`}
-      />
+  [alias]
+    st = status -sb
+    lg = log --oneline --graph --decorate --all
+    undo = reset HEAD~1 --mixed`}
+        />
 
-      <h2>Configurações Essenciais</h2>
-      <CodeBlock
-        title="Configurando o Git do zero"
-        code={`# Identidade (obrigatório)
-git config --global user.name "Seu Nome"
-git config --global user.email "seu@email.com"
+        <h2>Configurações por projeto (local)</h2>
+        <CodeBlock
+          title="Sobrescrever configurações para um projeto"
+          code={`# Usar e-mail diferente em um repositório do trabalho
+  cd /path/to/work-project
+  git config --local user.email "joao@empresa.com"
 
-# Branch padrão como 'main'
-git config --global init.defaultBranch main
+  # Configurar remoto específico para o projeto
+  git config --local branch.main.remote origin
 
-# Editor padrão
-git config --global core.editor "code --wait"   # VS Code
-git config --global core.editor "nano"           # Nano
-git config --global core.editor "vim"            # Vim
+  # Ver configuração efetiva (todas as fontes combinadas)
+  git config --list --show-origin
+  # Mostra: arquivo de origem + chave + valor`}
+        />
 
-# Pull com rebase ao invés de merge (opcional)
-git config --global pull.rebase false
+        <h2>Line endings e compatibilidade</h2>
+        <CodeBlock
+          title="Configurando line endings para evitar conflitos"
+          code={`# Linux e Mac (recomendado)
+  git config --global core.autocrlf input
+  # Converte CRLF→LF ao fazer commit, não muda ao checkout
 
-# Empurrar branch atual por padrão
-git config --global push.default current`}
-      />
+  # Windows
+  git config --global core.autocrlf true
+  # Converte LF→CRLF ao checkout, CRLF→LF ao commit
 
-      <h2>Configurações por Projeto</h2>
-      <CodeBlock
-        title="Sobrescrever configurações em um projeto"
-        code={`# Dentro do projeto, use --local (sem a flag, é --local por padrão dentro de um repo)
-cd /caminho/para/projeto-trabalho
-git config user.email "nome@empresa.com"   # só afeta este projeto
-git config user.name "Nome Profissional"
+  # Forçar sempre LF (recomendado para projetos cross-platform)
+  # Criar arquivo .gitattributes no projeto:
+  echo "* text=auto eol=lf" > .gitattributes
+  git add .gitattributes
+  git commit -m "chore: normaliza line endings para LF"`}
+        />
 
-# Verificar configurações locais
-git config --list --local
+        <AlertBox type="info" title="Credenciais e autenticação">
+          Para evitar digitar senha toda vez, configure um credential helper: <code>git config --global credential.helper store</code> (armazena em texto plano) ou use SSH keys para autenticação sem senha — mais seguro.
+        </AlertBox>
 
-# Ver a origem de cada configuração
-git config --list --show-origin`}
-      />
+        <h2>Verificando e limpando configurações</h2>
+        <CodeBlock
+          title="Gerenciando configurações"
+          code={`# Ver valor específico
+  git config user.email
+  git config --global core.editor
 
-      <h2>Assinando Commits com GPG</h2>
-      <CodeBlock
-        title="Configurar assinatura GPG"
-        code={`# Listar chaves GPG disponíveis
-gpg --list-secret-keys --keyid-format=long
+  # Remover uma configuração
+  git config --global --unset alias.bad-alias
 
-# Configurar o Git para usar sua chave
-git config --global user.signingkey SEU_ID_CHAVE_GPG
+  # Editar o arquivo diretamente
+  git config --global --edit
 
-# Assinar commits automaticamente
-git config --global commit.gpgsign true
-
-# Assinar uma tag
-git tag -s v1.0.0 -m "Release assinada"
-
-# Verificar assinatura de um commit
-git verify-commit abc1234
-git log --show-signature -1`}
-      />
-
-      <h2>Configurando Ferramentas de Diff e Merge</h2>
-      <CodeBlock
-        title="Configurar VS Code como ferramenta de diff e merge"
-        code={`# Diff com VS Code
-git config --global diff.tool vscode
-git config --global difftool.vscode.cmd 'code --wait --diff $LOCAL $REMOTE'
-
-# Merge com VS Code
-git config --global merge.tool vscode
-git config --global mergetool.vscode.cmd 'code --wait $MERGED'
-
-# Usar as ferramentas
-git difftool     # abre o diff no VS Code
-git mergetool    # resolve conflitos no VS Code`}
-      />
-
-      <AlertBox type="info" title="Configurações por Projeto de Trabalho">
-        Se você usa o Git tanto para projetos pessoais (com seu e-mail pessoal) quanto para trabalho (e-mail corporativo), use configurações locais por projeto ao invés de alterar a configuração global.
-      </AlertBox>
-    </PageContainer>
-  );
-}
+  # Listar tudo com origem dos valores
+  git config --list --show-origin --show-scope`}
+        />
+      </PageContainer>
+    );
+  }
+  
