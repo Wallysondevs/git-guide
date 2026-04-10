@@ -1,140 +1,145 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function Status() {
-  return (
-    <PageContainer
-      title="Status e Diff"
-      subtitle="Entenda o estado atual do repositório e veja as diferenças entre versões dos seus arquivos."
-      difficulty="iniciante"
-      timeToRead="10 min"
-    >
-      <p>
-        Dois dos comandos mais usados no dia a dia são <code>git status</code> e <code>git diff</code>. Eles respondem às perguntas: "O que mudou?" e "Como exatamente mudou?".
-      </p>
+  export default function Status() {
+    return (
+      <PageContainer
+        title="git status"
+        subtitle="Entenda o estado completo do seu repositório — staged, unstaged, untracked e muito mais."
+        difficulty="iniciante"
+        timeToRead="10 min"
+      >
+        <p>
+          O <code>git status</code> é o comando mais usado no dia a dia. Ele mostra o estado atual do working directory e da staging area — quais arquivos foram modificados, quais estão prontos para commit e quais o Git não conhece.
+        </p>
 
-      <h2>git status</h2>
-      <p>
-        O <code>git status</code> mostra o estado de todos os arquivos no repositório em relação ao último commit.
-      </p>
+        <h2>Lendo a saída do git status</h2>
+        <CodeBlock
+          title="Saída completa do git status"
+          code={`git status
 
-      <CodeBlock
-        title="Interpretando o git status"
-        code={`$ git status
+  # Saída típica:
+  On branch feature/login
+  Your branch is ahead of 'origin/feature/login' by 2 commits.
+    (use "git push" to publish your local commits)
 
-On branch main
-Your branch is up to date with 'origin/main'.
+  Changes to be committed:    ← STAGED (vão no próximo commit)
+    (use "git restore --staged <file>..." to unstage)
+          new file:   src/auth/login.js
+          modified:   src/app.js
 
-Changes to be committed:
-  (use "git restore --staged <file>..." to unstage)
-        new file:   src/utils.js       # Novo arquivo na staging area
-        modified:   src/app.js         # Arquivo modificado e staged
+  Changes not staged for commit:   ← UNSTAGED (não vão no commit)
+    (use "git add <file>..." to update what will be committed)
+    (use "git restore <file>..." to discard changes in working directory)
+          modified:   src/utils.js
 
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-        modified:   README.md          # Modificado, mas não staged
+  Untracked files:    ← Git não conhece esses arquivos
+    (use "git add <file>..." to include in what will be committed)
+          src/auth/oauth.js
+          .env.local`}
+        />
 
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-        temp.log                       # Arquivo não rastreado pelo Git`}
-      />
+        <h2>Formatos de exibição</h2>
+        <CodeBlock
+          title="Variações do git status"
+          code={`# Formato padrão (verboso, com instruções)
+  git status
 
-      <CodeBlock
-        title="Versão resumida do status"
-        code={`# Versão curta e compacta
-git status -s    # ou --short
+  # Formato curto (conciso)
+  git status -s
+  git status --short
+  # Saída:
+  # A  src/auth/login.js     (A = added/staged)
+  # M  src/app.js            (M na 1ª coluna = staged)
+  #  M src/utils.js          (M na 2ª coluna = unstaged)
+  # ?? src/auth/oauth.js     (?? = untracked)
 
-# Saída:
-# M  src/app.js    (M = modified, first column = staged)
-# ?? temp.log      (?? = untracked)
-# A  src/utils.js  (A = added/staged)
-#  M README.md     (M na segunda coluna = não staged)`}
-      />
+  # Com informação de branch
+  git status -sb
+  # ## feature/login...origin/feature/login [ahead 2]
+  # A  src/auth/login.js
 
-      <h2>git diff</h2>
-      <p>
-        O <code>git diff</code> mostra exatamente o que mudou nos arquivos — linha por linha.
-      </p>
+  # Mostrar arquivos ignorados também
+  git status --ignored`}
+        />
 
-      <CodeBlock
-        title="git diff — diferenças no working directory"
-        code={`# Mostra o que mudou mas NÃO está na staging area
-git diff
+        <h2>Entendendo os indicadores do formato curto</h2>
+        <div className="overflow-x-auto my-6">
+          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
+            <thead className="bg-muted">
+              <tr>
+                <th className="p-3 text-left">Símbolo</th>
+                <th className="p-3 text-left">Coluna 1 (staged)</th>
+                <th className="p-3 text-left">Coluna 2 (unstaged)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["M", "Modificado e staged", "Modificado mas não staged"],
+                ["A", "Arquivo novo adicionado ao stage", "-"],
+                ["D", "Deletado e staged", "Deletado mas não staged"],
+                ["R", "Renomeado", "-"],
+                ["C", "Copiado", "-"],
+                ["U", "Atualizado mas não mergeado (conflito)", "Atualizado mas não mergeado"],
+                ["?? ", "- ", "Arquivo não rastreado (untracked)"],
+                ["!!", "- ", "Arquivo ignorado (.gitignore)"],
+              ].map(([sim, col1, col2], i) => (
+                <tr key={i} className="border-t border-border">
+                  <td className="p-3 font-mono text-primary text-base font-bold">{sim}</td>
+                  <td className="p-3 text-muted-foreground text-sm">{col1}</td>
+                  <td className="p-3 text-muted-foreground text-sm">{col2}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-# Saída típica:
-# diff --git a/README.md b/README.md
-# index abc1234..def5678 100644
-# --- a/README.md    (versão antiga)
-# +++ b/README.md    (versão nova)
-# @@ -1,3 +1,4 @@
-#  # Meu Projeto
-# +
-# +Esta é uma nova linha adicionada.   (+ = adicionado)
-# -Esta linha foi removida.            (- = removido)
-#  Esta linha não mudou.`}
-      />
+        <h2>Status e informações de branch</h2>
+        <CodeBlock
+          title="Informações de sincronização com remoto"
+          code={`git status
+  # On branch main
+  # Your branch is ahead of 'origin/main' by 3 commits.
+  #   → Você tem 3 commits para fazer push
 
-      <CodeBlock
-        title="Variações do git diff"
-        code={`# Diferenças entre working directory e último commit
-git diff
+  # Your branch is behind 'origin/main' by 5 commits.
+  #   → Precisa de pull para atualizar
 
-# Diferenças na staging area (o que vai no próximo commit)
-git diff --staged   # ou --cached
+  # Your branch and 'origin/main' have diverged,
+  # and have 2 and 3 different commits each, respectively.
+  #   → Você e o remoto divergiram — precisa merge ou rebase
 
-# Diferenças entre dois commits
-git diff abc1234 def5678
+  # Nothing to commit, working tree clean
+  #   → Tudo em ordem, sem mudanças pendentes`}
+        />
 
-# Diferenças entre dois branches
-git diff main feature/nova-funcionalidade
+        <h2>Integrando status no workflow</h2>
+        <CodeBlock
+          title="Uso do git status no dia a dia"
+          code={`# Antes de começar a trabalhar
+  git status  # ver estado atual
+  git pull    # se necessário atualizar
 
-# Diferenças de um arquivo específico
-git diff README.md
+  # Antes de commitar
+  git status  # verificar o que vai ser commitado
+  git diff --staged  # ver exatamente o que está staged
 
-# Resumo estatístico das mudanças
-git diff --stat`}
-      />
+  # Antes de fazer push
+  git status  # confirmar que está no branch certo
 
-      <h2>git show</h2>
-      <p>
-        Para ver o conteúdo completo de um commit específico:
-      </p>
+  # Verificar estado de merge em andamento
+  git status
+  # On branch main
+  # You have unmerged paths.
+  #   (fix conflicts and run "git commit")
+  #   both modified: src/app.js`}
+        />
 
-      <CodeBlock
-        title="Inspecionando commits"
-        code={`# Mostra o último commit completo
-git show
-
-# Mostra um commit específico pelo hash
-git show abc1234
-
-# Mostra apenas os arquivos mudados em um commit
-git show --name-only abc1234
-
-# Mostra um arquivo específico em um commit
-git show abc1234:src/app.js`}
-      />
-
-      <h2>Rastreando um Arquivo Específico</h2>
-      <CodeBlock
-        title="Histórico de um arquivo"
-        code={`# Ver todos os commits que tocaram um arquivo
-git log -- src/app.js
-
-# Ver as mudanças em cada commit para um arquivo
-git log -p -- src/app.js
-
-# Ver quem escreveu cada linha (blame)
-git blame src/app.js
-
-# Ver blame de um trecho específico
-git blame -L 10,20 src/app.js`}
-      />
-
-      <AlertBox type="info" title="Dica: git diff com ferramentas visuais">
-        Você pode usar ferramentas visuais para ver diffs de forma mais clara. Configure com: <code>git config --global diff.tool vscode</code>. Depois use <code>git difftool</code> ao invés de <code>git diff</code>.
-      </AlertBox>
-    </PageContainer>
-  );
-}
+        <AlertBox type="success" title="Dica: git status -sb para uso rápido">
+          Configure um alias: <code>git config --global alias.s 'status -sb'</code>. Com isso, <code>git s</code> mostra o status de forma ultra-compacta — branch atual, sincronização com remoto e lista de arquivos modificados, tudo em poucas linhas.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
