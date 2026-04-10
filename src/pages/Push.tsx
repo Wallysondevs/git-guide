@@ -1,117 +1,151 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function Push() {
-  return (
-    <PageContainer
-      title="Push e Pull"
-      subtitle="Como sincronizar seu trabalho local com o repositório remoto usando git push e git pull."
-      difficulty="iniciante"
-      timeToRead="12 min"
-    >
-      <p>
-        O <code>git push</code> envia seus commits locais para o repositório remoto. O <code>git pull</code> traz os commits do remoto para o seu repositório local. Esses dois comandos são o coração da colaboração no Git.
-      </p>
+  export default function Push() {
+    return (
+      <PageContainer
+        title="git push"
+        subtitle="Envie seus commits para o repositório remoto e compartilhe seu trabalho com a equipe."
+        difficulty="iniciante"
+        timeToRead="12 min"
+      >
+        <p>
+          O <code>git push</code> envia commits do seu repositório local para um repositório remoto. É como "publicar" seu trabalho — tornando-o visível para colaboradores e integrando-o com CI/CD, backups e outros processos automatizados.
+        </p>
 
-      <h2>git push — Enviando Commits</h2>
-      <CodeBlock
-        title="Como usar git push"
-        code={`# Enviar o branch atual para o remoto
-git push
+        <h2>Uso básico</h2>
+        <CodeBlock
+          title="Comandos essenciais de push"
+          code={`# Push do branch atual para o remoto configurado
+  git push
 
-# Enviar para um remoto e branch específicos
-git push origin main
+  # Push explícito (remoto + branch)
+  git push origin main
+  git push origin feature/login
 
-# Enviar um branch novo (primeira vez)
-git push -u origin feature/nova-funcionalidade
-# -u define o tracking: futuras chamadas de 'git push' funcionarão sem argumentos
+  # Primeiro push de um novo branch (configura tracking)
+  git push -u origin meu-branch
+  # -u = --set-upstream (próximos pushes só precisam de 'git push')
 
-# Enviar todas as tags junto com os commits
-git push --follow-tags
+  # Push de todas as tags
+  git push --tags
+  git push --follow-tags  # só tags anotadas que apontem para commits empurrados
 
-# Enviar todos os branches locais
-git push --all origin`}
-      />
+  # Push de todas as branches locais
+  git push --all origin`}
+        />
 
-      <AlertBox type="warning" title="Push Rejeitado?">
-        Se o <code>git push</code> for rejeitado, é porque o remoto tem commits que você não tem localmente. Você precisa primeiro fazer <code>git pull</code> (ou <code>git pull --rebase</code>), resolver possíveis conflitos e depois tentar o push novamente.
-      </AlertBox>
+        <AlertBox type="info" title="Por que git push rejeita com 'non-fast-forward'?">
+          O remoto tem commits que você não tem localmente. Faça <code>git pull --rebase</code> primeiro para integrar as mudanças remotas, depois push. O Git não deixa você sobrescrever o trabalho de outros por acidente.
+        </AlertBox>
 
-      <h2>git pull — Recebendo Commits</h2>
-      <CodeBlock
-        title="Como usar git pull"
-        code={`# Trazer e integrar mudanças do branch atual
-git pull
-
-# Equivale a:
-git fetch origin
-git merge origin/main
-
-# Pull com rebase (histórico mais limpo — recomendado)
-git pull --rebase
-
-# Pull de um branch específico
-git pull origin main
-
-# Pull de outro branch para o atual
-git pull origin feature/outra-feature`}
-      />
-
-      <h2>git fetch vs git pull</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-        <div className="p-4 border border-border rounded-xl bg-primary/5">
-          <h4 className="font-bold mb-2 border-0 mt-0">git fetch</h4>
-          <ul className="text-sm space-y-1 text-muted-foreground">
-            <li>• Baixa as mudanças do remoto</li>
-            <li>• NÃO altera o working directory</li>
-            <li>• Você decide quando integrar</li>
-            <li>• Mais seguro e controlado</li>
-          </ul>
+        <h2>Opções importantes</h2>
+        <div className="overflow-x-auto my-6">
+          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
+            <thead className="bg-muted">
+              <tr>
+                <th className="p-3 text-left">Opção</th>
+                <th className="p-3 text-left">Efeito</th>
+                <th className="p-3 text-left">Cuidado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["-u / --set-upstream", "Configura o branch remoto de tracking", "Apenas no primeiro push do branch"],
+                ["--force / -f", "Sobrescreve o remoto mesmo se divergiu", "⚠️ Nunca em branches compartilhados"],
+                ["--force-with-lease", "Force push seguro: falha se alguém fez push enquanto você trabalhava", "✅ Prefira a este em vez de --force"],
+                ["--dry-run", "Simula o push sem enviar nada", "Útil para verificar o que seria enviado"],
+                ["--delete", "Deleta um branch remoto", "Irreversível para outros clones sem reflog"],
+                ["--no-verify", "Pula hooks de pre-push", "⚠️ Use apenas em emergências"],
+              ].map(([opt, efeito, cuidado], i) => (
+                <tr key={i} className="border-t border-border">
+                  <td className="p-3 font-mono text-primary text-xs">{opt}</td>
+                  <td className="p-3 text-muted-foreground text-sm">{efeito}</td>
+                  <td className="p-3 text-sm">{cuidado}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <div className="p-4 border border-border rounded-xl bg-primary/5">
-          <h4 className="font-bold mb-2 border-0 mt-0">git pull</h4>
-          <ul className="text-sm space-y-1 text-muted-foreground">
-            <li>• Fetch + Merge automaticamente</li>
-            <li>• Altera o working directory</li>
-            <li>• Mais rápido para uso cotidiano</li>
-            <li>• Pode criar merge commits</li>
-          </ul>
+
+        <h2>Force push seguro</h2>
+        <CodeBlock
+          title="--force-with-lease vs --force"
+          code={`# Situação: você fez rebase e precisa atualizar o remoto
+  git rebase -i origin/main
+
+  # RUIM: --force pode sobrescrever trabalho de outros
+  git push --force
+
+  # BOM: --force-with-lease verifica antes
+  git push --force-with-lease
+  # Se alguém fez push enquanto você trabalhava → falha com erro
+  # Isso previne sobrescrever o trabalho de outros acidentalmente
+
+  # Após rebase interativo de branch local:
+  git push --force-with-lease origin meu-branch`}
+        />
+
+        <h2>Deletando branches remotos</h2>
+        <CodeBlock
+          title="Gerenciando branches no remoto"
+          code={`# Deletar branch remoto
+  git push origin --delete feature/login
+  git push origin :feature/login  # sintaxe alternativa
+
+  # Ver branches remotos
+  git branch -r
+
+  # Limpar refs locais de branches remotos deletados
+  git fetch --prune
+  git remote prune origin
+
+  # Configurar prune automático
+  git config --global fetch.prune true`}
+        />
+
+        <h2>Configurando push padrão</h2>
+        <CodeBlock
+          title="Configurações de comportamento de push"
+          code={`# Ver configuração atual
+  git config push.default
+
+  # Opções disponíveis:
+  git config --global push.default simple
+  # simple: push apenas para o branch de tracking (mais seguro, padrão Git 2.0+)
+
+  git config --global push.default current
+  # current: push para branch com mesmo nome no remoto
+
+  git config --global push.default matching
+  # matching: push todos os branches com mesmo nome (perigoso)
+
+  # Configurar para não precisar de -u no primeiro push
+  git config --global push.autoSetupRemote true
+  # Git 2.37+: git push funciona mesmo sem upstream configurado`}
+        />
+
+        <h2>Solucionando erros comuns de push</h2>
+        <div className="grid grid-cols-1 gap-3 my-6">
+          {[
+            { erro: "rejected — non-fast-forward", causa: "Remoto tem commits que você não tem", solucao: "git pull --rebase && git push" },
+            { erro: "Permission denied (publickey)", causa: "Chave SSH não configurada ou não reconhecida", solucao: "Configure SSH key: ssh-keygen -t ed25519 e adicione no GitHub" },
+            { erro: "error: src refspec main does not match any", causa: "Branch local com nome diferente do esperado", solucao: "git switch -c main ou git push origin HEAD:main" },
+            { erro: "remote: Repository not found", causa: "URL errada ou sem permissão", solucao: "Verifique: git remote -v e acesso ao repositório" },
+          ].map((item) => (
+            <div key={item.erro} className="p-4 border border-border rounded-xl bg-card border-l-4 border-l-destructive">
+              <h4 className="font-mono text-destructive text-xs mb-1">{item.erro}</h4>
+              <p className="text-xs text-muted-foreground mb-1"><strong>Causa:</strong> {item.causa}</p>
+              <p className="text-xs"><strong>Solução:</strong> {item.solucao}</p>
+            </div>
+          ))}
         </div>
-      </div>
 
-      <h2>Push com Force (Cuidado!)</h2>
-      <CodeBlock
-        title="Force push — use com extrema cautela"
-        code={`# NUNCA use em branches compartilhados!
-git push --force origin feature/meu-branch
-
-# Versão mais segura do force push
-# Falha se alguém fez push enquanto você preparava o seu
-git push --force-with-lease origin feature/meu-branch
-
-# Quando usar force push:
-# - Após git commit --amend em branch local
-# - Após git rebase -i em branch próprio
-# - NUNCA em main, dev ou branches compartilhados`}
-      />
-
-      <h2>Deletando Branch Remoto</h2>
-      <CodeBlock
-        title="Gerenciando branches no remoto"
-        code={`# Deletar um branch no repositório remoto
-git push origin --delete feature/branch-antigo
-# ou
-git push origin :feature/branch-antigo
-
-# Sincronizar branches deletados (limpeza local)
-git fetch --prune
-# Remove referências locais de branches remotos que não existem mais`}
-      />
-
-      <AlertBox type="success" title="Workflow recomendado">
-        Antes de começar a trabalhar: <code>git pull</code>. Antes de fazer push: <code>git pull --rebase</code>. Isso minimiza conflitos e mantém o histórico limpo.
-      </AlertBox>
-    </PageContainer>
-  );
-}
+        <AlertBox type="success" title="Boa prática: push frequente em branches de feature">
+          Faça push do seu branch de feature regularmente — não apenas quando terminar. Isso serve como backup, permite que colegas vejam seu progresso e facilita recuperação se algo der errado localmente.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
