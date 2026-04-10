@@ -1,133 +1,131 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function Repositorios() {
-  return (
-    <PageContainer
-      title="Criando Repositórios"
-      subtitle="Como iniciar um repositório Git do zero ou a partir de um projeto existente."
-      difficulty="iniciante"
-      timeToRead="8 min"
-    >
-      <p>
-        Um repositório Git (ou "repo") é um diretório que o Git está monitorando. Você pode criar um repositório novo a partir de um diretório vazio ou clonar um repositório existente da internet.
-      </p>
+  export default function Repositorios() {
+    return (
+      <PageContainer
+        title="Repositórios"
+        subtitle="Crie, clone e configure repositórios Git do zero com as melhores práticas."
+        difficulty="iniciante"
+        timeToRead="12 min"
+      >
+        <p>
+          Um repositório Git é um diretório que contém seu projeto e a pasta <code>.git/</code> onde todo o histórico é armazenado. Você pode criar um repositório do zero ou clonar um existente.
+        </p>
 
-      <h2>git init — Novo Repositório</h2>
-      <p>
-        O comando <code>git init</code> transforma qualquer diretório em um repositório Git, criando a pasta oculta <code>.git</code>.
-      </p>
+        <h2>Criando repositórios</h2>
+        <CodeBlock
+          title="Inicializar e criar repositórios"
+          code={`# Criar repositório no diretório atual
+  git init
 
-      <CodeBlock
-        title="Iniciando um repositório"
-        code={`# Cria uma nova pasta e inicia um repositório
-mkdir meu-app
-cd meu-app
-git init
+  # Criar repositório em novo diretório
+  git init meu-projeto
 
-# Ou inicia em um diretório já existente
-cd /caminho/para/projeto-existente
-git init
+  # Criar repositório bare (servidor — sem working directory)
+  git init --bare projeto.git
 
-# Inicia com um branch padrão diferente
-git init --initial-branch=main`}
-      />
+  # Clonar repositório existente
+  git clone https://github.com/usuario/projeto.git
 
-      <h2>Estrutura da Pasta .git</h2>
-      <p>
-        Após o <code>git init</code>, a pasta <code>.git</code> contém toda a mágica do Git:
-      </p>
+  # Clonar em diretório específico
+  git clone https://github.com/usuario/projeto.git minha-pasta
 
-      <CodeBlock
-        title="Explorando a pasta .git"
-        code={`ls -la .git/
+  # Clonar apenas o último commit (shallow clone — mais rápido)
+  git clone --depth 1 https://github.com/usuario/projeto.git
 
-# Saída típica:
-# HEAD        - Aponta para o branch atual
-# config      - Configurações locais do repositório
-# description - Descrição (usada pelo GitWeb)
-# hooks/      - Scripts automáticos (git hooks)
-# info/       - Informações de exclusão
-# objects/    - Armazena commits, trees e blobs
-# refs/       - Referências para branches e tags`}
-      />
+  # Clonar branch específico
+  git clone -b develop https://github.com/usuario/projeto.git`}
+        />
 
-      <AlertBox type="warning" title="Nunca edite a pasta .git manualmente">
-        A pasta <code>.git</code> é gerenciada exclusivamente pelo Git. Editar seus arquivos manualmente pode corromper seu repositório. Use sempre os comandos Git.
-      </AlertBox>
+        <h2>Estrutura de um repositório Git</h2>
+        <div className="overflow-x-auto my-6">
+          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
+            <thead className="bg-muted">
+              <tr>
+                <th className="p-3 text-left">Caminho</th>
+                <th className="p-3 text-left">Conteúdo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                [".git/", "O repositório Git em si — todo o histórico e configuração"],
+                [".git/objects/", "Todos os objetos (commits, trees, blobs, tags)"],
+                [".git/refs/", "Referências: branches (heads) e tags"],
+                [".git/HEAD", "Ponteiro para o branch atual"],
+                [".git/config", "Configuração local do repositório"],
+                [".git/COMMIT_EDITMSG", "Última mensagem de commit (para edição)"],
+                [".git/index", "Staging area (índice)"],
+                [".git/hooks/", "Scripts de hooks locais"],
+              ].map(([caminho, conteudo], i) => (
+                <tr key={i} className="border-t border-border">
+                  <td className="p-3 font-mono text-primary text-xs">{caminho}</td>
+                  <td className="p-3 text-muted-foreground text-sm">{conteudo}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      <h2>Adicionando um README</h2>
-      <p>
-        Todo bom repositório começa com um <strong>README.md</strong>. É o primeiro arquivo que as pessoas veem ao acessar seu projeto no GitHub.
-      </p>
+        <h2>Configurando novo repositório no GitHub</h2>
+        <div className="grid grid-cols-1 gap-3 my-6">
+          {[
+            { n: "1", acao: "Crie no GitHub", desc: "Em github.com/new — escolha nome, visibilidade (público/privado), adicione README e .gitignore se quiser." },
+            { n: "2", acao: "Clone ou conecte local", desc: "Se criou no GitHub: git clone <url>. Se tem projeto local: git remote add origin <url>" },
+            { n: "3", acao: "Configurar branch principal", desc: "Certifique que o branch se chama 'main': git branch -M main" },
+            { n: "4", acao: "Push inicial", desc: "git push -u origin main" },
+          ].map((item) => (
+            <div key={item.n} className="flex gap-4 p-4 border border-border rounded-xl bg-card">
+              <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0">{item.n}</span>
+              <div>
+                <h4 className="font-bold text-sm mb-1">{item.acao}</h4>
+                <p className="text-sm text-muted-foreground">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
 
-      <CodeBlock
-        title="Criando um README profissional"
-        code={`# Cria o README
-cat > README.md << 'EOF'
-# Nome do Projeto
+        <CodeBlock
+          title="Conectar projeto local ao GitHub"
+          code={`# 1. Inicializar (se ainda não é repositório)
+  git init
 
-Breve descrição do que o projeto faz.
+  # 2. Criar commit inicial
+  git add .
+  git commit -m "chore: commit inicial"
 
-## Instalação
+  # 3. Renomear branch para main (se necessário)
+  git branch -M main
 
-\`\`\`bash
-npm install
-\`\`\`
+  # 4. Conectar ao GitHub
+  git remote add origin https://github.com/usuario/projeto.git
+  # ou SSH:
+  git remote add origin git@github.com:usuario/projeto.git
 
-## Como usar
+  # 5. Push inicial
+  git push -u origin main`}
+        />
 
-\`\`\`bash
-npm start
-\`\`\`
+        <h2>Tipos de repositório</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+          {[
+            { tipo: "Repositório local", desc: "Apenas na sua máquina. Sem colaboração. Útil para projetos pessoais ou experimentação.", cmd: "git init" },
+            { tipo: "Repositório remoto", desc: "Hospedado no GitHub, GitLab, Bitbucket etc. Permite colaboração e backup.", cmd: "git clone <url>" },
+            { tipo: "Bare repository", desc: "Sem working directory — só o histórico. Usado como servidor central em ambientes privados.", cmd: "git init --bare" },
+          ].map((item) => (
+            <div key={item.tipo} className="p-4 border border-border rounded-xl bg-card">
+              <h4 className="font-bold mb-1 mt-0 border-0 text-sm">{item.tipo}</h4>
+              <p className="text-xs text-muted-foreground mb-2">{item.desc}</p>
+              <code className="text-xs text-primary">{item.cmd}</code>
+            </div>
+          ))}
+        </div>
 
-## Contribuição
-
-Pull requests são bem-vindos!
-
-## Licença
-
-MIT
-EOF
-
-# Adiciona e commita
-git add README.md
-git commit -m "Adiciona README inicial"`}
-      />
-
-      <h2>Repositório Bare</h2>
-      <p>
-        Um repositório <strong>bare</strong> não tem working directory — ele é usado apenas como servidor central para compartilhar código entre membros de uma equipe.
-      </p>
-
-      <CodeBlock
-        title="Repositório bare (servidor)"
-        code={`# Cria um repositório bare
-git init --bare meu-projeto.git
-
-# Repositórios bare têm a extensão .git por convenção
-# e são usados como repositórios remotos`}
-      />
-
-      <h2>Verificando o Estado do Repositório</h2>
-      <CodeBlock
-        title="Comandos essenciais de inspeção"
-        code={`# Estado atual (sempre use antes de commitar)
-git status
-
-# Lista de commits
-git log --oneline
-
-# Mostra informações sobre o repositório
-git remote -v    # Repositórios remotos conectados
-git branch -a    # Todos os branches
-git tag          # Tags existentes`}
-      />
-
-      <AlertBox type="success" title="Dica Pro">
-        Sempre crie um <code>.gitignore</code> logo no início do projeto para evitar commitar arquivos desnecessários como <code>node_modules/</code>, <code>.env</code>, arquivos de build, etc.
-      </AlertBox>
-    </PageContainer>
-  );
-}
+        <AlertBox type="info" title="Arquivando e transferindo repositórios">
+          Para arquivar um repositório no GitHub (somente leitura): Settings → Archive this repository. Para transferir para outra conta: Settings → Transfer. Para criar um bundle portável: <code>git bundle create repo.bundle --all</code>
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
