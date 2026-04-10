@@ -138,7 +138,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3 mt-0 border-0 pb-0">
                   {section.title}
                 </h4>
-                <ul className="space-y-1">
+                <ul className="space-y-1 list-none">
                   {section.items.map((item, i) => {
                     const isActive = location === item.path;
                     const Icon = item.icon;
