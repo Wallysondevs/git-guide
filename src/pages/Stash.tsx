@@ -82,34 +82,25 @@ import { PageContainer } from "@/components/layout/PageContainer";
         />
 
         <h2>Cenários comuns de uso</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-          {[
-            {
-              titulo: "Urgência no meio do trabalho",
-              code: "# Você está no meio de uma feature
-# Surge um bug crítico em produção
-git stash push -m 'wip: feature X'
-git switch main
-git switch -c hotfix/bug-critico
-# ... corrige e faz PR ...
-git switch feature/x
-git stash pop",
-            },
-            {
-              titulo: "Código no branch errado",
-              code: "# Você commitou no main sem querer
-# (se ainda não commitou — use stash)
-git stash push -m 'trabalho no branch errado'
-git switch feature/correta
-git stash pop",
-            },
-          ].map((item) => (
-            <div key={item.titulo} className="p-4 border border-border rounded-xl bg-card">
-              <h4 className="font-bold mb-2 mt-0 border-0 text-sm">{item.titulo}</h4>
-              <pre className="text-xs text-muted-foreground overflow-x-auto whitespace-pre-wrap">{item.code}</pre>
-            </div>
-          ))}
-        </div>
+        <CodeBlock
+          title="Urgência no meio do trabalho"
+          code={`# Você está no meio de uma feature
+  # Surge um bug crítico em produção
+  git stash push -m 'wip: feature X'
+  git switch main
+  git switch -c hotfix/bug-critico
+  # ... corrige e faz PR ...
+  git switch feature/x
+  git stash pop`}
+        />
+
+        <CodeBlock
+          title="Código no branch errado"
+          code={`# Você está codando no branch errado (sem ter commitado)
+  git stash push -m 'trabalho no branch errado'
+  git switch feature/correta
+  git stash pop`}
+        />
 
         <h2>Resolvendo conflitos ao aplicar stash</h2>
         <CodeBlock
@@ -124,7 +115,6 @@ git stash pop",
 
   # 1. Resolver conflitos
   git add src/app.js
-  git restore --staged src/app.js  # ou commitar conforme necessário
 
   # 2. Remover o stash manualmente
   git stash drop stash@{0}`}
