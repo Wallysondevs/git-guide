@@ -1,140 +1,158 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function Github() {
-  return (
-    <PageContainer
-      title="Usando GitHub"
-      subtitle="O GitHub é a maior plataforma de hospedagem de código do mundo. Aprenda a usar seus recursos principais."
-      difficulty="iniciante"
-      timeToRead="12 min"
-    >
-      <p>
-        O GitHub é muito mais do que um lugar para hospedar código Git. É uma plataforma completa de colaboração com issues, pull requests, actions (CI/CD), wikis, discussões e muito mais.
-      </p>
+  export default function Github() {
+    return (
+      <PageContainer
+        title="GitHub"
+        subtitle="Domine o GitHub — Issues, Actions, Pages, releases e funcionalidades essenciais da plataforma."
+        difficulty="iniciante"
+        timeToRead="14 min"
+      >
+        <p>
+          O GitHub é a maior plataforma de hospedagem de código do mundo. Além de armazenar repositórios Git, oferece Issues, Pull Requests, GitHub Actions (CI/CD), GitHub Pages, e muito mais.
+        </p>
 
-      <h2>Criando seu Primeiro Repositório no GitHub</h2>
-      <CodeBlock
-        title="Conectando um projeto local ao GitHub"
-        code={`# Opção 1: Criar o repo no GitHub primeiro, depois clonar
-git clone https://github.com/seu-usuario/meu-projeto.git
-cd meu-projeto
-# Comece a trabalhar
-
-# Opção 2: Conectar um projeto existente ao GitHub
-cd projeto-existente
-git init
-git add .
-git commit -m "Commit inicial"
-git remote add origin https://github.com/seu-usuario/meu-projeto.git
-git branch -M main
-git push -u origin main`}
-      />
-
-      <h2>GitHub CLI (gh)</h2>
-      <p>
-        O <strong>GitHub CLI</strong> permite interagir com o GitHub diretamente do terminal, sem abrir o navegador:
-      </p>
-
-      <CodeBlock
-        title="Usando o GitHub CLI"
-        code={`# Instalar no Linux (via apt)
-sudo apt install gh
-
-# Instalar no macOS
-brew install gh
-
-# Autenticar
-gh auth login
-
-# Criar repositório
-gh repo create meu-projeto --public --clone
-
-# Criar pull request
-gh pr create --title "feat: nova funcionalidade" --body "Descrição..."
-
-# Listar issues
-gh issue list
-
-# Criar issue
-gh issue create --title "Bug: crash ao logar" --body "Passos para reproduzir..."
-
-# Ver status do workflow de CI/CD
-gh run list`}
-      />
-
-      <h2>Issues</h2>
-      <p>
-        Issues são a forma de rastrear tarefas, bugs, melhorias e discussões no GitHub:
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-        <div className="p-4 border border-border rounded-xl bg-primary/5">
-          <h4 className="font-bold mb-2 border-0 mt-0">Boas práticas para Issues</h4>
-          <ul className="text-sm space-y-1 text-muted-foreground">
-            <li>• Título claro e descritivo</li>
-            <li>• Passos para reproduzir (bugs)</li>
-            <li>• Comportamento esperado vs atual</li>
-            <li>• Labels para categorizar</li>
-            <li>• Assign para responsáveis</li>
-          </ul>
+        <h2>Funcionalidades principais do GitHub</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+          {[
+            { titulo: "Issues", desc: "Sistema de rastreamento de bugs, features e tarefas. Suporta labels, milestones, assignees e templates. Integra com PRs e commits." },
+            { titulo: "Pull Requests", desc: "O coração da colaboração — proposta de mudanças, revisão de código, discussão, CI e merge. Conecta Issue ao código." },
+            { titulo: "GitHub Actions", desc: "CI/CD integrado. Automatiza builds, testes, deploys e qualquer workflow usando YAML." },
+            { titulo: "GitHub Pages", desc: "Hospedagem estática gratuita a partir de um branch ou pasta dist/. Ideal para documentação e sites de projetos." },
+            { titulo: "Releases", desc: "Empacotamento de versões com changelogs, assets (binários) e tags. Baseado em tags Git." },
+            { titulo: "GitHub Codespaces", desc: "Ambiente de desenvolvimento completo na nuvem, diretamente no browser, configurado via devcontainer." },
+          ].map((item) => (
+            <div key={item.titulo} className="p-4 border border-border rounded-xl bg-card">
+              <h4 className="font-bold mb-1 mt-0 border-0 text-sm text-primary">{item.titulo}</h4>
+              <p className="text-xs text-muted-foreground">{item.desc}</p>
+            </div>
+          ))}
         </div>
-        <div className="p-4 border border-border rounded-xl bg-primary/5">
-          <h4 className="font-bold mb-2 border-0 mt-0">Referências em commits</h4>
-          <ul className="text-sm space-y-1 text-muted-foreground">
-            <li>• <code>#123</code> — menciona a issue</li>
-            <li>• <code>closes #123</code> — fecha a issue</li>
-            <li>• <code>fixes #123</code> — fecha a issue</li>
-            <li>• <code>resolves #123</code> — fecha a issue</li>
-          </ul>
+
+        <h2>GitHub Actions — CI/CD básico</h2>
+        <CodeBlock
+          title="Workflow básico de CI"
+          code={`# .github/workflows/ci.yml
+  name: CI
+
+  on:
+    push:
+      branches: [main]
+    pull_request:
+      branches: [main]
+
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: '20'
+            cache: 'npm'
+
+        - name: Instalar dependências
+          run: npm ci
+
+        - name: Executar testes
+          run: npm test
+
+        - name: Build
+          run: npm run build`}
+        />
+
+        <h2>GitHub Pages — deploy automático</h2>
+        <CodeBlock
+          title="Deploy no GitHub Pages via Actions"
+          code={`# .github/workflows/deploy.yml
+  name: Deploy GitHub Pages
+
+  on:
+    push:
+      branches: [main]
+
+  permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+  jobs:
+    deploy:
+      environment:
+        name: github-pages
+        url: ${{ steps.deployment.outputs.page_url }}
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-node@v4
+          with:
+            node-version: '20'
+        - run: npm ci && npm run build
+        - uses: actions/upload-pages-artifact@v3
+          with:
+            path: dist/
+        - uses: actions/deploy-pages@v4
+          id: deployment`}
+        />
+
+        <h2>Issues e referências cruzadas</h2>
+        <CodeBlock
+          title="Vinculando commits e PRs a Issues"
+          code={`# Fechar issue automaticamente ao mergear PR:
+  git commit -m "feat: adiciona filtro de busca
+
+  Closes #42"
+
+  # Palavras-chave que fecham issues:
+  # close, closes, closed
+  # fix, fixes, fixed
+  # resolve, resolves, resolved
+
+  # Referenciar sem fechar:
+  git commit -m "fix: parte da solução, ref #42"
+
+  # Referenciar issue de outro repositório:
+  "Closes usuario/outro-repo#15"
+
+  # No PR, referenciar issue no corpo da descrição:
+  # "This PR closes #42 and partially addresses #38"`}
+        />
+
+        <h2>Atalhos úteis no GitHub</h2>
+        <div className="overflow-x-auto my-6">
+          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
+            <thead className="bg-muted">
+              <tr>
+                <th className="p-3 text-left">Atalho</th>
+                <th className="p-3 text-left">Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["t", "Pesquisar arquivo no repositório (file finder)"],
+                [".", "Abrir o repositório no VS Code na web (github.dev)"],
+                ["b", "Abrir blame view do arquivo atual"],
+                ["y", "Transformar URL em link permanente ao commit atual"],
+                ["?", "Ver lista completa de atalhos"],
+                ["Ctrl+K / Cmd+K", "Abrir command palette do GitHub"],
+              ].map(([atalho, acao], i) => (
+                <tr key={i} className="border-t border-border">
+                  <td className="p-3 font-mono text-primary text-sm">{atalho}</td>
+                  <td className="p-3 text-muted-foreground text-sm">{acao}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
 
-      <CodeBlock
-        title="Commits que referenciam issues"
-        code={`# Mencionar uma issue na mensagem de commit
-git commit -m "fix: corrige validação de email
-
-Closes #45
-See also #32"
-
-# Quando este commit for mergeado no main,
-# a issue #45 será fechada automaticamente`}
-      />
-
-      <h2>GitHub Actions — CI/CD</h2>
-      <p>
-        O GitHub Actions automatiza testes, builds e deploys toda vez que você faz push ou abre um pull request:
-      </p>
-
-      <CodeBlock
-        title="Workflow básico de CI"
-        language="yaml"
-        code={`# .github/workflows/ci.yml
-name: CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm install
-      - run: npm test`}
-      />
-
-      <AlertBox type="success" title="GitHub é gratuito para projetos públicos">
-        Repositórios públicos no GitHub são 100% gratuitos e incluem GitHub Actions com 2.000 minutos/mês. Para projetos open source, os limites são ainda mais generosos.
-      </AlertBox>
-    </PageContainer>
-  );
-}
+        <AlertBox type="success" title="GitHub CLI — controle total via terminal">
+          Instale o GitHub CLI (<code>gh</code>) para gerenciar Issues, PRs, Actions e releases diretamente do terminal. <code>gh pr create</code>, <code>gh issue list</code>, <code>gh run watch</code> são mais rápidos que a interface web para fluxos repetitivos.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
