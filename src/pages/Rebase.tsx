@@ -22,15 +22,15 @@ import { PageContainer } from "@/components/layout/PageContainer";
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
           <div className="p-4 border border-border rounded-xl bg-card">
             <h4 className="font-bold mb-2 mt-0 border-0">Merge — preserva o histórico real</h4>
-            <pre className="text-xs text-muted-foreground">A---B---C---M  (main + merge commit M)
-       \     /
-        D---E  (feature)</pre>
+            <pre className="text-xs text-muted-foreground">A---B---C---M  (main + merge commit M){"
+"}     \     /{"
+"}      D---E  (feature)</pre>
           </div>
           <div className="p-4 border border-border rounded-xl bg-primary/5">
             <h4 className="font-bold mb-2 mt-0 border-0">Rebase — histórico linear</h4>
-            <pre className="text-xs text-muted-foreground">A---B---C---D'---E'  (linear, sem merge commit)
-           ↑
-       feature rebased sobre main</pre>
+            <pre className="text-xs text-muted-foreground">A---B---C---D'---E'{"
+"}         ↑{"
+"}     feature rebased sobre main</pre>
           </div>
         </div>
 
@@ -76,13 +76,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
   # edit   = parar para alterar o commit
   # squash = combinar com o commit anterior (mantém mensagens)
   # fixup  = combinar com o anterior (descarta mensagem)
-  # drop   = deletar o commit completamente
-
-  # Resultado após squash/fixup:
-  # pick abc1234 feat: adiciona formulário de login
-  # fixup def5678  ← combina com abc1234
-  # fixup ghi9012  ← combina com abc1234
-  # reword jkl3456  ← nova mensagem`}
+  # drop   = deletar o commit completamente`}
         />
 
         <AlertBox type="info" title="Rebase interativo é a forma mais segura de rebase">
@@ -90,25 +84,30 @@ import { PageContainer } from "@/components/layout/PageContainer";
         </AlertBox>
 
         <h2>Casos de uso comuns</h2>
-        <div className="grid grid-cols-1 gap-3 my-6">
-          {[
-            { caso: "Atualizar feature branch com main", cmd: "git switch feature/x
-git fetch origin
-git rebase origin/main" },
-            { caso: "Limpar commits antes do PR", cmd: "git rebase -i HEAD~5
-# Squash WIPs, reword mensagens, drop commits de debug" },
-            { caso: "Mover commits para branch correto", cmd: "git rebase --onto main feature-old feature-new" },
-            { caso: "Separar um commit em dois", cmd: "git rebase -i HEAD~1
-# edite o commit: git reset HEAD~1
-# git add -p  →  git commit  →  git commit
-# git rebase --continue" },
-          ].map((item) => (
-            <div key={item.caso} className="p-4 border border-border rounded-xl bg-card">
-              <h4 className="font-bold mb-2 mt-0 border-0 text-sm">{item.caso}</h4>
-              <pre className="text-xs text-muted-foreground font-mono">{item.cmd}</pre>
-            </div>
-          ))}
-        </div>
+        <CodeBlock
+          title="Atualizar feature branch com main"
+          code={`git switch feature/x
+  git fetch origin
+  git rebase origin/main`}
+        />
+
+        <CodeBlock
+          title="Limpar commits antes do PR"
+          code={`git rebase -i HEAD~5
+  # Squash WIPs, reword mensagens, drop commits de debug`}
+        />
+
+        <CodeBlock
+          title="Separar um commit em dois"
+          code={`git rebase -i HEAD~1
+  # Selecione 'edit' no commit
+  git reset HEAD~1
+  git add -p  # adicionar primeira parte
+  git commit -m "fix: primeira mudança"
+  git add .   # adicionar o resto
+  git commit -m "feat: segunda mudança"
+  git rebase --continue`}
+        />
 
         <h2>git pull --rebase</h2>
         <CodeBlock
@@ -119,9 +118,6 @@ git rebase origin/main" },
   # Configura como padrão
   git config --global pull.rebase true
   # Agora 'git pull' sempre faz rebase
-
-  # Se preferir merges no pull (padrão antigo):
-  git config --global pull.rebase false
 
   # Para um único pull sem alterar o default:
   git pull --no-rebase`}
