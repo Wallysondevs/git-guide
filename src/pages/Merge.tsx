@@ -1,113 +1,143 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function Merge() {
-  return (
-    <PageContainer
-      title="Merge"
-      subtitle="Como integrar branches com git merge e entender os diferentes tipos de merge."
-      difficulty="intermediario"
-      timeToRead="12 min"
-    >
-      <p>
-        O <code>git merge</code> integra o histórico de dois branches. Depois de trabalhar em uma funcionalidade em um branch separado, você usa merge para trazer essas mudanças de volta ao branch principal.
-      </p>
+  export default function Merge() {
+    return (
+      <PageContainer
+        title="git merge"
+        subtitle="Combine o trabalho de diferentes branches preservando o histórico completo de cada um."
+        difficulty="intermediario"
+        timeToRead="14 min"
+      >
+        <p>
+          O <code>git merge</code> integra as mudanças de um branch em outro. Existem diferentes estratégias de merge com trade-offs entre clareza do histórico e simplicidade — escolher a certa faz toda a diferença na legibilidade do projeto.
+        </p>
 
-      <h2>Tipos de Merge</h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-        <div className="p-4 border border-border rounded-xl bg-primary/5">
-          <h4 className="font-bold text-primary mb-2 border-0 mt-0">Fast-forward Merge</h4>
-          <p className="text-sm text-muted-foreground">Ocorre quando o branch principal não avançou desde a criação do branch de feature. O Git simplesmente move o ponteiro para frente — sem criar commit de merge.</p>
+        <h2>Tipos de merge</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+          {[
+            { tipo: "Fast-Forward", desc: "Quando o branch alvo não divergiu: apenas move o ponteiro. Histórico linear, sem commit de merge.", cmd: "--ff (padrão)" },
+            { tipo: "Merge Commit", desc: "Cria um commit extra que une os dois históricos. Preserva o contexto de quando cada feature foi desenvolvida.", cmd: "--no-ff" },
+            { tipo: "Squash", desc: "Combina todos os commits do branch em um só no destino. Histórico limpo mas perde detalhes do desenvolvimento.", cmd: "--squash" },
+          ].map((item) => (
+            <div key={item.tipo} className="p-4 border border-border rounded-xl bg-card">
+              <h4 className="font-bold mb-1 mt-0 border-0 text-sm text-primary">{item.tipo}</h4>
+              <p className="text-xs text-muted-foreground mb-2">{item.desc}</p>
+              <code className="text-xs bg-muted px-2 py-0.5 rounded">{item.cmd}</code>
+            </div>
+          ))}
         </div>
-        <div className="p-4 border border-border rounded-xl bg-primary/5">
-          <h4 className="font-bold text-primary mb-2 border-0 mt-0">Three-way Merge</h4>
-          <p className="text-sm text-muted-foreground">Ocorre quando ambos os branches avançaram. O Git cria um "merge commit" especial com dois pais, preservando o histórico de ambos os branches.</p>
+
+        <CodeBlock
+          title="Exemplos de cada tipo de merge"
+          code={`# Fast-Forward (padrão quando possível)
+  git switch main
+  git merge feature/login
+  # Se não houve commits no main desde que feature/login divergiu:
+  # → apenas move o ponteiro, sem criar commit de merge
+
+  # Forçar merge commit (mesmo quando fast-forward seria possível)
+  git merge --no-ff feature/login
+  # Útil para manter registro visual de quando cada feature foi integrada
+
+  # Squash: comprime todos os commits da feature em um
+  git merge --squash feature/login
+  git commit -m "feat: implementa sistema de login completo"
+  # Os commits individuais não aparecem no histórico do main
+
+  # Apenas verificar se há conflitos sem fazer merge
+  git merge --no-commit --no-ff feature/login
+  git merge --abort  # abortar se não quiser`}
+        />
+
+        <h2>Estratégias de merge</h2>
+        <CodeBlock
+          title="Estratégias avançadas"
+          code={`# Estratégia ort (padrão no Git moderno)
+  git merge -s ort feature/login
+
+  # Estratégia recursive com opções
+  git merge -X theirs feature/login  # em conflito, usa versão do branch
+  git merge -X ours feature/login    # em conflito, usa versão do main
+
+  # Ignorar mudanças de whitespace
+  git merge -Xignore-all-space feature/login
+  git merge -Xignore-space-change feature/login
+
+  # Merge de um commit específico (sem branch)
+  git merge abc1234`}
+        />
+
+        <AlertBox type="info" title="Quando usar --no-ff">
+          Use <code>--no-ff</code> para features e releases. O commit de merge cria um "nó" visual no histórico que mostra claramente: "aqui a feature X foi integrada no dia Y". Sem isso, os commits da feature ficam misturados no histórico linear do main.
+        </AlertBox>
+
+        <h2>Resolvendo conflitos de merge</h2>
+        <CodeBlock
+          title="Fluxo completo de resolução de conflito"
+          code={`# Merge que gera conflito
+  git merge feature/login
+  # CONFLICT (content): Merge conflict in src/auth.js
+  # Automatic merge failed; fix conflicts and then commit the result.
+
+  # 1. Ver arquivos em conflito
+  git status
+  # both modified: src/auth.js
+
+  # 2. Abrir o arquivo e ver os marcadores
+  # <<<<<<< HEAD (sua versão)
+  # function login(user) { ... }
+  # =======
+  # function authenticate(credentials) { ... }
+  # >>>>>>> feature/login (versão entrando)
+
+  # 3. Usar uma ferramenta de merge visual
+  git mergetool  # abre ferramenta configurada (vimdiff, meld, etc.)
+
+  # 4. Após resolver cada arquivo
+  git add src/auth.js
+
+  # 5. Finalizar o merge
+  git commit  # mensagem pré-preenchida com info do merge
+
+  # OU abortar tudo
+  git merge --abort`}
+        />
+
+        <h2>Comparando merge vs rebase</h2>
+        <div className="overflow-x-auto my-6">
+          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
+            <thead className="bg-muted">
+              <tr>
+                <th className="p-3 text-left">Critério</th>
+                <th className="p-3 text-left">git merge</th>
+                <th className="p-3 text-left">git rebase</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["Histórico", "Preserva exatamente como aconteceu", "Reescreve para ficar linear"],
+                ["Commit extra", "Sim (commit de merge)", "Não"],
+                ["Conflitos", "Resolve uma vez", "Pode resolver para cada commit"],
+                ["Segurança", "Seguro em branches públicos", "Nunca em branches públicos/compartilhados"],
+                ["Reversibilidade", "Fácil (reverter o commit de merge)", "Mais complexo"],
+                ["Uso ideal", "Integrar features finalizadas", "Atualizar branch local antes do push"],
+              ].map(([crit, merge, rebase], i) => (
+                <tr key={i} className="border-t border-border">
+                  <td className="p-3 font-medium text-sm">{crit}</td>
+                  <td className="p-3 text-green-400 text-sm">{merge}</td>
+                  <td className="p-3 text-blue-400 text-sm">{rebase}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
 
-      <CodeBlock
-        title="Fazendo merge"
-        code={`# Primeiro, vá para o branch que receberá o merge
-git switch main
-
-# Faça o merge do branch de feature
-git merge feature/nova-funcionalidade
-
-# Merge com mensagem customizada
-git merge feature/nova-funcionalidade -m "Merge: adiciona funcionalidade de exportação"
-
-# Forçar a criação de um merge commit (mesmo se fast-forward fosse possível)
-git merge --no-ff feature/nova-funcionalidade
-
-# Ver quais commits serão mergeados antes de executar
-git log main..feature/nova-funcionalidade --oneline`}
-      />
-
-      <AlertBox type="info" title="--no-ff: Merge sem Fast-forward">
-        Muitas equipes usam <code>--no-ff</code> para sempre criar um merge commit. Isso preserva no histórico o contexto de que aquele trabalho foi feito em um branch separado, facilitando a leitura do histórico.
-      </AlertBox>
-
-      <h2>Merge com Squash</h2>
-      <p>
-        O <code>--squash</code> junta todos os commits do branch em um único commit no branch principal, mantendo o histórico mais limpo.
-      </p>
-
-      <CodeBlock
-        title="Squash merge"
-        code={`# Traz todas as mudanças do branch como staged, sem criar merge commit
-git merge --squash feature/nova-funcionalidade
-
-# Você precisa criar o commit manualmente
-git commit -m "feat: adiciona nova funcionalidade de exportação"
-
-# Resultado: apenas 1 commit no main, ao invés de 10 commits do feature`}
-      />
-
-      <h2>Cancelando um Merge</h2>
-      <CodeBlock
-        title="Abortando um merge em andamento"
-        code={`# Se houver conflitos e você quiser cancelar o merge
-git merge --abort
-
-# Se o merge já foi completado mas você quer desfazer
-git reset --hard HEAD~1   # só se ainda não fez push!`}
-      />
-
-      <h2>Estratégias de Merge</h2>
-      <CodeBlock
-        title="Estratégias avançadas de merge"
-        code={`# Merge preferindo a versão do branch atual em caso de conflito
-git merge -X ours feature/branch
-
-# Merge preferindo a versão do branch sendo mergeado
-git merge -X theirs feature/branch
-
-# Ver o que seria mergeado sem fazer o merge
-git merge --no-commit --no-ff feature/branch
-# Para ver o resultado:
-git diff --cached
-# Para cancelar:
-git merge --abort`}
-      />
-
-      <h2>Após o Merge</h2>
-      <CodeBlock
-        title="Limpando depois do merge"
-        code={`# Após o merge bem-sucedido, delete o branch local
-git branch -d feature/nova-funcionalidade
-
-# Delete também o branch remoto (se existir)
-git push origin --delete feature/nova-funcionalidade
-
-# Confirme que o merge foi bem-sucedido
-git log --oneline --graph -10`}
-      />
-
-      <AlertBox type="success" title="Quando usar Merge vs Rebase">
-        Use <strong>merge</strong> para integrar branches de longa duração (feature branches, hotfixes) ao main — preserva o contexto histórico. Use <strong>rebase</strong> para manter seu branch de feature atualizado com o main durante o desenvolvimento — cria um histórico mais linear.
-      </AlertBox>
-    </PageContainer>
-  );
-}
+        <AlertBox type="success" title="Regra simples: merge para integrar, rebase para atualizar">
+          Use merge ao integrar uma feature no main (cria registro histórico). Use rebase ao atualizar seu branch local com as mudanças do main (antes de abrir PR). Esta combinação dá o melhor dos dois mundos.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
