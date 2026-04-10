@@ -88,8 +88,9 @@
     @apply font-mono text-sm bg-muted px-1.5 py-0.5 rounded text-primary;
   }
 
-  ul { @apply list-disc list-inside space-y-2 mb-6 text-muted-foreground; }
-  li { @apply leading-relaxed; }
+  ul { @apply list-none; }
+  .prose ul { @apply list-disc list-inside space-y-2 mb-6 text-muted-foreground; }
+  .prose li { @apply leading-relaxed; }
 }
 
 .glass-panel {
