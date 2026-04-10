@@ -22,15 +22,13 @@ import { PageContainer } from "@/components/layout/PageContainer";
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
           <div className="p-4 border border-border rounded-xl bg-card">
             <h4 className="font-bold mb-2 mt-0 border-0">Merge — preserva o histórico real</h4>
-            <pre className="text-xs text-muted-foreground">A---B---C---M  (main + merge commit M){"
-"}     \     /{"
-"}      D---E  (feature)</pre>
+            <p className="text-sm text-muted-foreground">Cria um commit de merge que une dois branches. O histórico mostra exatamente como e quando cada feature foi desenvolvida e integrada.</p>
+            <code className="text-xs text-muted-foreground mt-2 block">git merge feature/login</code>
           </div>
           <div className="p-4 border border-border rounded-xl bg-primary/5">
             <h4 className="font-bold mb-2 mt-0 border-0">Rebase — histórico linear</h4>
-            <pre className="text-xs text-muted-foreground">A---B---C---D'---E'{"
-"}         ↑{"
-"}     feature rebased sobre main</pre>
+            <p className="text-sm text-muted-foreground">Reaplica commits do feature sobre o main atual. Histórico fica linear sem commits de merge, como se a feature tivesse sido escrita depois das mudanças do main.</p>
+            <code className="text-xs text-muted-foreground mt-2 block">git rebase main</code>
           </div>
         </div>
 
@@ -100,13 +98,13 @@ import { PageContainer } from "@/components/layout/PageContainer";
         <CodeBlock
           title="Separar um commit em dois"
           code={`git rebase -i HEAD~1
-  # Selecione 'edit' no commit
-  git reset HEAD~1
-  git add -p  # adicionar primeira parte
+  # Selecione 'edit' no commit — o Git para no commit para edição
+  git reset HEAD~1        # desfaz o commit mas mantém as mudanças staged
+  git add -p              # adicionar primeira parte interativamente
   git commit -m "fix: primeira mudança"
-  git add .   # adicionar o resto
+  git add .               # adicionar o resto
   git commit -m "feat: segunda mudança"
-  git rebase --continue`}
+  git rebase --continue   # terminar o rebase`}
         />
 
         <h2>git pull --rebase</h2>
@@ -126,17 +124,40 @@ import { PageContainer } from "@/components/layout/PageContainer";
         <h2>Rebase onto — mover commits entre branches</h2>
         <CodeBlock
           title="Rebase --onto para reestruturar branches"
-          code={`# Situação: feature-b foi criada de feature-a, mas agora
-  # precisa ir direto para o main
-  #
-  # Antes:  main → A → B (feature-a) → C → D (feature-b)
-  # Depois: main → A → B (feature-a)
-  #                ↓
-  #              C' → D' (feature-b agora sobre main)
+          code={`# Situação: feature-b foi criada a partir de feature-a,
+  # mas agora precisa ir direto para o main
 
   git rebase --onto main feature-a feature-b
   # Sintaxe: --onto <novo-base> <ponto-de-corte> <branch-a-mover>`}
         />
+
+        <h2>Comparativo rápido</h2>
+        <div className="overflow-x-auto my-6">
+          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
+            <thead className="bg-muted">
+              <tr>
+                <th className="p-3 text-left">Critério</th>
+                <th className="p-3 text-left">Merge</th>
+                <th className="p-3 text-left">Rebase</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["Histórico", "Preserva como aconteceu (bifurcações)", "Linear e limpo (sem bifurcações)"],
+                ["Commit extra", "Sim — commit de merge", "Não"],
+                ["Seguro em público", "✅ Sempre", "❌ Nunca (reescreve histórico)"],
+                ["Conflitos", "Resolve uma vez", "Pode resolver por commit"],
+                ["Uso ideal", "Integrar features finalizadas no main", "Atualizar branch local antes do PR"],
+              ].map(([crit, merge, rebase], i) => (
+                <tr key={i} className="border-t border-border">
+                  <td className="p-3 font-medium text-sm">{crit}</td>
+                  <td className="p-3 text-green-400 text-sm">{merge}</td>
+                  <td className="p-3 text-blue-400 text-sm">{rebase}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         <AlertBox type="success" title="Quando usar rebase, quando usar merge">
           <strong>Rebase:</strong> antes de abrir um PR (para atualizar com main e limpar commits), sempre em branches locais. <strong>Merge:</strong> ao fechar um PR no main, ao integrar releases. Combine os dois: rebase para manter, merge para integrar.
