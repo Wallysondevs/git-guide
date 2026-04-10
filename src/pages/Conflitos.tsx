@@ -43,32 +43,35 @@ import { PageContainer } from "@/components/layout/PageContainer";
   }
   >>>>>>> feature/refatorar-desconto
 
-  // Para resolver, você escolhe uma versão, combina as duas,
-  // ou escreve algo completamente diferente.
-  // Depois REMOVE os marcadores <<<, ===, >>>
-  // e adiciona o arquivo com git add`}
+  // Para resolver: escolha uma versão, combine as duas,
+  // ou escreva algo diferente.
+  // Depois REMOVA os marcadores <<<, ===, >>>
+  // e adicione o arquivo com git add`}
         />
 
         <h2>Fluxo de resolução de conflitos</h2>
-        <div className="grid grid-cols-1 gap-3 my-6">
-          {[
-            { n: "1", titulo: "Identificar arquivos em conflito", cmd: "git status
-git diff --name-only --diff-filter=U" },
-            { n: "2", titulo: "Abrir cada arquivo e resolver", cmd: "# Edite manualmente OU use uma ferramenta:
-git mergetool" },
-            { n: "3", titulo: "Marcar como resolvido", cmd: "git add arquivo-resolvido.js" },
-            { n: "4", titulo: "Continuar o merge", cmd: "git commit  # para merge
-git rebase --continue  # para rebase" },
-          ].map((item) => (
-            <div key={item.n} className="flex gap-4 p-4 border border-border rounded-xl bg-card">
-              <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">{item.n}</span>
-              <div className="flex-1">
-                <h4 className="font-bold text-sm mb-2">{item.titulo}</h4>
-                <pre className="text-xs text-muted-foreground font-mono whitespace-pre-wrap">{item.cmd}</pre>
-              </div>
-            </div>
-          ))}
-        </div>
+        <CodeBlock
+          title="Passo 1: Identificar arquivos em conflito"
+          code={`git status
+  git diff --name-only --diff-filter=U`}
+        />
+
+        <CodeBlock
+          title="Passo 2: Abrir cada arquivo e resolver"
+          code={`# Editar manualmente ou usar ferramenta visual:
+  git mergetool  # abre VS Code, vimdiff, meld etc.`}
+        />
+
+        <CodeBlock
+          title="Passo 3 e 4: Marcar como resolvido e continuar"
+          code={`# Após resolver o arquivo
+  git add arquivo-resolvido.js
+
+  # Finalizar o merge
+  git commit  # para merge
+  # OU
+  git rebase --continue  # para rebase`}
+        />
 
         <h2>Ferramentas de merge visual</h2>
         <CodeBlock
@@ -82,15 +85,10 @@ git rebase --continue  # para rebase" },
   # - vimdiff: terminal, sem dependências
   # - meld: GUI simples e gratuita
   # - P4Merge: gratuita, boa visualização
-  # - IntelliJ/WebStorm: integrado na IDE
 
   # Usar a ferramenta
   git mergetool
-  # Abre cada arquivo em conflito na ferramenta
-
-  # Após resolver com a ferramenta:
-  git status  # verificar que todos os conflitos foram resolvidos
-  git commit`}
+  # Abre cada arquivo em conflito na ferramenta`}
         />
 
         <h2>Estratégias para conflitos específicos</h2>
@@ -128,7 +126,7 @@ git rebase --continue  # para rebase" },
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
           {[
             { dica: "Branches curtos", desc: "Quanto mais tempo um branch existe sem ser integrado, mais provável o conflito. Faça PRs pequenos e frequentes." },
-            { dica: "Sincronize frequentemente", desc: "git fetch + git rebase origin/main regularmente no seu branch. Conflitos menores resolvidos cedo = sem conflito gigante no merge." },
+            { dica: "Sincronize frequentemente", desc: "git fetch + git rebase origin/main regularmente no seu branch. Conflitos menores resolvidos cedo é melhor que um conflito gigante no merge." },
             { dica: "Comunicação na equipe", desc: "Avise colegas quando for refatorar arquivos muito usados. Coordenação previne conflitos de código." },
             { dica: "Linters e formatadores", desc: "Prettier/ESLint com configuração compartilhada eliminam conflitos de estilo — a fonte de conflitos mais evitável." },
           ].map((item) => (
