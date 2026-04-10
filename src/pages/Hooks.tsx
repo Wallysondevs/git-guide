@@ -1,139 +1,148 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function Hooks() {
-  return (
-    <PageContainer
-      title="Git Hooks"
-      subtitle="Scripts automáticos que rodam em momentos específicos do ciclo de vida do Git."
-      difficulty="avancado"
-      timeToRead="12 min"
-    >
-      <p>
-        Git Hooks são scripts executáveis que o Git roda automaticamente em eventos específicos — antes ou depois de commits, pushes, merges, etc. Eles permitem automatizar verificações de qualidade e fluxos de trabalho.
-      </p>
+  export default function Hooks() {
+    return (
+      <PageContainer
+        title="Git Hooks"
+        subtitle="Automatize tarefas com scripts executados automaticamente em eventos do Git."
+        difficulty="avancado"
+        timeToRead="14 min"
+      >
+        <p>
+          Hooks são scripts executados automaticamente pelo Git antes ou depois de eventos como commit, push e merge. Eles permitem automatizar linting, testes, formatação e validações sem depender de memória humana.
+        </p>
 
-      <h2>Hooks Disponíveis</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-        <div className="p-4 border border-border rounded-xl bg-primary/5">
-          <h4 className="font-bold mb-2 border-0 mt-0">Hooks do Cliente</h4>
-          <ul className="text-sm space-y-1 text-muted-foreground font-mono">
-            <li>pre-commit</li>
-            <li>prepare-commit-msg</li>
-            <li>commit-msg</li>
-            <li>post-commit</li>
-            <li>pre-push</li>
-            <li>pre-rebase</li>
-          </ul>
+        <h2>Tipos de hooks disponíveis</h2>
+        <div className="overflow-x-auto my-6">
+          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
+            <thead className="bg-muted">
+              <tr>
+                <th className="p-3 text-left">Hook</th>
+                <th className="p-3 text-left">Quando executa</th>
+                <th className="p-3 text-left">Uso típico</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["pre-commit", "Antes de criar o commit", "Lint, testes unitários, formatação"],
+                ["commit-msg", "Após digitar a mensagem", "Validar formato da mensagem (Conventional Commits)"],
+                ["post-commit", "Após commit ser criado", "Notificações, logs"],
+                ["pre-push", "Antes de enviar para remoto", "Testes de integração, build"],
+                ["pre-rebase", "Antes de iniciar rebase", "Avisos de proteção de branch"],
+                ["post-merge", "Após merge ser completado", "npm install se package.json mudou"],
+                ["post-checkout", "Após trocar de branch", "Atualizar dependências, ambiente"],
+                ["pre-receive", "Lado do servidor — recebe push", "Validações no servidor Git"],
+              ].map(([hook, quando, uso], i) => (
+                <tr key={i} className="border-t border-border">
+                  <td className="p-3 font-mono text-primary text-xs">{hook}</td>
+                  <td className="p-3 text-muted-foreground text-sm">{quando}</td>
+                  <td className="p-3 text-sm">{uso}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <div className="p-4 border border-border rounded-xl bg-primary/5">
-          <h4 className="font-bold mb-2 border-0 mt-0">Hooks do Servidor</h4>
-          <ul className="text-sm space-y-1 text-muted-foreground font-mono">
-            <li>pre-receive</li>
-            <li>update</li>
-            <li>post-receive</li>
-          </ul>
-        </div>
-      </div>
 
-      <h2>Onde ficam os Hooks</h2>
-      <CodeBlock
-        title="Localização dos hooks"
-        code={`# Hooks ficam em .git/hooks/
-ls .git/hooks/
+        <h2>Criando um hook manualmente</h2>
+        <CodeBlock
+          title="Hook pre-commit simples"
+          code={`# Os hooks ficam em .git/hooks/
+  ls .git/hooks/
+  # pre-commit.sample  commit-msg.sample  ...
 
-# O Git cria exemplos com .sample (desabilitados)
-# Para ativar: remova o .sample ou crie um novo arquivo
+  # Criar hook pre-commit
+  cat > .git/hooks/pre-commit << 'EOF'
+  #!/bin/sh
+  # Roda ESLint antes de cada commit
+  npm run lint
+  if [ $? -ne 0 ]; then
+    echo "❌ Lint falhou! Commit bloqueado."
+    exit 1
+  fi
+  echo "✅ Lint passou!"
+  exit 0
+  EOF
 
-# Exemplos de hooks desabilitados por padrão:
-# pre-commit.sample
-# commit-msg.sample
-# pre-push.sample`}
-      />
+  chmod +x .git/hooks/pre-commit
 
-      <h2>Criando um Hook Pre-commit</h2>
-      <CodeBlock
-        title="Hook que roda linting antes de commitar"
-        language="bash"
-        code={`#!/bin/sh
-# .git/hooks/pre-commit
+  # Testar o hook
+  git commit -m "test"  # vai rodar o lint automaticamente`}
+        />
 
-# Rodar ESLint nos arquivos staged
-echo "Rodando ESLint..."
-npx eslint --ext .js,.ts,.tsx $(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|ts|tsx)$')
+        <AlertBox type="warning" title="Hooks em .git/hooks não são versionados">
+          A pasta <code>.git/</code> não é commitada. Hooks criados diretamente lá não são compartilhados com a equipe. Use ferramentas como Husky ou lefthook para versionar e distribuir hooks.
+        </AlertBox>
 
-# Se ESLint falhar, aborta o commit
-if [ $? -ne 0 ]; then
-  echo "ESLint falhou! Corrija os erros antes de commitar."
-  exit 1
-fi
+        <h2>Husky — hooks versionados e compartilhados</h2>
+        <CodeBlock
+          title="Configurando Husky em projeto Node.js"
+          code={`# Instalar Husky
+  npm install --save-dev husky
 
-echo "Tudo OK!"`}
-      />
+  # Inicializar
+  npx husky init
 
-      <CodeBlock
-        title="Ativando o hook"
-        code={`# Crie o arquivo e torne-o executável
-cat > .git/hooks/pre-commit << 'EOF'
-#!/bin/sh
-npx eslint . && npx tsc --noEmit
-EOF
+  # Isso cria:
+  # .husky/pre-commit  (arquivo de hook)
+  # e adiciona ao package.json:
+  # "prepare": "husky"
 
-chmod +x .git/hooks/pre-commit
+  # Configurar hook pre-commit
+  echo "npm run lint" > .husky/pre-commit
+  echo "npm test" >> .husky/pre-commit
 
-# Testar o hook
-git commit -m "teste"  # O hook rodará antes do commit`}
-      />
+  # Configurar hook commit-msg (validar mensagem)
+  echo "npx commitlint --edit $1" > .husky/commit-msg
 
-      <h2>Hook commit-msg — Validar Mensagens</h2>
-      <CodeBlock
-        title="Validar formato da mensagem de commit"
-        language="bash"
-        code={`#!/bin/sh
-# .git/hooks/commit-msg
-# Valida que a mensagem segue o padrão Conventional Commits
+  # Commitar os hooks
+  git add .husky package.json
+  git commit -m "chore: adiciona hooks com Husky"`}
+        />
 
-COMMIT_MSG=$(cat "$1")
-PATTERN="^(feat|fix|docs|style|refactor|test|chore|perf|build|ci|revert)(\(.+\))?: .{1,72}"
+        <h2>commit-msg — validando mensagens</h2>
+        <CodeBlock
+          title="Validando Conventional Commits"
+          code={`# Instalar commitlint
+  npm install --save-dev @commitlint/cli @commitlint/config-conventional
 
-if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
-  echo "❌ Mensagem de commit inválida!"
-  echo ""
-  echo "Formato esperado: tipo(escopo): descrição"
-  echo "Exemplo: feat(auth): adiciona login com Google"
-  echo ""
-  echo "Tipos válidos: feat, fix, docs, style, refactor, test, chore"
-  exit 1
-fi`}
-      />
+  # Criar configuração
+  echo "module.exports = { extends: ['@commitlint/config-conventional'] };" > commitlint.config.js
 
-      <h2>Husky — Hooks no Package.json</h2>
-      <p>
-        O <strong>Husky</strong> é uma ferramenta que facilita o gerenciamento de hooks em projetos Node.js, permitindo compartilhá-los com a equipe via <code>package.json</code>:
-      </p>
+  # Hook commit-msg
+  cat > .husky/commit-msg << 'EOF'
+  npx commitlint --edit "$1"
+  EOF
 
-      <CodeBlock
-        title="Instalando e configurando Husky"
-        code={`# Instalar Husky
-npm install --save-dev husky
+  # Agora commits com mensagens inválidas são bloqueados:
+  git commit -m "alterações"
+  # ✖ subject may not be empty [subject-empty]
+  # ✖ type may not be empty [type-empty]
 
-# Ativar hooks
-npx husky init
+  # Mensagem válida:
+  git commit -m "feat: adiciona validação de email"`}
+        />
 
-# Editar o hook pre-commit
-echo "npx lint-staged" > .husky/pre-commit
+        <h2>Pular hooks em emergências</h2>
+        <CodeBlock
+          title="Ignorando hooks temporariamente"
+          code={`# Pular hooks de pre-commit e commit-msg
+  git commit --no-verify -m "WIP: commit de emergência"
+  git commit -n -m "fix: hotfix urgente"  # -n = --no-verify
 
-# Configurar lint-staged no package.json
-# "lint-staged": {
-#   "*.{js,ts,tsx}": ["eslint --fix", "prettier --write"],
-#   "*.{css,scss}": ["prettier --write"]
-# }`}
-      />
+  # Pular hook de pre-push
+  git push --no-verify
 
-      <AlertBox type="warning" title="Hooks locais não são compartilhados">
-        Os hooks em <code>.git/hooks/</code> não são versionados pelo Git — cada desenvolvedor precisa configurá-los manualmente. Use Husky ou similar para garantir que toda a equipe use os mesmos hooks.
-      </AlertBox>
-    </PageContainer>
-  );
-}
+  # Desabilitar Husky temporariamente (env var)
+  HUSKY=0 git commit -m "deploy de emergência"
+  HUSKY=0 git push`}
+        />
+
+        <AlertBox type="success" title="Hooks são o seu QA automatizado local">
+          Um bom conjunto de hooks evita que erros óbvios (código com lint errors, testes quebrados, mensagens de commit inválidas) cheguem ao repositório remoto. Invista tempo configurando-os — economizará muito mais tempo em revisões.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
