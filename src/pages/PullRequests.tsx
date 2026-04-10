@@ -1,115 +1,133 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function PullRequests() {
-  return (
-    <PageContainer
-      title="Pull Requests"
-      subtitle="Pull Requests são a forma principal de colaboração no GitHub — propor, revisar e integrar mudanças."
-      difficulty="intermediario"
-      timeToRead="12 min"
-    >
-      <p>
-        Um Pull Request (PR) é uma proposta para integrar mudanças de um branch em outro. É o centro da colaboração no GitHub: você propõe suas mudanças, outros revisam, discutem e aprovam antes de integrar.
-      </p>
+  export default function PullRequests() {
+    return (
+      <PageContainer
+        title="Pull Requests"
+        subtitle="Como criar, revisar e gerenciar Pull Requests de forma eficiente no GitHub."
+        difficulty="iniciante"
+        timeToRead="14 min"
+      >
+        <p>
+          Pull Requests (PRs) são o mecanismo de colaboração central no GitHub. Eles propõem mudanças, facilitam revisão de código, gatilham CI/CD e criam um registro histórico de por que cada decisão foi tomada. Um PR bem feito acelera o desenvolvimento da equipe.
+        </p>
 
-      <h2>O Fluxo de um Pull Request</h2>
-      <div className="grid grid-cols-1 gap-3 my-6">
-        {[
-          { n: "1", title: "Crie um branch", desc: "Sempre trabalhe em um branch separado — nunca diretamente no main." },
-          { n: "2", title: "Faça commits", desc: "Implemente a funcionalidade com commits bem descritos." },
-          { n: "3", title: "Abra o PR", desc: "No GitHub, compare seu branch com o main e clique em 'New Pull Request'." },
-          { n: "4", title: "Aguarde a revisão", desc: "Outros desenvolvedores revisam, comentam e sugerem mudanças." },
-          { n: "5", title: "Atualize se necessário", desc: "Faça novos commits no branch — o PR atualiza automaticamente." },
-          { n: "6", title: "Merge!", desc: "Após aprovação, o PR é mergeado ao branch principal." },
-        ].map((step, i) => (
-          <div key={i} className="flex gap-4 items-start p-4 rounded-xl bg-muted/50 border border-border">
-            <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0">
-              {step.n}
+        <h2>Anatomia de um bom Pull Request</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+          {[
+            { campo: "Título", desc: "Descreve o que foi feito — não como. Use prefixos: feat:, fix:, refactor:, docs:. Seja específico e conciso.", exemplo: "feat: adiciona autenticação via Google OAuth" },
+            { campo: "Descrição", desc: "Explica o PORQUÊ da mudança. Inclua: contexto do problema, solução adotada, alternativas consideradas, e como testar.", exemplo: "Closes #123 — usuários pediam login social" },
+            { campo: "Tamanho", desc: "PRs menores são revisados mais rápido e com mais qualidade. Prefira PRs de um único propósito.", exemplo: "< 400 linhas mudadas é o ideal" },
+            { campo: "Reviewers", desc: "Selecione pessoas que têm contexto sobre a área modificada. Mínimo 1 reviewer antes de merge.", exemplo: "@colega-especialista-em-auth" },
+          ].map((item) => (
+            <div key={item.campo} className="p-4 border border-border rounded-xl bg-card">
+              <h4 className="font-bold mb-1 mt-0 border-0 text-sm text-primary">{item.campo}</h4>
+              <p className="text-xs text-muted-foreground mb-2">{item.desc}</p>
+              <code className="text-xs">{item.exemplo}</code>
             </div>
-            <div>
-              <strong>{step.title}</strong>
-              <p className="text-sm text-muted-foreground mt-1 mb-0">{step.desc}</p>
+          ))}
+        </div>
+
+        <CodeBlock
+          title="Criando um PR via GitHub CLI (gh)"
+          code={`# Instalar GitHub CLI
+  brew install gh  # macOS
+  # ou baixe de cli.github.com
+
+  # Autenticar
+  gh auth login
+
+  # Criar PR interativamente
+  gh pr create
+
+  # Criar PR com opções
+  gh pr create \
+    --title "feat: adiciona paginação na listagem de produtos" \
+    --body "Closes #456. Implementa cursor-based pagination..." \
+    --reviewer @colega1,@colega2 \
+    --label enhancement \
+    --draft  # abre como rascunho
+
+  # Listar PRs abertos
+  gh pr list
+
+  # Ver PR atual (do branch)
+  gh pr view
+
+  # Fazer checkout de um PR para revisar localmente
+  gh pr checkout 123`}
+        />
+
+        <h2>Processo de revisão de código</h2>
+        <div className="grid grid-cols-1 gap-3 my-6">
+          {[
+            { fase: "Como autor", acoes: ["Marque como draft enquanto trabalha", "Adicione description e contexto antes de pedir revisão", "Responda todos os comentários — even se apenas 'Feito, obrigado'", "Não force push após revisão começar (perde contexto)"] },
+            { fase: "Como reviewer", acoes: ["Entenda o problema que o PR resolve antes de revisar o código", "Comente o que você não entende com perguntas, não acusações", "Diferencie: blocking (deve mudar) vs non-blocking (sugestão)", "Aprove quando estiver satisfeito — não exija perfeição"] },
+          ].map((item) => (
+            <div key={item.fase} className="p-4 border border-border rounded-xl bg-card">
+              <h4 className="font-bold mb-2 mt-0 border-0 text-sm">{item.fase}</h4>
+              <ul className="text-sm space-y-1 text-muted-foreground">
+                {item.acoes.map((a, i) => <li key={i}>• {a}</li>)}
+              </ul>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <h2>Preparando um PR de Qualidade</h2>
-      <CodeBlock
-        title="Antes de abrir o PR"
-        code={`# 1. Certifique-se de estar no branch certo
-git status
+        <h2>Estratégias de merge no GitHub</h2>
+        <div className="overflow-x-auto my-6">
+          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
+            <thead className="bg-muted">
+              <tr>
+                <th className="p-3 text-left">Estratégia</th>
+                <th className="p-3 text-left">Histórico gerado</th>
+                <th className="p-3 text-left">Quando usar</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["Create a merge commit", "Commit de merge + todos os commits do PR", "Quando quer preservar contexto completo do PR"],
+                ["Squash and merge", "Um único commit com tudo do PR", "Commits do PR são WIP/bagunçados, quer histórico limpo no main"],
+                ["Rebase and merge", "Commits do PR aplicados um a um (sem merge commit)", "Commits bem feitos, quer histórico linear sem commit de merge"],
+              ].map(([strat, hist, quando], i) => (
+                <tr key={i} className="border-t border-border">
+                  <td className="p-3 font-medium text-sm">{strat}</td>
+                  <td className="p-3 text-muted-foreground text-sm">{hist}</td>
+                  <td className="p-3 text-sm">{quando}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-# 2. Atualize seu branch com o main (evita conflitos)
-git fetch origin
-git rebase origin/main   # ou git merge origin/main
+        <CodeBlock
+          title="Operações comuns com gh pr"
+          code={`# Atualizar PR com novos commits
+  git add .
+  git commit -m "fix: endereça feedback da revisão"
+  git push  # push para o mesmo branch, PR atualiza automaticamente
 
-# 3. Execute os testes localmente
-npm test    # ou o comando de teste do seu projeto
+  # Solicitar nova revisão após mudanças
+  gh pr review --request-changes  # reabre revisão
 
-# 4. Faça push do branch
-git push -u origin feature/minha-funcionalidade
+  # Fechar PR sem merge
+  gh pr close 123
 
-# 5. O GitHub mostrará um banner para criar o PR!
-# Ou crie via CLI:
-gh pr create --title "feat: adiciona autenticação OAuth" \
-  --body "## O que mudou\n\n- Integra login com Google\n- Adiciona testes\n\nFixes #42"`}
-      />
+  # Merge via CLI
+  gh pr merge 123 --squash --delete-branch
 
-      <h2>Escrevendo uma Boa Descrição de PR</h2>
-      <CodeBlock
-        title="Template de PR"
-        language="markdown"
-        code={`## Descrição
-Breve descrição do que foi feito e por quê.
+  # Ver status dos checks de CI
+  gh pr checks
 
-## Tipo de mudança
-- [ ] Bug fix (correção de bug)
-- [x] Nova funcionalidade
-- [ ] Breaking change
+  # Adicionar comentário no PR
+  gh pr comment -b "Deixa eu investigar o erro no CI antes de continuar"`}
+        />
 
-## Como testar
-1. Acesse a página de login
-2. Clique em "Entrar com Google"
-3. Verifique se o redirecionamento funciona
-
-## Checklist
-- [x] Testes passando
-- [x] Código revisado
-- [x] Documentação atualizada
-
-Closes #42`}
-      />
-
-      <h2>Revisando um PR</h2>
-      <CodeBlock
-        title="Revisando o código de outros"
-        code={`# Baixar e testar o PR localmente
-gh pr checkout 42    # GitHub CLI
-
-# Ou manualmente:
-git fetch origin pull/42/head:pr-42
-git switch pr-42
-
-# Após revisar, aprovar via CLI
-gh pr review 42 --approve
-gh pr review 42 --request-changes --body "Pode extrair essa lógica em uma função?"
-
-# Fazer merge via CLI (após aprovação)
-gh pr merge 42 --squash
-gh pr merge 42 --merge
-gh pr merge 42 --rebase`}
-      />
-
-      <AlertBox type="info" title="Draft Pull Requests">
-        Você pode abrir um PR como "Draft" para mostrar o trabalho em andamento e obter feedback antecipado, sem que seja mergeado por acidente. No GitHub, clique na seta ao lado de "Create Pull Request" e escolha "Create Draft Pull Request".
-      </AlertBox>
-
-      <AlertBox type="success" title="Code Review: Boas práticas">
-        Ao revisar: seja construtivo, não pessoal. Ao receber: não leve para o lado pessoal — revisão é sobre o código, não sobre você. Um bom PR tem menos de 400 linhas alteradas — fica mais fácil de revisar e aprovar rapidamente.
-      </AlertBox>
-    </PageContainer>
-  );
-}
+        <AlertBox type="success" title="Draft PRs para feedback antecipado">
+          Abra um PR como Draft assim que tiver a estrutura inicial — mesmo antes de terminar. Isso permite que a equipe dê feedback cedo, quando mudanças ainda são baratas. Use <code>gh pr ready</code> para marcar como pronto para revisão.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
