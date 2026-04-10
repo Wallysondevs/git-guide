@@ -1,123 +1,145 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function Remotos() {
-  return (
-    <PageContainer
-      title="Repositórios Remotos"
-      subtitle="Como conectar seu repositório local a servidores remotos como GitHub, GitLab e Bitbucket."
-      difficulty="iniciante"
-      timeToRead="10 min"
-    >
-      <p>
-        Um repositório remoto é uma versão do seu projeto hospedada na internet ou em uma rede local. É onde você sincroniza o trabalho com colaboradores e mantém um backup seguro do código.
-      </p>
+  export default function Remotos() {
+    return (
+      <PageContainer
+        title="Repositórios Remotos"
+        subtitle="Configure e gerencie conexões com repositórios remotos — origin, upstream e múltiplos remotos."
+        difficulty="iniciante"
+        timeToRead="12 min"
+      >
+        <p>
+          Remotos são apelidos (aliases) para URLs de repositórios Git. O remoto <code>origin</code> é criado automaticamente ao clonar — mas você pode adicionar, remover e renomear remotos conforme sua necessidade.
+        </p>
 
-      <h2>Gerenciando Remotos</h2>
-      <CodeBlock
-        title="Comandos básicos para remotos"
-        code={`# Ver os remotos configurados
-git remote -v
+        <h2>Gerenciando remotos</h2>
+        <CodeBlock
+          title="Operações essenciais com remotos"
+          code={`# Listar remotos configurados
+  git remote
+  git remote -v  # com URLs (verboso)
+  # origin  https://github.com/usuario/projeto.git (fetch)
+  # origin  https://github.com/usuario/projeto.git (push)
 
-# Saída típica:
-# origin  https://github.com/usuario/projeto.git (fetch)
-# origin  https://github.com/usuario/projeto.git (push)
+  # Adicionar um novo remoto
+  git remote add origin https://github.com/usuario/projeto.git
+  git remote add upstream https://github.com/original/projeto.git
 
-# Adicionar um novo remoto
-git remote add origin https://github.com/usuario/projeto.git
+  # Renomear remoto
+  git remote rename origin novo-nome
+  git remote rename upstream origin  # trocar origin por upstream
 
-# Adicionar um segundo remoto (útil para forks)
-git remote add upstream https://github.com/original/projeto.git
+  # Remover remoto
+  git remote remove upstream
+  git remote rm upstream  # abreviação
 
-# Ver informações detalhadas de um remoto
-git remote show origin`}
-      />
+  # Ver detalhes de um remoto específico
+  git remote show origin
+  # Mostra: URL, branches de tracking, push e fetch status`}
+        />
 
-      <h2>O Remoto "origin"</h2>
-      <p>
-        Por convenção, o remoto principal é chamado de <strong>origin</strong>. Quando você clona um repositório, o Git automaticamente cria um remoto chamado "origin" apontando para o repositório de origem.
-      </p>
-
-      <h2>Modificando Remotos</h2>
-      <CodeBlock
-        title="Editando configuração de remotos"
-        code={`# Renomear um remoto
-git remote rename origin github
-
-# Remover um remoto
-git remote remove upstream
-
-# Alterar a URL de um remoto existente
-git remote set-url origin https://github.com/novo-usuario/projeto.git
-
-# Útil quando você muda o repo para uma organização no GitHub
-git remote set-url origin git@github.com:organizacao/projeto.git`}
-      />
-
-      <h2>HTTPS vs SSH</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-        <div className="p-4 border border-border rounded-xl bg-primary/5">
-          <h4 className="font-bold mb-2 border-0 mt-0">HTTPS</h4>
-          <ul className="text-sm space-y-1 text-muted-foreground">
-            <li>• Funciona em qualquer lugar</li>
-            <li>• Pede usuário/senha (ou token)</li>
-            <li>• Mais fácil de configurar</li>
-            <li>• Recomendado para iniciantes</li>
-          </ul>
-          <code className="text-xs block mt-2">https://github.com/usuario/repo.git</code>
+        <h2>origin e upstream — o padrão de fork</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+          <div className="p-4 border border-border rounded-xl bg-primary/5">
+            <h4 className="font-bold mb-2 mt-0 border-0">origin</h4>
+            <p className="text-sm text-muted-foreground">Seu fork ou o repositório ao qual você tem acesso de push. Criado automaticamente no <code>git clone</code>.</p>
+            <code className="text-xs mt-2 block">git push origin meu-branch</code>
+          </div>
+          <div className="p-4 border border-border rounded-xl bg-card">
+            <h4 className="font-bold mb-2 mt-0 border-0">upstream</h4>
+            <p className="text-sm text-muted-foreground">Convenção para o repositório original do qual você fez fork. Usado para sincronizar mudanças do projeto original.</p>
+            <code className="text-xs mt-2 block">git fetch upstream && git merge upstream/main</code>
+          </div>
         </div>
-        <div className="p-4 border border-border rounded-xl bg-primary/5">
-          <h4 className="font-bold mb-2 border-0 mt-0">SSH</h4>
-          <ul className="text-sm space-y-1 text-muted-foreground">
-            <li>• Autenticação via chave criptográfica</li>
-            <li>• Não precisa de senha no push/pull</li>
-            <li>• Mais seguro</li>
-            <li>• Requer configuração inicial</li>
-          </ul>
-          <code className="text-xs block mt-2">git@github.com:usuario/repo.git</code>
-        </div>
-      </div>
 
-      <h2>Configurando SSH para GitHub</h2>
-      <CodeBlock
-        title="Criando e adicionando chave SSH"
-        code={`# Gerar um par de chaves SSH
-ssh-keygen -t ed25519 -C "seu@email.com"
-# Pressione Enter para aceitar os padrões
+        <CodeBlock
+          title="Configuração completa para contribuição via fork"
+          code={`# 1. Clonar seu fork
+  git clone git@github.com:seu-usuario/projeto.git
+  cd projeto
 
-# Iniciar o agente SSH
-eval "$(ssh-agent -s)"
+  # 2. Adicionar o repositório original como upstream
+  git remote add upstream https://github.com/original/projeto.git
 
-# Adicionar a chave ao agente
-ssh-add ~/.ssh/id_ed25519
+  # 3. Verificar configuração
+  git remote -v
+  # origin    git@github.com:seu-usuario/projeto.git (fetch)
+  # origin    git@github.com:seu-usuario/projeto.git (push)
+  # upstream  https://github.com/original/projeto.git (fetch)
+  # upstream  https://github.com/original/projeto.git (push)
 
-# Copiar a chave pública (adicione esta no GitHub)
-cat ~/.ssh/id_ed25519.pub
+  # 4. Sincronizar com upstream periodicamente
+  git fetch upstream
+  git switch main
+  git merge upstream/main
+  git push origin main  # atualizar seu fork`}
+        />
 
-# Testar a conexão com o GitHub
-ssh -T git@github.com
-# Esperado: "Hi username! You've successfully authenticated..."`}
-      />
+        <h2>Mudando a URL de um remoto</h2>
+        <CodeBlock
+          title="Atualizar URL do remoto"
+          code={`# Situação: você mudou de HTTPS para SSH (ou vice-versa)
+  git remote set-url origin git@github.com:usuario/projeto.git
 
-      <AlertBox type="info" title="Token de Acesso Pessoal">
-        O GitHub não aceita mais senha simples para HTTPS desde 2021. Você precisa criar um <strong>Personal Access Token (PAT)</strong> em Configurações → Developer settings → Personal access tokens. Use o token como senha quando o Git solicitar.
-      </AlertBox>
+  # Verificar
+  git remote get-url origin
 
-      <h2>Branches de Rastreamento</h2>
-      <CodeBlock
-        title="Entendendo origin/main"
-        code={`# Branches remotos aparecem como 'origin/main', 'origin/dev', etc.
-git branch -r   # ver branches remotos
-git branch -a   # ver todos (local + remoto)
+  # Adicionar URL de push diferente da de fetch (avançado)
+  git remote set-url --push origin git@github.com:usuario/fork.git
 
-# O Git mantém cópias locais dos branches remotos
-# Elas são atualizadas com git fetch
-git fetch origin
+  # Situação: repositório foi movido para nova organização
+  git remote set-url origin https://github.com/nova-org/projeto.git`}
+        />
 
-# Ver diferença entre local e remoto
-git diff main origin/main`}
-      />
-    </PageContainer>
-  );
-}
+        <h2>Trabalhando com múltiplos remotos</h2>
+        <CodeBlock
+          title="Cenários com múltiplos remotos"
+          code={`# Mirror: backup em dois serviços simultaneamente
+  git remote add backup git@gitlab.com:usuario/projeto.git
+
+  # Push para os dois remotos
+  git push origin main
+  git push backup main
+
+  # Ou via push multiple (avançado)
+  git remote set-url --add --push origin git@gitlab.com:usuario/projeto.git
+
+  # Ver todos os branches de todos os remotos
+  git branch -r
+
+  # Fazer fetch de todos
+  git fetch --all
+
+  # Configurar push padrão para não precisar especificar
+  git push -u origin meu-branch  # -u configura tracking`}
+        />
+
+        <h2>Referências de branches remotos</h2>
+        <CodeBlock
+          title="Como referenciar branches remotos"
+          code={`# Formato: remoto/branch
+  origin/main
+  upstream/develop
+  backup/production
+
+  # Comparar branch local com remoto
+  git diff main origin/main
+
+  # Criar branch local a partir de remoto
+  git switch --track origin/develop
+  # ou
+  git switch -c develop origin/develop
+
+  # Ver em qual branch remoto o local está configurado
+  git branch -vv`}
+        />
+
+        <AlertBox type="success" title="Dica: git remote show origin">
+          O comando <code>git remote show origin</code> mostra um resumo completo: URL do remoto, branches locais configurados para push/fetch, e quais branches remotos são rastreados. Muito útil para entender a configuração atual.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
