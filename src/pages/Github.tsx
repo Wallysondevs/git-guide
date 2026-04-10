@@ -84,7 +84,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
     deploy:
       environment:
         name: github-pages
-        url: ${{ steps.deployment.outputs.page_url }}
+        url: \${{ steps.deployment.outputs.page_url }}
       runs-on: ubuntu-latest
       steps:
         - uses: actions/checkout@v4
