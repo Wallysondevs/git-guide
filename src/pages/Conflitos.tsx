@@ -11,7 +11,28 @@ export default function Conflitos() {
       difficulty="intermediario"
       timeToRead="13 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Conflito"}</strong> {' — '} {"duas branches mexeram na mesma linha — Git pede ajuda."}
+          </li>
+        <li>
+            <strong>{"<<<<<<< HEAD"}</strong> {' — '} {"marcador do lado atual; ======= separa; >>>>>>> branch é o entrante."}
+          </li>
+        <li>
+            <strong>{"git status"}</strong> {' — '} {"lista arquivos com conflito (Unmerged paths)."}
+          </li>
+        <li>
+            <strong>{"Mergetool"}</strong> {' — '} {"git mergetool abre ferramenta visual configurada."}
+          </li>
+        <li>
+            <strong>{"Abortar"}</strong> {' — '} {"git merge --abort / rebase --abort volta ao estado anterior."}
+          </li>
+        </ul>
+        <p>
         Conflitos não são bugs — são <strong>uma feature</strong>. O Git só te avisa quando ele <em>não tem como decidir sozinho</em> o que é o resultado correto. Saber resolver conflitos com calma é o que separa o iniciante do desenvolvedor confiante.
       </p>
 

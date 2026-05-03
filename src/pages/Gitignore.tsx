@@ -11,7 +11,28 @@ export default function Gitignore() {
       difficulty="iniciante"
       timeToRead="10 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{".gitignore"}</strong> {' — '} {"padrões de arquivos que o Git ignora."}
+          </li>
+        <li>
+            <strong>{"Globs"}</strong> {' — '} {"*, **, !negação, /raiz, dir/."}
+          </li>
+        <li>
+            <strong>{"Local vs global"}</strong> {' — '} {"~/.gitignore_global para padrões pessoais (DS_Store)."}
+          </li>
+        <li>
+            <strong>{"gitignore.io"}</strong> {' — '} {"gerador online por linguagem/IDE."}
+          </li>
+        <li>
+            <strong>{"Já rastreado?"}</strong> {' — '} {"git rm --cached arquivo, depois adicione ao .gitignore."}
+          </li>
+        </ul>
+        <p>
         O <code>.gitignore</code> é um arquivo de texto que diz ao Git "esses arquivos eu nem quero ver". Ele protege você de commitar acidentalmente segredos, dependências (<code>node_modules</code>, <code>venv</code>) ou artefatos de build — coisas que poluem o repo e causam conflitos.
       </p>
 

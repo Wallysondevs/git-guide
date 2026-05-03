@@ -11,7 +11,28 @@ export default function Referencias() {
       difficulty="iniciante"
       timeToRead="6 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"HEAD"}</strong> {' — '} {"ponteiro para branch ou commit atual."}
+          </li>
+        <li>
+            <strong>{"HEAD~N"}</strong> {' — '} {"N commits para trás."}
+          </li>
+        <li>
+            <strong>{"HEAD^N"}</strong> {' — '} {"N-ésimo pai (em merges)."}
+          </li>
+        <li>
+            <strong>{"branch@{N}"}</strong> {' — '} {"N-ésimo movimento do branch (reflog)."}
+          </li>
+        <li>
+            <strong>{"ORIG_HEAD"}</strong> {' — '} {"HEAD antes de operação destrutiva."}
+          </li>
+        </ul>
+        <p>
         Este guia cobriu o essencial e o avançado, mas Git é um universo. Aqui está uma curadoria dos melhores recursos para você continuar aprendendo — todos gratuitos ou padrão da indústria.
       </p>
 

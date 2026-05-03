@@ -11,7 +11,28 @@ export default function Signing() {
       difficulty="avancado"
       timeToRead="11 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Commit signing"}</strong> {' — '} {"assina commits com GPG ou SSH."}
+          </li>
+        <li>
+            <strong>{"gpg-key"}</strong> {' — '} {"gera com gpg --full-generate-key; configure user.signingkey."}
+          </li>
+        <li>
+            <strong>{"SSH signing (Git 2.34+)"}</strong> {' — '} {"reusa sua chave SSH para assinar."}
+          </li>
+        <li>
+            <strong>{"Verified badge"}</strong> {' — '} {"GitHub mostra \"Verified\" se assinatura bate."}
+          </li>
+        <li>
+            <strong>{"commit.gpgsign true"}</strong> {' — '} {"assina automaticamente."}
+          </li>
+        </ul>
+        <p>
         Por padrão, qualquer pessoa pode criar um commit no <em>seu</em> nome — basta configurar <code>user.name</code> e <code>user.email</code> com seus dados. <strong>Assinatura criptográfica</strong> resolve isso: cada commit (ou tag) carrega uma assinatura que só você consegue gerar, e qualquer um pode verificar.
       </p>
 

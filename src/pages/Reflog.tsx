@@ -11,7 +11,28 @@ export default function Reflog() {
       difficulty="intermediario"
       timeToRead="10 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Reflog"}</strong> {' — '} {"log local de todos os movimentos do HEAD."}
+          </li>
+        <li>
+            <strong>{"git reflog"}</strong> {' — '} {"vê histórico; cada entrada tem HEAD@{N}."}
+          </li>
+        <li>
+            <strong>{"Recuperar HEAD"}</strong> {' — '} {"git reset --hard HEAD@{2}."}
+          </li>
+        <li>
+            <strong>{"Branch reflog"}</strong> {' — '} {"git reflog show nome-do-branch."}
+          </li>
+        <li>
+            <strong>{"Expiração"}</strong> {' — '} {"padrão 90 dias para alcançáveis, 30 para inalcançáveis."}
+          </li>
+        </ul>
+        <p>
         O <strong>reflog</strong> é uma <em>caixa preta</em>: cada vez que <code>HEAD</code> ou um branch se move (commit, checkout, reset, rebase, merge), o Git registra. Tudo isso fica gravado por <strong>30 a 90 dias</strong>, mesmo que os commits não estejam mais em nenhum branch. Isso significa que <strong>quase nada se perde de verdade</strong> no Git.
       </p>
 

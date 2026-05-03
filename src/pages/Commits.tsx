@@ -11,7 +11,28 @@ export default function Commits() {
       difficulty="iniciante"
       timeToRead="14 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Commit"}</strong> {' — '} {"snapshot da árvore + metadados (autor, msg, parent)."}
+          </li>
+        <li>
+            <strong>{"SHA-1/SHA-256"}</strong> {' — '} {"hash que identifica unicamente o commit."}
+          </li>
+        <li>
+            <strong>{"git commit -m"}</strong> {' — '} {"mensagem inline; -am inclui add de arquivos rastreados."}
+          </li>
+        <li>
+            <strong>{"Mensagem boa"}</strong> {' — '} {"imperativo no presente: \"Add\", \"Fix\", \"Remove\"."}
+          </li>
+        <li>
+            <strong>{"Amend"}</strong> {' — '} {"git commit --amend altera o último commit (perigoso após push)."}
+          </li>
+        </ul>
+        <p>
         Um commit é uma <strong>fotografia do projeto + mensagem explicativa</strong>. Mas mais que isso: bons commits são leitura técnica para quem chega depois (incluindo seu eu de daqui a 6 meses). Esta é uma das habilidades mais subestimadas da carreira.
       </p>
 

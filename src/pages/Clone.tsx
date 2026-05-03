@@ -11,7 +11,28 @@ export default function Clone() {
       difficulty="iniciante"
       timeToRead="11 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git clone URL"}</strong> {' — '} {"baixa repo + cria remoto origin + checkout do default branch."}
+          </li>
+        <li>
+            <strong>{"--depth N"}</strong> {' — '} {"shallow clone; só os últimos N commits — rápido em CI."}
+          </li>
+        <li>
+            <strong>{"--branch X"}</strong> {' — '} {"já clona em branch específico."}
+          </li>
+        <li>
+            <strong>{"--bare"}</strong> {' — '} {"clone sem working tree; usado em servers."}
+          </li>
+        <li>
+            <strong>{"SSH vs HTTPS"}</strong> {' — '} {"SSH usa chave; HTTPS usa token (PAT)."}
+          </li>
+        </ul>
+        <p>
         <code>git clone</code> faz três coisas em um comando: cria a pasta, baixa o repositório completo e configura <code>origin</code>. Mas tem flags poderosas que mudam radicalmente o comportamento — e podem reduzir um clone de 4GB para 200MB.
       </p>
 

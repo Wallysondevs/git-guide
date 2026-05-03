@@ -11,7 +11,28 @@ export default function ConventionalCommits() {
       difficulty="iniciante"
       timeToRead="9 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Conventional Commits"}</strong> {' — '} {"padrão: tipo(escopo): descrição."}
+          </li>
+        <li>
+            <strong>{"Tipos"}</strong> {' — '} {"feat, fix, docs, style, refactor, test, chore, build, ci."}
+          </li>
+        <li>
+            <strong>{"Breaking change"}</strong> {' — '} {"! depois do escopo OU footer \"BREAKING CHANGE:\"."}
+          </li>
+        <li>
+            <strong>{"Semantic-release"}</strong> {' — '} {"automatiza versão + changelog a partir das mensagens."}
+          </li>
+        <li>
+            <strong>{"Commitlint"}</strong> {' — '} {"valida formato em pre-commit ou CI."}
+          </li>
+        </ul>
+        <p>
         <strong>Conventional Commits</strong> é uma especificação leve para escrever mensagens de commit. A ideia: um prefixo padronizado (<code>feat:</code>, <code>fix:</code>, <code>docs:</code>...) que <em>máquinas</em> conseguem ler. Resultado: changelog gerado automaticamente, versão calculada sozinha (semver), e mensagens uniformes no histórico inteiro.
       </p>
 

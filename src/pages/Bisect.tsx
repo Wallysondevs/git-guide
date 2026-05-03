@@ -11,7 +11,28 @@ export default function Bisect() {
       difficulty="avancado"
       timeToRead="10 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git bisect"}</strong> {' — '} {"busca binária para achar o commit que introduziu bug."}
+          </li>
+        <li>
+            <strong>{"bisect start/good/bad"}</strong> {' — '} {"marca pontos conhecidos; Git escolhe o meio."}
+          </li>
+        <li>
+            <strong>{"bisect run script.sh"}</strong> {' — '} {"automatiza testando cada commit."}
+          </li>
+        <li>
+            <strong>{"bisect reset"}</strong> {' — '} {"volta ao HEAD original."}
+          </li>
+        <li>
+            <strong>{"bisect skip"}</strong> {' — '} {"pula commit sem afetar a busca (build quebrado, etc)."}
+          </li>
+        </ul>
+        <p>
         Você sabe que algo funcionava na versão 1.0 e quebrou na 1.5. Entre elas, 500 commits. Como achar o culpado? <code>git bisect</code> faz busca binária: você marca commits como "good" ou "bad", e o Git divide o intervalo em 9 testes para identificar exatamente o commit que introduziu o bug.
       </p>
 

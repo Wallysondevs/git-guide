@@ -11,7 +11,28 @@ export default function Worktrees() {
       difficulty="avancado"
       timeToRead="11 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git worktree add"}</strong> {' — '} {"cria checkout adicional do mesmo repo em outra pasta."}
+          </li>
+        <li>
+            <strong>{"Uso"}</strong> {' — '} {"trabalhar em 2 branches sem stash."}
+          </li>
+        <li>
+            <strong>{"list"}</strong> {' — '} {"git worktree list mostra todos."}
+          </li>
+        <li>
+            <strong>{"remove"}</strong> {' — '} {"git worktree remove caminho."}
+          </li>
+        <li>
+            <strong>{"prune"}</strong> {' — '} {"git worktree prune limpa worktrees mortas."}
+          </li>
+        </ul>
+        <p>
         <strong>Git worktrees</strong> resolvem um problema clássico: você está no meio de uma feature, precisa olhar outra branch, mas não quer parar tudo. Em vez de <code>stash + switch</code>, você abre a outra branch em <em>outra pasta</em>, paralela. Como ter múltiplos clones, mas compartilhando o mesmo <code>.git</code> (e portanto o mesmo histórico).
       </p>
 

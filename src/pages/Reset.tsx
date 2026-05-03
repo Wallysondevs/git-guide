@@ -11,7 +11,28 @@ export default function Reset() {
       difficulty="intermediario"
       timeToRead="13 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"--soft"}</strong> {' — '} {"move HEAD; preserva index e working."}
+          </li>
+        <li>
+            <strong>{"--mixed (default)"}</strong> {' — '} {"move HEAD + reseta index; preserva working."}
+          </li>
+        <li>
+            <strong>{"--hard"}</strong> {' — '} {"move HEAD + reseta index + working — DESTRUTIVO."}
+          </li>
+        <li>
+            <strong>{"vs revert"}</strong> {' — '} {"reset reescreve; revert cria commit que desfaz."}
+          </li>
+        <li>
+            <strong>{"vs checkout"}</strong> {' — '} {"reset move branch; checkout move HEAD ou restaura arquivos."}
+          </li>
+        </ul>
+        <p>
         Existem três comandos para "desfazer" no Git, e usá-los errado pode <strong>perder código</strong>. <code>reset</code> move o ponteiro do branch. <code>revert</code> cria commit novo que desfaz outro. <code>checkout/restore</code> mexe nos arquivos. Aqui você vai entender exatamente quando usar cada um.
       </p>
 

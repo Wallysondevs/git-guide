@@ -11,7 +11,28 @@ export default function Hooks() {
       difficulty="intermediario"
       timeToRead="13 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Hook"}</strong> {' — '} {"script disparado por evento Git (pre-commit, pre-push, etc)."}
+          </li>
+        <li>
+            <strong>{".git/hooks/"}</strong> {' — '} {"pasta local; não é versionada por padrão."}
+          </li>
+        <li>
+            <strong>{"Husky"}</strong> {' — '} {"gerencia hooks no JS/TS, versionados via package.json."}
+          </li>
+        <li>
+            <strong>{"lint-staged"}</strong> {' — '} {"roda linter só nos arquivos staged."}
+          </li>
+        <li>
+            <strong>{"pre-receive"}</strong> {' — '} {"no servidor: rejeita pushes inválidos."}
+          </li>
+        </ul>
+        <p>
         <strong>Hooks</strong> são scripts que o Git executa em momentos específicos: antes de um commit, depois de um merge, antes de um push. Eles são a base de toda automação local — desde lint até validação de mensagens, geração de docs e bloqueio de segredos.
       </p>
 

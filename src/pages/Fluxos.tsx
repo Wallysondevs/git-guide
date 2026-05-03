@@ -11,7 +11,28 @@ export default function Fluxos() {
       difficulty="intermediario"
       timeToRead="14 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Git Flow"}</strong> {' — '} {"branches main, develop, feature/, release/, hotfix/."}
+          </li>
+        <li>
+            <strong>{"GitHub Flow"}</strong> {' — '} {"simples: main + feature branches + PR."}
+          </li>
+        <li>
+            <strong>{"Trunk-based"}</strong> {' — '} {"todos integram em main várias vezes ao dia."}
+          </li>
+        <li>
+            <strong>{"Release branch"}</strong> {' — '} {"isola estabilização sem travar develop."}
+          </li>
+        <li>
+            <strong>{"Tagging de release"}</strong> {' — '} {"git tag -a v1.0 marca versões oficialmente."}
+          </li>
+        </ul>
+        <p>
         O Git é uma ferramenta — <strong>fluxo de trabalho</strong> é como você usa essa ferramenta em equipe. Existem 4 grandes famílias, cada uma adequada a um tamanho de time, ritmo de release e nível de risco diferente. Escolher errado é caro.
       </p>
 

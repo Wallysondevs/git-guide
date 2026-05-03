@@ -11,7 +11,28 @@ export default function Tags() {
       difficulty="iniciante"
       timeToRead="9 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Tag"}</strong> {' — '} {"referência imutável a um commit (releases)."}
+          </li>
+        <li>
+            <strong>{"Lightweight"}</strong> {' — '} {"git tag v1.0 — só ponteiro."}
+          </li>
+        <li>
+            <strong>{"Anotada"}</strong> {' — '} {"git tag -a v1.0 -m \"msg\" — objeto com autor + mensagem."}
+          </li>
+        <li>
+            <strong>{"Push"}</strong> {' — '} {"git push --tags ou push origin v1.0."}
+          </li>
+        <li>
+            <strong>{"Semver"}</strong> {' — '} {"MAJOR.MINOR.PATCH; +breaking, +feature, +fix."}
+          </li>
+        </ul>
+        <p>
         <strong>Tags</strong> são ponteiros <em>imutáveis</em> para um commit específico. Diferente de branches, que se movem, tags ficam paradas — perfeitas para marcar releases, versões e estados estáveis do código.
       </p>
 

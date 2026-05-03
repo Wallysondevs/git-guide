@@ -11,7 +11,28 @@ export default function Instalacao() {
       difficulty="iniciante"
       timeToRead="10 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Linux"}</strong> {' — '} {"apt install git / dnf install git / pacman -S git."}
+          </li>
+        <li>
+            <strong>{"macOS"}</strong> {' — '} {"brew install git ou xcode-select --install."}
+          </li>
+        <li>
+            <strong>{"Windows"}</strong> {' — '} {"Git for Windows traz git, bash e SSH."}
+          </li>
+        <li>
+            <strong>{"git --version"}</strong> {' — '} {"confirma instalação."}
+          </li>
+        <li>
+            <strong>{"Configuração inicial"}</strong> {' — '} {"git config --global user.name + user.email."}
+          </li>
+        </ul>
+        <p>
         Em 5 minutos você terá o Git instalado, identidade configurada e pronto para clonar ou criar repositórios. Esta configuração inicial é a base de tudo — vale a pena fazer com calma.
       </p>
 

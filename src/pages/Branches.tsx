@@ -11,7 +11,28 @@ export default function Branches() {
       difficulty="iniciante"
       timeToRead="14 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Branch"}</strong> {' — '} {"ponteiro de 41 bytes para um commit; criar é grátis."}
+          </li>
+        <li>
+            <strong>{"HEAD"}</strong> {' — '} {"ponteiro especial para o branch/commit ativo."}
+          </li>
+        <li>
+            <strong>{"git switch -c nome"}</strong> {' — '} {"cria e troca; preferido sobre checkout -b."}
+          </li>
+        <li>
+            <strong>{"Tracking"}</strong> {' — '} {"branch local ligado a um remoto (origin/X)."}
+          </li>
+        <li>
+            <strong>{"Detached HEAD"}</strong> {' — '} {"HEAD aponta para commit, não para branch."}
+          </li>
+        </ul>
+        <p>
         Um <strong>branch</strong> no Git é literalmente um <em>arquivo de 41 bytes</em> contendo o hash de um commit. Criar um é instantâneo. Trocar entre eles é instantâneo. Isso muda completamente como você trabalha — você experimenta, isola features e nunca quebra a main.
       </p>
 

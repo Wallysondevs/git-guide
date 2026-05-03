@@ -11,7 +11,25 @@ export default function PrimeirosPassos() {
       difficulty="iniciante"
       timeToRead="10 min"
     >
-      <p>
+      <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git init"}</strong> {' — '} {"cria .git/ no diretório atual."}
+          </li>
+        <li>
+            <strong>{"git add"}</strong> {' — '} {"move arquivo para staging."}
+          </li>
+        <li>
+            <strong>{"git commit"}</strong> {' — '} {"grava snapshot do staging."}
+          </li>
+        <li>
+            <strong>{"git status"}</strong> {' — '} {"o que mudou desde o último commit."}
+          </li>
+        <li>
+            <strong>{"git log"}</strong> {' — '} {"histórico de commits."}
+          </li>
+        </ul>
+        <p>
         Aqui você vai aprender o <strong>ciclo básico do Git</strong>: criar repositório → editar arquivo → adicionar ao stage → commitar. Esses 4 passos são 80% do que você faz no dia a dia.
       </p>
 

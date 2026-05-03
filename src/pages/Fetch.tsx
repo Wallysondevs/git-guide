@@ -11,7 +11,28 @@ export default function Fetch() {
       difficulty="intermediario"
       timeToRead="9 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git fetch"}</strong> {' — '} {"baixa commits remotos sem mexer em branches locais."}
+          </li>
+        <li>
+            <strong>{"origin/main"}</strong> {' — '} {"branch de tracking remoto — cópia local do que o servidor tinha."}
+          </li>
+        <li>
+            <strong>{"fetch --prune"}</strong> {' — '} {"remove referências a branches deletados no remoto."}
+          </li>
+        <li>
+            <strong>{"fetch --all"}</strong> {' — '} {"traz de todos os remotos configurados."}
+          </li>
+        <li>
+            <strong>{"vs pull"}</strong> {' — '} {"pull = fetch + merge (ou rebase com --rebase)."}
+          </li>
+        </ul>
+        <p>
         <code>git fetch</code> baixa commits, branches e tags do remoto para os <strong>refs locais de tracking</strong> (<code>origin/main</code>, <code>origin/feature/x</code>) — <strong>sem tocar</strong> nos seus arquivos ou no seu branch atual. É o equivalente a "olha, o servidor tem novidades, mas eu não vou aplicar nada ainda".
       </p>
 

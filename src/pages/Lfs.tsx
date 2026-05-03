@@ -11,7 +11,28 @@ export default function Lfs() {
       difficulty="avancado"
       timeToRead="12 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Git LFS"}</strong> {' — '} {"Large File Storage — versiona binários grandes via ponteiros."}
+          </li>
+        <li>
+            <strong>{"git lfs install"}</strong> {' — '} {"registra hooks; rode 1x por máquina."}
+          </li>
+        <li>
+            <strong>{"track"}</strong> {' — '} {"git lfs track \"*.psd\" registra padrão; gera .gitattributes."}
+          </li>
+        <li>
+            <strong>{"Custos"}</strong> {' — '} {"GitHub cobra storage + bandwidth acima da cota."}
+          </li>
+        <li>
+            <strong>{"Migração"}</strong> {' — '} {"git lfs migrate import --include=\"*.zip\" reescreve histórico."}
+          </li>
+        </ul>
+        <p>
         Git foi projetado para <strong>texto</strong>. Coloque um vídeo de 200MB no histórico e seu repositório engasga: clones lentos, branches travadas, push pesado. <strong>Git LFS</strong> (Large File Storage) resolve isso substituindo arquivos grandes por <em>ponteiros</em> no Git, e armazenando o conteúdo real em um servidor separado.
       </p>
 

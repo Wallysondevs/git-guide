@@ -11,7 +11,28 @@ export default function Github() {
       difficulty="iniciante"
       timeToRead="13 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Repository"}</strong> {' — '} {"espelho remoto + issues, PRs, actions, pages."}
+          </li>
+        <li>
+            <strong>{"SSH key"}</strong> {' — '} {"adicione em settings/SSH keys; mais seguro que HTTPS."}
+          </li>
+        <li>
+            <strong>{"Personal Access Token"}</strong> {' — '} {"PAT substitui senha em HTTPS."}
+          </li>
+        <li>
+            <strong>{"GitHub Pages"}</strong> {' — '} {"hospedagem estática a partir de branch ou /docs."}
+          </li>
+        <li>
+            <strong>{"Actions"}</strong> {' — '} {"CI/CD nativo; workflows em .github/workflows/."}
+          </li>
+        </ul>
+        <p>
         <strong>Git ≠ GitHub.</strong> Git é o sistema de controle de versão; GitHub é uma plataforma que hospeda repositórios Git e adiciona em cima: pull requests, issues, actions, pages e mais. Este capítulo cobre o que você precisa saber para usá-lo bem.
       </p>
 

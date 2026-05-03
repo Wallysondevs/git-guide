@@ -11,7 +11,28 @@ export default function Configuracao() {
       difficulty="intermediario"
       timeToRead="13 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git config"}</strong> {' — '} {"lê/escreve configs em local, --global ou --system."}
+          </li>
+        <li>
+            <strong>{"core.editor"}</strong> {' — '} {"editor para mensagens de commit (vim, nano, code --wait)."}
+          </li>
+        <li>
+            <strong>{"user.name / user.email"}</strong> {' — '} {"aparecem em todo commit; configure por repo se precisar."}
+          </li>
+        <li>
+            <strong>{"credential.helper"}</strong> {' — '} {"cache de credenciais (manager, store, cache)."}
+          </li>
+        <li>
+            <strong>{"init.defaultBranch"}</strong> {' — '} {"nome do branch inicial (use main)."}
+          </li>
+        </ul>
+        <p>
         O Git tem um sistema de configuração em camadas: <strong>system</strong> (toda a máquina) → <strong>global</strong> (seu usuário) → <strong>local</strong> (este repositório) → <strong>worktree</strong>. Configs mais específicas sobrescrevem as gerais. Saber onde colocar cada coisa evita muita dor.
       </p>
 

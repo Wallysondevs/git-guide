@@ -11,7 +11,28 @@ export default function Manutencao() {
       difficulty="avancado"
       timeToRead="12 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git gc"}</strong> {' — '} {"garbage collection — compacta objetos."}
+          </li>
+        <li>
+            <strong>{"git fsck"}</strong> {' — '} {"verifica integridade do repo."}
+          </li>
+        <li>
+            <strong>{"git prune"}</strong> {' — '} {"remove objetos inalcançáveis."}
+          </li>
+        <li>
+            <strong>{"git reflog expire"}</strong> {' — '} {"limpa entradas antigas do reflog."}
+          </li>
+        <li>
+            <strong>{"git maintenance"}</strong> {' — '} {"agenda gc + commit-graph + prefetch automaticamente."}
+          </li>
+        </ul>
+        <p>
         Repositórios Git acumulam <em>cruft</em> com o tempo: objetos soltos, packs não otimizados, refs órfãs, branches remotas que já não existem. Em projetos grandes isso se traduz em <strong>clones lentos, status pesado, push demorado</strong>. Este capítulo mostra os comandos de manutenção e como automatizá-los.
       </p>
 

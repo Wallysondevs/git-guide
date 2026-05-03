@@ -11,7 +11,28 @@ export default function Staging() {
       difficulty="iniciante"
       timeToRead="11 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Staging area / index"}</strong> {' — '} {"snapshot proposto para o próximo commit."}
+          </li>
+        <li>
+            <strong>{"git add"}</strong> {' — '} {"move arquivo do working para staging."}
+          </li>
+        <li>
+            <strong>{"git add -p"}</strong> {' — '} {"interativo: escolhe hunks específicos."}
+          </li>
+        <li>
+            <strong>{"git restore --staged"}</strong> {' — '} {"desfaz add (reverso)."}
+          </li>
+        <li>
+            <strong>{"git diff vs --staged"}</strong> {' — '} {"mostra mudanças no working vs staging."}
+          </li>
+        </ul>
+        <p>
         A <strong>staging area</strong> (também chamada <em>index</em>) é o que separa o Git de quase todos os outros sistemas de controle de versão. Ela é uma área intermediária entre seus arquivos editados e o histórico permanente — um <strong>rascunho do próximo commit</strong>.
       </p>
 

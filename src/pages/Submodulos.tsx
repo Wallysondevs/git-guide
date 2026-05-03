@@ -11,7 +11,28 @@ export default function Submodulos() {
       difficulty="avancado"
       timeToRead="14 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Submodule"}</strong> {' — '} {"repo dentro de outro repo, fixado em commit específico."}
+          </li>
+        <li>
+            <strong>{"git submodule add URL"}</strong> {' — '} {"adiciona; cria .gitmodules."}
+          </li>
+        <li>
+            <strong>{"init/update"}</strong> {' — '} {"clona e checa out os submódulos."}
+          </li>
+        <li>
+            <strong>{"--recurse-submodules"}</strong> {' — '} {"clone/pull já trata submódulos."}
+          </li>
+        <li>
+            <strong>{"Atualização"}</strong> {' — '} {"cd submodule + git pull + commit no parent."}
+          </li>
+        </ul>
+        <p>
         <strong>Submódulos</strong> permitem incluir um repositório Git <em>dentro</em> de outro, fixado em um commit específico. Útil para libs internas compartilhadas, themes de site, ou dependências que você quer trackear como código-fonte.
       </p>
 

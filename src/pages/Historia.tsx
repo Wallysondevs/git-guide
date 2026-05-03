@@ -11,7 +11,28 @@ export default function Historia() {
       difficulty="iniciante"
       timeToRead="8 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"2005"}</strong> {' — '} {"Linus Torvalds cria Git para o kernel Linux após briga com BitKeeper."}
+          </li>
+        <li>
+            <strong>{"DVCS"}</strong> {' — '} {"sistema distribuído — todo clone é um repo completo."}
+          </li>
+        <li>
+            <strong>{"Hashing"}</strong> {' — '} {"SHA-1 detecta qualquer corrupção; transição para SHA-256 em curso."}
+          </li>
+        <li>
+            <strong>{"Plumbing vs porcelain"}</strong> {' — '} {"baixo nível (hash-object) vs alto nível (commit)."}
+          </li>
+        <li>
+            <strong>{"10 dias"}</strong> {' — '} {"Linus escreveu a versão inicial em ~10 dias."}
+          </li>
+        </ul>
+        <p>
         <strong>Git</strong> é um sistema de controle de versão distribuído criado em 2005 por <strong>Linus Torvalds</strong> — o mesmo do kernel Linux. Ele nasceu de uma necessidade prática: o BitKeeper (usado no kernel) deixou de ser gratuito, e nenhum sistema existente atendia aos requisitos de velocidade, integridade e descentralização que o Linux exigia.
       </p>
 

@@ -11,7 +11,28 @@ export default function Repositorios() {
       difficulty="iniciante"
       timeToRead="11 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{".git/"}</strong> {' — '} {"diretório que armazena objetos, refs, configs."}
+          </li>
+        <li>
+            <strong>{"Working tree"}</strong> {' — '} {"arquivos visíveis no filesystem."}
+          </li>
+        <li>
+            <strong>{"Index/Staging"}</strong> {' — '} {"área intermediária entre working e commit."}
+          </li>
+        <li>
+            <strong>{"Bare"}</strong> {' — '} {"repo sem working tree, usado em servers."}
+          </li>
+        <li>
+            <strong>{"Worktree"}</strong> {' — '} {"cópias adicionais do mesmo repo (git worktree add)."}
+          </li>
+        </ul>
+        <p>
         Um <strong>repositório Git</strong> é qualquer pasta que tenha um diretório <code>.git/</code> dentro. Ele guarda todo o histórico, as configurações locais e as referências (branches, tags). Entender o que mora ali é o que separa o usuário casual do power user.
       </p>
 

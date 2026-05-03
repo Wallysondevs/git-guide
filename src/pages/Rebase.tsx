@@ -11,7 +11,28 @@ export default function Rebase() {
       difficulty="avancado"
       timeToRead="16 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git rebase"}</strong> {' — '} {"re-aplica commits sobre outra base — histórico linear."}
+          </li>
+        <li>
+            <strong>{"Interactive"}</strong> {' — '} {"rebase -i permite editar/squash/reorder/drop commits."}
+          </li>
+        <li>
+            <strong>{"vs merge"}</strong> {' — '} {"rebase reescreve história; merge preserva."}
+          </li>
+        <li>
+            <strong>{"Golden rule"}</strong> {' — '} {"nunca rebase commits já compartilhados."}
+          </li>
+        <li>
+            <strong>{"Conflito"}</strong> {' — '} {"resolve, git add, git rebase --continue."}
+          </li>
+        </ul>
+        <p>
         <strong>Rebase</strong> pega seus commits e os "reaplica" em cima de outra base. O resultado é um histórico <em>linear</em>, como se você tivesse trabalhado a partir do código mais novo desde o começo. É a ferramenta mais poderosa — e mais perigosa — do Git.
       </p>
 

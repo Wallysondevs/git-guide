@@ -11,7 +11,28 @@ export default function Dicas() {
       difficulty="intermediario"
       timeToRead="13 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git switch -"}</strong> {' — '} {"volta ao branch anterior (igual cd -)."}
+          </li>
+        <li>
+            <strong>{"git restore --source=X"}</strong> {' — '} {"recupera versão de arquivo de commit X."}
+          </li>
+        <li>
+            <strong>{"git log --oneline --graph"}</strong> {' — '} {"histórico visual compacto."}
+          </li>
+        <li>
+            <strong>{"git reflog"}</strong> {' — '} {"salva-vidas: registra todos os movimentos do HEAD."}
+          </li>
+        <li>
+            <strong>{"git stash pop"}</strong> {' — '} {"aplica + remove stash em uma operação."}
+          </li>
+        </ul>
+        <p>
         Coletânea de macetes que vão acelerar seu uso diário do Git. Cada um deles parece pequeno, mas somados economizam <strong>horas por mês</strong>.
       </p>
 

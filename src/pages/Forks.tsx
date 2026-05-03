@@ -11,7 +11,28 @@ export default function Forks() {
       difficulty="intermediario"
       timeToRead="11 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Fork"}</strong> {' — '} {"cópia do repo na sua conta; PR original aceita contribuições."}
+          </li>
+        <li>
+            <strong>{"upstream"}</strong> {' — '} {"convenção: remoto apontando para o repo original."}
+          </li>
+        <li>
+            <strong>{"Sync"}</strong> {' — '} {"git fetch upstream; git merge upstream/main mantém atualizado."}
+          </li>
+        <li>
+            <strong>{"PR"}</strong> {' — '} {"Pull Request — propõe merge do seu fork no upstream."}
+          </li>
+        <li>
+            <strong>{"Squash and merge"}</strong> {' — '} {"PR vira único commit no upstream."}
+          </li>
+        </ul>
+        <p>
         Um <strong>fork</strong> é uma cópia completa de um repositório feita no servidor (GitHub, GitLab, etc.), associada à sua conta. Ele é a base do <strong>fork & pull workflow</strong> — como contribuições funcionam em projetos onde você não tem permissão de push direto.
       </p>
 

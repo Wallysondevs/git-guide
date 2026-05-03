@@ -11,7 +11,28 @@ export default function Aliases() {
       difficulty="iniciante"
       timeToRead="9 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git config --global alias.X"}</strong> {' — '} {"registra apelido global; vale para todos os repos do usuário."}
+          </li>
+        <li>
+            <strong>{"~/.gitconfig"}</strong> {' — '} {"arquivo onde aliases moram, na seção [alias]."}
+          </li>
+        <li>
+            <strong>{"! prefix"}</strong> {' — '} {"! sh \"comando\" — alias roda comando shell, não só git."}
+          </li>
+        <li>
+            <strong>{"Composição"}</strong> {' — '} {"alias que chama outro alias funciona normalmente."}
+          </li>
+        <li>
+            <strong>{"Listagem"}</strong> {' — '} {"git config --get-regexp ^alias\\. lista todos."}
+          </li>
+        </ul>
+        <p>
         <strong>Aliases</strong> são apelidos para comandos do Git. Em vez de digitar <code>git log --graph --oneline --decorate --all</code>, você digita <code>git lg</code>. Pequenos acúmulos viram horas economizadas por ano.
       </p>
 

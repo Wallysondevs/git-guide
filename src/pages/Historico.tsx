@@ -11,7 +11,28 @@ export default function Historico() {
       difficulty="intermediario"
       timeToRead="14 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git log"}</strong> {' — '} {"lista commits do branch atual."}
+          </li>
+        <li>
+            <strong>{"--oneline --graph --all"}</strong> {' — '} {"visualização compacta de todos os branches."}
+          </li>
+        <li>
+            <strong>{"--author / --grep"}</strong> {' — '} {"filtra por autor ou mensagem."}
+          </li>
+        <li>
+            <strong>{"-p"}</strong> {' — '} {"mostra patch (diff) de cada commit."}
+          </li>
+        <li>
+            <strong>{"Range"}</strong> {' — '} {"git log A..B = commits em B mas não em A."}
+          </li>
+        </ul>
+        <p>
         Um repositório com 5 anos pode ter dezenas de milhares de commits. <code>git log</code> é a ferramenta para encontrar agulhas no palheiro: o commit que introduziu o bug, quem mudou aquela linha, qual foi a última versão estável.
       </p>
 

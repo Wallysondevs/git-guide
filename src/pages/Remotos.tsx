@@ -11,7 +11,28 @@ export default function Remotos() {
       difficulty="intermediario"
       timeToRead="12 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Remote"}</strong> {' — '} {"referência nomeada a outro repo (origin, upstream)."}
+          </li>
+        <li>
+            <strong>{"git remote -v"}</strong> {' — '} {"lista remotes e URLs."}
+          </li>
+        <li>
+            <strong>{"git remote add"}</strong> {' — '} {"cadastra novo remote."}
+          </li>
+        <li>
+            <strong>{"Refspec"}</strong> {' — '} {"+refs/heads/*:refs/remotes/origin/* — define mapping de fetch."}
+          </li>
+        <li>
+            <strong>{"Multi-remote"}</strong> {' — '} {"útil em forks (origin = seu, upstream = original)."}
+          </li>
+        </ul>
+        <p>
         Um <strong>remote</strong> é um apelido para a URL de um repositório Git em outra máquina. Você não digita a URL toda vez — usa o apelido (geralmente <code>origin</code>). Entender remotes é entender como o Git distribuído funciona de verdade.
       </p>
 

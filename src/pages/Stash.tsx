@@ -11,7 +11,28 @@ export default function Stash() {
       difficulty="iniciante"
       timeToRead="10 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git stash"}</strong> {' — '} {"guarda mudanças não commitadas em pilha."}
+          </li>
+        <li>
+            <strong>{"stash pop / apply"}</strong> {' — '} {"aplica + remove / aplica e mantém."}
+          </li>
+        <li>
+            <strong>{"stash -u"}</strong> {' — '} {"inclui untracked."}
+          </li>
+        <li>
+            <strong>{"stash list"}</strong> {' — '} {"lista todos os stashes (stash@{0}, etc)."}
+          </li>
+        <li>
+            <strong>{"stash branch"}</strong> {' — '} {"cria branch novo a partir do stash."}
+          </li>
+        </ul>
+        <p>
         <strong>Stash</strong> é o "ctrl+x mental" do Git. Você está no meio de um trabalho, precisa trocar de branch para ver outra coisa, mas não quer commitar lixo. Stash guarda tudo, limpa o working, e devolve depois quando você pedir.
       </p>
 

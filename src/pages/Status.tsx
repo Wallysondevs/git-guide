@@ -11,7 +11,28 @@ export default function Status() {
       difficulty="iniciante"
       timeToRead="10 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git status"}</strong> {' — '} {"o que mudou; arquivos rastreados/não-rastreados/staged."}
+          </li>
+        <li>
+            <strong>{"Branch info"}</strong> {' — '} {"mostra branch atual + relação com upstream."}
+          </li>
+        <li>
+            <strong>{"-s / --short"}</strong> {' — '} {"formato compacto (XY arquivo)."}
+          </li>
+        <li>
+            <strong>{"--ignored"}</strong> {' — '} {"mostra também arquivos ignorados."}
+          </li>
+        <li>
+            <strong>{"Untracked"}</strong> {' — '} {"arquivos novos que o Git ainda não rastreia."}
+          </li>
+        </ul>
+        <p>
         <code>git status</code> e <code>git diff</code> são os <strong>olhos</strong> do desenvolvedor Git. Antes de qualquer commit, push ou rebase, você roda esses comandos. Dominar a saída deles é a diferença entre commitar com confiança e commitar no escuro.
       </p>
 

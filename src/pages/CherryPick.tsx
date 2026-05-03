@@ -11,7 +11,28 @@ export default function CherryPick() {
       difficulty="intermediario"
       timeToRead="10 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git cherry-pick"}</strong> {' — '} {"copia commit específico para o branch atual."}
+          </li>
+        <li>
+            <strong>{"Conflito"}</strong> {' — '} {"resolve, git add, git cherry-pick --continue."}
+          </li>
+        <li>
+            <strong>{"-x"}</strong> {' — '} {"adiciona linha \"(cherry picked from commit ...)\"."}
+          </li>
+        <li>
+            <strong>{"-n"}</strong> {' — '} {"aplica mudanças sem commitar."}
+          </li>
+        <li>
+            <strong>{"Range"}</strong> {' — '} {"cherry-pick A..B aplica vários commits em sequência."}
+          </li>
+        </ul>
+        <p>
         <strong>Cherry-pick</strong> aplica um commit específico (de qualquer branch) na sua branch atual, criando um <em>commit novo</em> com as mesmas mudanças. É como dizer "eu não quero todo o branch dele, só esse commit aqui".
       </p>
 

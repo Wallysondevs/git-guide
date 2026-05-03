@@ -11,7 +11,28 @@ export default function PullRequests() {
       difficulty="intermediario"
       timeToRead="14 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"PR"}</strong> {' — '} {"Pull Request — proposta de merge revisada."}
+          </li>
+        <li>
+            <strong>{"Code review"}</strong> {' — '} {"comentários inline + aprovação obrigatória."}
+          </li>
+        <li>
+            <strong>{"Draft PR"}</strong> {' — '} {"marca como work-in-progress; não notifica reviewers."}
+          </li>
+        <li>
+            <strong>{"Linked issue"}</strong> {' — '} {"PR fecha automaticamente issue: \"Closes #123\"."}
+          </li>
+        <li>
+            <strong>{"Squash/merge/rebase"}</strong> {' — '} {"3 estratégias para integrar PR."}
+          </li>
+        </ul>
+        <p>
         Um <strong>Pull Request</strong> (ou Merge Request no GitLab) é uma proposta de mudança: "olha, fiz isso aqui, dá uma olhada e me diga se posso mergear?". Ele combina código + discussão + revisão + CI em um só lugar — é onde o trabalho vira de fato parte do projeto.
       </p>
 

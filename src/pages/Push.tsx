@@ -11,7 +11,28 @@ export default function Push() {
       difficulty="iniciante"
       timeToRead="13 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git push"}</strong> {' — '} {"envia commits locais para o remoto."}
+          </li>
+        <li>
+            <strong>{"-u"}</strong> {' — '} {"set upstream — configura tracking, próximas vezes só git push."}
+          </li>
+        <li>
+            <strong>{"--force / --force-with-lease"}</strong> {' — '} {"reescreve histórico remoto; lease é seguro."}
+          </li>
+        <li>
+            <strong>{"Push tags"}</strong> {' — '} {"git push --tags envia tags junto."}
+          </li>
+        <li>
+            <strong>{"Protected branches"}</strong> {' — '} {"servidor pode rejeitar push direto em main."}
+          </li>
+        </ul>
+        <p>
         <code>push</code> manda seus commits para o remoto. <code>pull</code> traz commits do remoto para você. Soa simples — mas a maioria dos problemas de "Git quebrou" mora aqui. Este capítulo te dá modelos mentais sólidos para nunca mais ter medo desses comandos.
       </p>
 

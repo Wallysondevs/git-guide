@@ -11,7 +11,28 @@ export default function Recuperacao() {
       difficulty="intermediario"
       timeToRead="13 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"git reflog"}</strong> {' — '} {"registra todo movimento do HEAD por 90 dias."}
+          </li>
+        <li>
+            <strong>{"Recuperar commit"}</strong> {' — '} {"git checkout <hash> ou git branch nome <hash>."}
+          </li>
+        <li>
+            <strong>{"git fsck --lost-found"}</strong> {' — '} {"encontra objetos órfãos."}
+          </li>
+        <li>
+            <strong>{"Stash perdido"}</strong> {' — '} {"git stash list após reflog stash."}
+          </li>
+        <li>
+            <strong>{"Backup remoto"}</strong> {' — '} {"sempre push frequente é o melhor seguro."}
+          </li>
+        </ul>
+        <p>
         Pânico é o pior conselheiro. Antes de qualquer coisa: <strong>respire</strong>. O Git mantém os objetos por <strong>30 a 90 dias</strong> mesmo depois que parecem ter sido apagados. Este capítulo é um guia de emergência por sintoma — vá direto ao seu cenário.
       </p>
 

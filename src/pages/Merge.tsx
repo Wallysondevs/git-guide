@@ -11,7 +11,28 @@ export default function Merge() {
       difficulty="intermediario"
       timeToRead="14 min"
     >
-      <p>
+      <AlertBox type="info" title="Pré-requisitos">
+          Familiaridade com terminal e noções básicas de versionamento. Se ainda não viu o capítulo de instalação ou primeiros passos, comece por lá.
+        </AlertBox>
+        <h2>Glossário rápido</h2>
+        <ul>
+          <li>
+            <strong>{"Fast-forward"}</strong> {' — '} {"HEAD avança porque não há divergência."}
+          </li>
+        <li>
+            <strong>{"3-way merge"}</strong> {' — '} {"combina mudanças de duas linhas que divergiram."}
+          </li>
+        <li>
+            <strong>{"--no-ff"}</strong> {' — '} {"força commit de merge mesmo se daria fast-forward."}
+          </li>
+        <li>
+            <strong>{"--squash"}</strong> {' — '} {"combina branch inteira em um único commit."}
+          </li>
+        <li>
+            <strong>{"Octopus"}</strong> {' — '} {"merge de 3+ branches ao mesmo tempo (raro)."}
+          </li>
+        </ul>
+        <p>
         <strong>Merge</strong> é como você integra trabalho feito em uma branch de volta para outra. O Git tem 3 estratégias principais — escolher a certa em cada situação preserva clareza no histórico e evita conflitos desnecessários.
       </p>
 
