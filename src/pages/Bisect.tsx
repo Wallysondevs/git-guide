@@ -1,162 +1,288 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function Bisect() {
-    return (
-      <PageContainer
-        title="git bisect"
-        subtitle="Encontre exatamente qual commit introduziu um bug usando busca binária automatizada."
-        difficulty="avancado"
-        timeToRead="12 min"
-      >
-        <p>
-          O <code>git bisect</code> usa busca binária no histórico de commits para encontrar qual commit introduziu um bug. Em vez de testar commit por commit (O(n)), o bisect testa O(log n) — em 1000 commits, você encontra o culpado testando apenas 10.
-        </p>
+export default function Bisect() {
+  return (
+    <PageContainer
+      title="Bisect"
+      subtitle="Busca binária no histórico para encontrar exatamente qual commit introduziu um bug — em log(N) passos."
+      difficulty="avancado"
+      timeToRead="10 min"
+    >
+      <p>
+        Você sabe que algo funcionava na versão 1.0 e quebrou na 1.5. Entre elas, 500 commits. Como achar o culpado? <code>git bisect</code> faz busca binária: você marca commits como "good" ou "bad", e o Git divide o intervalo em 9 testes para identificar exatamente o commit que introduziu o bug.
+      </p>
 
-        <h2>Como funciona a busca binária</h2>
-        <p>
-          Você informa dois pontos: um commit "ruim" (onde o bug existe) e um commit "bom" (onde funcionava). O Git escolhe o commit do meio para testar. Você diz se é bom ou ruim, e o Git divide novamente — até chegar no commit exato que introduziu o problema.
-        </p>
+      <AlertBox type="tip" title="Matemática">
+        500 commits → 9 passos. 1000 commits → 10 passos. 1 milhão → 20 passos. Bisect é poderoso porque é <strong>logarítmico</strong>.
+      </AlertBox>
 
-        <CodeBlock
-          title="Fluxo básico do bisect"
-          code={`# 1. Iniciar a sessão de bisect
-  git bisect start
+      <h2>Workflow básico</h2>
+      <CodeBlock
+        title="git bisect manual"
+        language="bash"
+        code={`# 1. Inicia o bisect
+git bisect start
 
-  # 2. Marcar commit atual como ruim (tem o bug)
-  git bisect bad
-  # OU marcar um commit específico como ruim
-  git bisect bad HEAD
+# 2. Marca o estado atual como bad (bug presente)
+git bisect bad
+git bisect bad HEAD
 
-  # 3. Marcar onde funcionava como bom
-  git bisect good v1.0.0
-  # OU por SHA
-  git bisect good abc1234
+# 3. Marca um ponto antigo como good (bug não estava lá)
+git bisect good v1.0.0
+git bisect good abc1234
 
-  # Git automaticamente faz checkout do commit do meio
-  # Bisecting: 50 revisions left to test after this
-  # [def5678] Commit do meio
+# Saída:
+# Bisecting: 250 revisions left to test after this (roughly 9 steps)
+# [7p8q9r0] commit do meio
 
-  # 4. Teste o código agora e informe o resultado
-  git bisect good   # se está funcionando aqui
-  git bisect bad    # se o bug já existe aqui
+# 4. Testa o commit que o Git checkou
+npm test                    # ou rode o app, ou faça o teste manual
 
-  # 5. Repita até o Git encontrar o commit culpado
-  # "abc1234 is the first bad commit"
+# 5. Se passou → "good", se falhou → "bad"
+git bisect good
+# OU
+git bisect bad
 
-  # 6. Ao terminar
-  git bisect reset  # volta ao branch original`}
-        />
+# Repita 3-5 até o Git anunciar:
+# 7p8q9r0 is the first bad commit
+# Author: Maria
+# Date: ...
+# feat: refactor login
 
-        <AlertBox type="success" title="Bisect automatizado com script">
-          O poder real do bisect está na automação. Se você tem um script ou comando que retorna 0 para "bom" e 1 para "ruim", o Git roda o bisect completamente sozinho.
-        </AlertBox>
+# 6. Encerra o bisect (volta ao estado anterior)
+git bisect reset
+`}
+      />
 
-        <h2>Bisect automático com script</h2>
-        <CodeBlock
-          title="Automatizando o bisect"
-          code={`# Criar script de teste (deve retornar 0=bom, 1=ruim)
-  cat > test_bug.sh << 'EOF'
-  #!/bin/bash
-  npm test -- --grep "login deve funcionar"
-  exit $?
-  EOF
-  chmod +x test_bug.sh
+      <h2>Bisect automatizado — o ouro</h2>
+      <p>Se você tem um <strong>script</strong> que retorna 0 (good) ou 1 (bad), o Git faz tudo sozinho.</p>
 
-  # Iniciar bisect automático
-  git bisect start
-  git bisect bad HEAD
-  git bisect good v2.0.0
+      <CodeBlock
+        title="git bisect run"
+        language="bash"
+        code={`# Bisect totalmente automático
+git bisect start HEAD v1.0.0
+git bisect run npm test
 
-  # Deixar o Git testar sozinho
-  git bisect run ./test_bug.sh
-  # Git vai rodar o script em cada commit automaticamente
-  # Ao final mostra: "abc123 is the first bad commit"
+# O Git vai:
+# 1. Checkout no commit do meio
+# 2. Rodar npm test
+# 3. Marcar good (exit 0) ou bad (exit ≠ 0)
+# 4. Repetir até achar
+# 5. Imprimir o commit culpado
 
-  # Para testes de compilação
-  git bisect run sh -c "npm build && node -e 'require("./dist")'"
+# Exit codes especiais:
+# 125 = "skip" (commit não pode ser testado, ex: build quebrado)
+# 0   = good
+# 1-124, 126-127 = bad
+# 128+ = aborta o bisect
+`}
+      />
 
-  # Para verificar se arquivo existe
-  git bisect run test -f src/problematic-file.js`}
-        />
+      <CodeBlock
+        title="Script de teste customizado"
+        language="bash"
+        code={`# .bisect-test.sh
+#!/bin/bash
+set -e
 
-        <h2>Comandos de controle da sessão</h2>
-        <div className="overflow-x-auto my-6">
-          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-3 text-left">Comando</th>
-                <th className="p-3 text-left">Significado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ["git bisect good", "Este commit funciona corretamente"],
-                ["git bisect bad", "Este commit tem o bug"],
-                ["git bisect skip", "Não consigo testar este commit (ex: não compila por outro motivo)"],
-                ["git bisect reset", "Encerra bisect e volta ao HEAD original"],
-                ["git bisect log", "Mostra o log das decisões tomadas na sessão"],
-                ["git bisect replay log.txt", "Reproduce uma sessão de bisect de um arquivo de log"],
-                ["git bisect visualize", "Abre gitk mostrando os commits restantes"],
-              ].map(([cmd, sig], i) => (
-                <tr key={i} className="border-t border-border">
-                  <td className="p-3 font-mono text-primary text-xs">{cmd}</td>
-                  <td className="p-3 text-muted-foreground text-sm">{sig}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+# Build (se quebrar, skip — não é nosso bug)
+npm install || exit 125
+npm run build || exit 125
 
-        <h2>Cenário real: encontrando regressão de performance</h2>
-        <CodeBlock
-          title="Exemplo prático com teste de performance"
-          code={`# Script: verifica se operação demora mais de 2 segundos
-  cat > perf_test.sh << 'EOF'
-  #!/bin/bash
-  time_ms=$(node -e "
-    const start = Date.now();
-    require('./src/heavy-operation');
-    console.log(Date.now() - start);
-  ")
-  [ "$time_ms" -lt 2000 ]  # retorna 0 se < 2s (bom), 1 se >= 2s (ruim)
-  EOF
+# Teste o caso específico do bug
+result=\$(node -e 'console.log(require("./dist").calc(10, 5))')
 
-  git bisect start
-  git bisect bad HEAD        # lento agora
-  git bisect good v3.0.0    # era rápido na v3
-  git bisect run bash perf_test.sh
+if [ "\$result" = "15" ]; then
+  exit 0   # good
+else
+  exit 1   # bad
+fi
+`}
+      />
 
-  # Resultado: "commit abc123 introduced the regression"
-  git show abc123            # ver exatamente o que mudou`}
-        />
+      <CodeBlock
+        title="Usando o script"
+        language="bash"
+        code={`chmod +x .bisect-test.sh
 
-        <AlertBox type="info" title="git bisect skip — commits que não podem ser testados">
-          Se um commit não pode ser testado (não compila por um bug diferente, dependência faltando, etc.), use <code>git bisect skip</code>. O Git continuará com outro commit próximo. Se o commit culpado estiver entre os pulados, o Git avisará com uma lista de suspeitos.
-        </AlertBox>
+git bisect start HEAD v1.0.0
+git bisect run ./.bisect-test.sh
 
-        <h2>Dicas avançadas</h2>
-        <CodeBlock
-          title="Técnicas avançadas de bisect"
-          code={`# Salvar log do bisect para reprodução futura
-  git bisect log > bisect_session.log
+# Saída final:
+# 7p8q9r0 is the first bad commit
+# 50 commits testados, 9 iterações
+`}
+      />
 
-  # Reproduzir uma sessão salva
-  git bisect replay bisect_session.log
+      <h2>Termos customizados</h2>
+      <p>Em vez de "good/bad", você pode usar termos que fazem sentido pro seu caso:</p>
 
-  # Bisect com termos customizados (ex: "fast" / "slow")
-  git bisect start --term-good=fast --term-bad=slow
-  git bisect fast abc123
-  git bisect slow HEAD
+      <CodeBlock
+        title="--term"
+        language="bash"
+        code={`# Para investigar regressão de performance
+git bisect start --term-old fast --term-new slow
+git bisect slow HEAD
+git bisect fast v1.0.0
 
-  # Ver quantos commits restam para testar
-  git bisect visualize --oneline | wc -l
+# Para feature que parou de funcionar
+git bisect start --term-old works --term-new broken
+git bisect broken
+git bisect works v1.5.0
+`}
+      />
 
-  # Bisect em repositório com submodules
-  git bisect run sh -c "git submodule update && npm test"`}
-        />
-      </PageContainer>
-    );
-  }
-  
+      <h2>Gerenciando o bisect</h2>
+      <CodeBlock
+        title="Comandos úteis durante bisect"
+        language="bash"
+        code={`# Ver onde você está
+git bisect log
+git bisect visualize         # abre gitk com o range restante
+git bisect view              # mesma coisa
+
+# Pular um commit que não pode ser testado
+git bisect skip
+git bisect skip v1.2..v1.3   # pular range inteiro
+
+# Voltar atrás (oops, marquei errado)
+git bisect log > /tmp/bisect.log
+# Edite /tmp/bisect.log removendo as linhas erradas
+git bisect reset
+git bisect replay /tmp/bisect.log
+
+# Encerrar e voltar ao estado anterior
+git bisect reset
+`}
+      />
+
+      <h2>Caso prático completo</h2>
+      <CodeBlock
+        title="Encontrando regressão"
+        language="bash"
+        code={`# Bug: API retorna 500 desde "ontem"
+# Última versão sabida boa: v1.5.0
+
+git bisect start
+git bisect bad
+git bisect good v1.5.0
+
+# Crie script de teste rápido
+cat > test-bug.sh <<'EOF'
+#!/bin/bash
+npm install --silent || exit 125
+npm run build --silent || exit 125
+npm start --silent &
+SERVER=\$!
+sleep 3
+status=\$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/users)
+kill \$SERVER 2>/dev/null
+[ "\$status" = "200" ] && exit 0 || exit 1
+EOF
+chmod +x test-bug.sh
+
+git bisect run ./test-bug.sh
+
+# Output:
+# 7p8q9r0 is the first bad commit
+# Author: João
+# Date: 2 days ago
+# refactor: simplifica handler de users
+
+git show 7p8q9r0     # examine o problema
+git bisect reset
+
+# Avise o autor, abra issue, faça fix
+`}
+      />
+
+      <h2>Preparando seu repo para bisect eficiente</h2>
+      <ul>
+        <li><strong>Commits atômicos</strong> — quanto menores, mais preciso bisect.</li>
+        <li><strong>Cada commit deve buildar</strong> — senão você vai dar muito skip.</li>
+        <li><strong>Testes rápidos</strong> — bisect roda 9-20 vezes; se cada teste leva 10min, são 3 horas.</li>
+        <li><strong>CI por commit</strong> — se todo commit já está testado, bisect é trivial.</li>
+      </ul>
+
+      <h2>Bisect em monorepos</h2>
+      <CodeBlock
+        title="Restrito a um caminho"
+        language="bash"
+        code={`# Só considera commits que mexeram em src/auth/
+git bisect start -- src/auth/
+git bisect bad
+git bisect good v1.5.0
+git bisect run ./test-auth.sh
+
+# Diminui drasticamente o número de commits testados
+`}
+      />
+
+      <h2>Bisect remoto — colaborativo</h2>
+      <CodeBlock
+        title="Compartilhar progresso"
+        language="bash"
+        code={`# Salvar o log do bisect
+git bisect log > bisect.log
+
+# Outro dev pode continuar de onde você parou
+git bisect start
+git bisect replay bisect.log
+# ... continua os passos
+`}
+      />
+
+      <h2>Visualizando o que sobrou</h2>
+      <CodeBlock
+        title="Range remanescente"
+        language="bash"
+        code={`# Quantos commits restam para testar?
+git bisect view --oneline
+git rev-list --count refs/bisect/bad..refs/bisect/good
+
+# GUI
+git bisect visualize    # abre gitk
+gitk refs/bisect/bad..refs/bisect/good
+`}
+      />
+
+      <h2>Cheat-sheet</h2>
+      <CodeBlock
+        title="Workflow bisect"
+        language="bash"
+        code={`# Manual
+git bisect start
+git bisect bad [HEAD]
+git bisect good v1.0.0
+git bisect good / bad     # repita
+git bisect skip           # se commit não testável
+git bisect reset          # encerrar
+
+# Automático (★)
+git bisect start HEAD v1.0.0
+git bisect run ./test.sh
+
+# Outras
+git bisect log            # ver histórico
+git bisect log > f && git bisect replay f   # reproduzir
+git bisect visualize      # GUI
+git bisect start -- path  # restringir a caminho
+
+# Termos custom
+git bisect start --term-old works --term-new broken
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/historico">Histórico</Link> — outras formas de investigar</li>
+        <li><Link href="/reflog">Reflog</Link> — histórico de operações locais</li>
+        <li><Link href="/dicas">Dicas e Truques</Link> — mais ferramentas de investigação</li>
+      </ul>
+    </PageContainer>
+  );
+}

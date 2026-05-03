@@ -1,53 +1,72 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 
-import Home from "@/pages/Home";
-import Historia from "@/pages/Historia";
-import Instalacao from "@/pages/Instalacao";
-import PrimeirosPassos from "@/pages/PrimeirosPassos";
-import Repositorios from "@/pages/Repositorios";
-import Status from "@/pages/Status";
-import Staging from "@/pages/Staging";
-import Commits from "@/pages/Commits";
-import Historico from "@/pages/Historico";
-import Branches from "@/pages/Branches";
-import Merge from "@/pages/Merge";
-import Rebase from "@/pages/Rebase";
-import Conflitos from "@/pages/Conflitos";
-import Tags from "@/pages/Tags";
-import Stash from "@/pages/Stash";
-import Remotos from "@/pages/Remotos";
-import Clone from "@/pages/Clone";
-import Push from "@/pages/Push";
-import Fetch from "@/pages/Fetch";
-import Github from "@/pages/Github";
-import PullRequests from "@/pages/PullRequests";
-import Forks from "@/pages/Forks";
-import Gitignore from "@/pages/Gitignore";
-import Configuracao from "@/pages/Configuracao";
-import Aliases from "@/pages/Aliases";
-import Hooks from "@/pages/Hooks";
-import Submodulos from "@/pages/Submodulos";
-import Reset from "@/pages/Reset";
-import CherryPick from "@/pages/CherryPick";
-import Bisect from "@/pages/Bisect";
-import Reflog from "@/pages/Reflog";
-import Fluxos from "@/pages/Fluxos";
-import Dicas from "@/pages/Dicas";
-import Referencias from "@/pages/Referencias";
-import NotFound from "@/pages/not-found";
+const Home = lazy(() => import("@/pages/Home"));
+const Historia = lazy(() => import("@/pages/Historia"));
+const Instalacao = lazy(() => import("@/pages/Instalacao"));
+const PrimeirosPassos = lazy(() => import("@/pages/PrimeirosPassos"));
+const Repositorios = lazy(() => import("@/pages/Repositorios"));
+const Status = lazy(() => import("@/pages/Status"));
+const Staging = lazy(() => import("@/pages/Staging"));
+const Commits = lazy(() => import("@/pages/Commits"));
+const Historico = lazy(() => import("@/pages/Historico"));
+const Branches = lazy(() => import("@/pages/Branches"));
+const Merge = lazy(() => import("@/pages/Merge"));
+const Rebase = lazy(() => import("@/pages/Rebase"));
+const Conflitos = lazy(() => import("@/pages/Conflitos"));
+const Tags = lazy(() => import("@/pages/Tags"));
+const Stash = lazy(() => import("@/pages/Stash"));
+const Remotos = lazy(() => import("@/pages/Remotos"));
+const Clone = lazy(() => import("@/pages/Clone"));
+const Push = lazy(() => import("@/pages/Push"));
+const Fetch = lazy(() => import("@/pages/Fetch"));
+const Github = lazy(() => import("@/pages/Github"));
+const PullRequests = lazy(() => import("@/pages/PullRequests"));
+const Forks = lazy(() => import("@/pages/Forks"));
+const Gitignore = lazy(() => import("@/pages/Gitignore"));
+const Configuracao = lazy(() => import("@/pages/Configuracao"));
+const Aliases = lazy(() => import("@/pages/Aliases"));
+const Hooks = lazy(() => import("@/pages/Hooks"));
+const Submodulos = lazy(() => import("@/pages/Submodulos"));
+const Reset = lazy(() => import("@/pages/Reset"));
+const CherryPick = lazy(() => import("@/pages/CherryPick"));
+const Bisect = lazy(() => import("@/pages/Bisect"));
+const Reflog = lazy(() => import("@/pages/Reflog"));
+const Fluxos = lazy(() => import("@/pages/Fluxos"));
+const Dicas = lazy(() => import("@/pages/Dicas"));
+const Referencias = lazy(() => import("@/pages/Referencias"));
+const Worktrees = lazy(() => import("@/pages/Worktrees"));
+const Lfs = lazy(() => import("@/pages/Lfs"));
+const Signing = lazy(() => import("@/pages/Signing"));
+const ConventionalCommits = lazy(() => import("@/pages/ConventionalCommits"));
+const Recuperacao = lazy(() => import("@/pages/Recuperacao"));
+const Manutencao = lazy(() => import("@/pages/Manutencao"));
+const NotFound = lazy(() => import("@/pages/not-found"));
 
-const queryClient = new QueryClient();
+function PageFallback() {
+  return (
+    <div className="max-w-4xl mx-auto py-16 px-6 animate-pulse">
+      <div className="h-4 w-24 bg-muted rounded mb-6" />
+      <div className="h-12 w-3/4 bg-muted rounded mb-4" />
+      <div className="h-6 w-2/3 bg-muted/70 rounded mb-12" />
+      <div className="space-y-3">
+        <div className="h-4 w-full bg-muted/60 rounded" />
+        <div className="h-4 w-11/12 bg-muted/60 rounded" />
+        <div className="h-4 w-10/12 bg-muted/60 rounded" />
+        <div className="h-32 w-full bg-muted/40 rounded-xl mt-8" />
+      </div>
+    </div>
+  );
+}
 
 function Layout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
   const [location] = useHashLocation();
+
   useEffect(() => {
     setIsSidebarOpen(false);
     window.scrollTo(0, 0);
@@ -59,7 +78,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 lg:pl-72 flex flex-col min-w-0 transition-all duration-300">
         <Header onMenuClick={() => setIsSidebarOpen(true)} />
         <main className="flex-1">
-          {children}
+          <Suspense fallback={<PageFallback />}>{children}</Suspense>
         </main>
       </div>
     </div>
@@ -104,20 +123,22 @@ function Router() {
         <Route path="/fluxos" component={Fluxos} />
         <Route path="/dicas" component={Dicas} />
         <Route path="/referencias" component={Referencias} />
+        <Route path="/worktrees" component={Worktrees} />
+        <Route path="/lfs" component={Lfs} />
+        <Route path="/signing" component={Signing} />
+        <Route path="/conventional-commits" component={ConventionalCommits} />
+        <Route path="/recuperacao" component={Recuperacao} />
+        <Route path="/manutencao" component={Manutencao} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
   );
 }
 
-function App() {
+export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <WouterRouter hook={useHashLocation}>
-        <Router />
-      </WouterRouter>
-    </QueryClientProvider>
+    <WouterRouter hook={useHashLocation}>
+      <Router />
+    </WouterRouter>
   );
 }
-
-export default App;

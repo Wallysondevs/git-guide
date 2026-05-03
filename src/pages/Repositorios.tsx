@@ -1,131 +1,225 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function Repositorios() {
-    return (
-      <PageContainer
-        title="Repositórios"
-        subtitle="Crie, clone e configure repositórios Git do zero com as melhores práticas."
-        difficulty="iniciante"
-        timeToRead="12 min"
-      >
-        <p>
-          Um repositório Git é um diretório que contém seu projeto e a pasta <code>.git/</code> onde todo o histórico é armazenado. Você pode criar um repositório do zero ou clonar um existente.
-        </p>
+export default function Repositorios() {
+  return (
+    <PageContainer
+      title="Criando Repositórios"
+      subtitle="Tudo o que você precisa saber sobre git init, repositórios bare, templates e o que mora dentro de .git/."
+      difficulty="iniciante"
+      timeToRead="11 min"
+    >
+      <p>
+        Um <strong>repositório Git</strong> é qualquer pasta que tenha um diretório <code>.git/</code> dentro. Ele guarda todo o histórico, as configurações locais e as referências (branches, tags). Entender o que mora ali é o que separa o usuário casual do power user.
+      </p>
 
-        <h2>Criando repositórios</h2>
-        <CodeBlock
-          title="Inicializar e criar repositórios"
-          code={`# Criar repositório no diretório atual
-  git init
+      <AlertBox type="tip" title="TL;DR">
+        Use <code>git init</code> para começar do zero, <code>git clone</code> para copiar um existente, e <code>git init --bare</code> para criar repositórios de servidor (sem working directory).
+      </AlertBox>
 
-  # Criar repositório em novo diretório
-  git init meu-projeto
+      <h2>git init — do zero</h2>
+      <CodeBlock
+        title="Inicialização simples"
+        language="bash"
+        code={`# Inicializa repo na pasta atual
+git init
 
-  # Criar repositório bare (servidor — sem working directory)
-  git init --bare projeto.git
+# Inicializa em uma pasta específica (cria se não existir)
+git init meu-novo-projeto
 
-  # Clonar repositório existente
-  git clone https://github.com/usuario/projeto.git
+# Define o nome do branch inicial (override do init.defaultBranch)
+git init --initial-branch=main
+git init -b main
 
-  # Clonar em diretório específico
-  git clone https://github.com/usuario/projeto.git minha-pasta
+# Inicializa com SHA-256 em vez de SHA-1 (avançado)
+git init --object-format=sha256
+`}
+      />
 
-  # Clonar apenas o último commit (shallow clone — mais rápido)
-  git clone --depth 1 https://github.com/usuario/projeto.git
+      <h2>O que é criado</h2>
+      <CodeBlock
+        title="Anatomia da pasta .git/"
+        language="bash"
+        code={`ls -la .git/
 
-  # Clonar branch específico
-  git clone -b develop https://github.com/usuario/projeto.git`}
-        />
+# HEAD              → ponteiro para o branch atual ("ref: refs/heads/main")
+# config            → configuração local deste repo
+# description       → usado por GitWeb (você raramente toca)
+# hooks/            → scripts que rodam em eventos (pre-commit, etc.)
+# info/             → exclude (gitignore local não-versionado)
+# objects/          → TODOS os snapshots, comprimidos por hash
+# refs/             → ponteiros para commits (branches e tags)
+#   heads/main      → arquivo com hash do último commit do main
+#   tags/v1.0.0     → arquivo com hash da tag
+# packed-refs       → refs compactadas (após git gc)
+`}
+      />
 
-        <h2>Estrutura de um repositório Git</h2>
-        <div className="overflow-x-auto my-6">
-          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-3 text-left">Caminho</th>
-                <th className="p-3 text-left">Conteúdo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                [".git/", "O repositório Git em si — todo o histórico e configuração"],
-                [".git/objects/", "Todos os objetos (commits, trees, blobs, tags)"],
-                [".git/refs/", "Referências: branches (heads) e tags"],
-                [".git/HEAD", "Ponteiro para o branch atual"],
-                [".git/config", "Configuração local do repositório"],
-                [".git/COMMIT_EDITMSG", "Última mensagem de commit (para edição)"],
-                [".git/index", "Staging area (índice)"],
-                [".git/hooks/", "Scripts de hooks locais"],
-              ].map(([caminho, conteudo], i) => (
-                <tr key={i} className="border-t border-border">
-                  <td className="p-3 font-mono text-primary text-xs">{caminho}</td>
-                  <td className="p-3 text-muted-foreground text-sm">{conteudo}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <AlertBox type="note" title="Tudo é texto e arquivos">
+        A pasta <code>.git/</code> é puro filesystem. Você pode literalmente abrir <code>.git/refs/heads/main</code> em um editor e ver o hash do último commit. Isso torna o Git inspecionável e debugável.
+      </AlertBox>
 
-        <h2>Configurando novo repositório no GitHub</h2>
-        <div className="grid grid-cols-1 gap-3 my-6">
-          {[
-            { n: "1", acao: "Crie no GitHub", desc: "Em github.com/new — escolha nome, visibilidade (público/privado), adicione README e .gitignore se quiser." },
-            { n: "2", acao: "Clone ou conecte local", desc: "Se criou no GitHub: git clone <url>. Se tem projeto local: git remote add origin <url>" },
-            { n: "3", acao: "Configurar branch principal", desc: "Certifique que o branch se chama 'main': git branch -M main" },
-            { n: "4", acao: "Push inicial", desc: "git push -u origin main" },
-          ].map((item) => (
-            <div key={item.n} className="flex gap-4 p-4 border border-border rounded-xl bg-card">
-              <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0">{item.n}</span>
-              <div>
-                <h4 className="font-bold text-sm mb-1">{item.acao}</h4>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+      <h2>Repositório bare — para servidores</h2>
+      <p>Um repositório <strong>bare</strong> não tem working directory — só o conteúdo do <code>.git/</code> exposto na raiz. É o que você usa em servidores Git auto-hospedados (Gitea, GitLab self-hosted, ou um simples servidor SSH).</p>
 
-        <CodeBlock
-          title="Conectar projeto local ao GitHub"
-          code={`# 1. Inicializar (se ainda não é repositório)
-  git init
+      <CodeBlock
+        title="Criando e usando bare repos"
+        language="bash"
+        code={`# Criar um bare repo (convenção: terminar com .git)
+git init --bare /srv/git/meu-projeto.git
 
-  # 2. Criar commit inicial
-  git add .
-  git commit -m "chore: commit inicial"
+# Estrutura é o conteúdo do .git/ direto na raiz:
+ls /srv/git/meu-projeto.git/
+# HEAD  config  description  hooks  info  objects  refs
 
-  # 3. Renomear branch para main (se necessário)
-  git branch -M main
+# Clonar de um bare repo
+git clone /srv/git/meu-projeto.git
+# ou via SSH:
+git clone usuario@servidor:/srv/git/meu-projeto.git
+`}
+      />
 
-  # 4. Conectar ao GitHub
-  git remote add origin https://github.com/usuario/projeto.git
-  # ou SSH:
-  git remote add origin git@github.com:usuario/projeto.git
+      <h2>Convertendo um repo existente em bare</h2>
+      <CodeBlock
+        title="Migração de não-bare → bare"
+        language="bash"
+        code={`# Clonar como bare a partir do existente
+git clone --bare meu-projeto meu-projeto.git
 
-  # 5. Push inicial
-  git push -u origin main`}
-        />
+# Mover para o servidor
+scp -r meu-projeto.git usuario@servidor:/srv/git/
 
-        <h2>Tipos de repositório</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
-          {[
-            { tipo: "Repositório local", desc: "Apenas na sua máquina. Sem colaboração. Útil para projetos pessoais ou experimentação.", cmd: "git init" },
-            { tipo: "Repositório remoto", desc: "Hospedado no GitHub, GitLab, Bitbucket etc. Permite colaboração e backup.", cmd: "git clone <url>" },
-            { tipo: "Bare repository", desc: "Sem working directory — só o histórico. Usado como servidor central em ambientes privados.", cmd: "git init --bare" },
-          ].map((item) => (
-            <div key={item.tipo} className="p-4 border border-border rounded-xl bg-card">
-              <h4 className="font-bold mb-1 mt-0 border-0 text-sm">{item.tipo}</h4>
-              <p className="text-xs text-muted-foreground mb-2">{item.desc}</p>
-              <code className="text-xs text-primary">{item.cmd}</code>
-            </div>
-          ))}
-        </div>
+# Atualizar o origin no clone original
+cd meu-projeto
+git remote set-url origin usuario@servidor:/srv/git/meu-projeto.git
+`}
+      />
 
-        <AlertBox type="info" title="Arquivando e transferindo repositórios">
-          Para arquivar um repositório no GitHub (somente leitura): Settings → Archive this repository. Para transferir para outra conta: Settings → Transfer. Para criar um bundle portável: <code>git bundle create repo.bundle --all</code>
-        </AlertBox>
-      </PageContainer>
-    );
-  }
-  
+      <h2>Templates de repositório</h2>
+      <p>Você pode definir um <strong>template</strong> que o <code>git init</code> sempre copia para novos repos — útil para padronizar hooks, configs e arquivos iniciais em uma equipe.</p>
+
+      <CodeBlock
+        title="Criando e usando templates"
+        language="bash"
+        code={`# Estrutura de um template
+mkdir -p ~/.git-template/hooks
+cat > ~/.git-template/hooks/pre-commit <<'EOF'
+#!/bin/sh
+# bloqueia commit com console.log
+if git diff --cached | grep -q "console.log"; then
+  echo "❌ console.log detectado, remova antes de commitar"
+  exit 1
+fi
+EOF
+chmod +x ~/.git-template/hooks/pre-commit
+
+# Definir como padrão
+git config --global init.templateDir ~/.git-template
+
+# Agora todo "git init" usa o template automaticamente
+mkdir teste && cd teste && git init
+ls .git/hooks/   # pre-commit já está lá
+`}
+      />
+
+      <h2>Verificando integridade do repositório</h2>
+      <CodeBlock
+        title="git fsck — file system check"
+        language="bash"
+        code={`# Verifica integridade de todos os objetos
+git fsck
+
+# Inclui objetos não-alcançáveis (commits órfãos)
+git fsck --lost-found
+
+# Verifica também o reflog
+git fsck --reflog
+
+# Modo silencioso (só mostra problemas)
+git fsck --no-progress 2>&1
+`}
+      />
+
+      <h2>Onde o Git procura o repositório</h2>
+      <p>Por padrão, o Git sobe na árvore de pastas até encontrar um <code>.git/</code> ou o root. É por isso que você pode rodar <code>git status</code> de uma subpasta.</p>
+
+      <CodeBlock
+        title="Inspecionar resolução"
+        language="bash"
+        code={`# Mostrar a raiz do repo atual
+git rev-parse --show-toplevel
+# /home/voce/meu-projeto
+
+# Mostrar onde o .git está
+git rev-parse --git-dir
+# .git   (relativo) ou caminho absoluto
+
+# Estamos dentro de um repo?
+git rev-parse --is-inside-work-tree
+# true / false
+
+# Variável de ambiente para forçar local específico
+GIT_DIR=/srv/git/repo.git git log
+`}
+      />
+
+      <h2>Removendo o repositório (sem perder os arquivos)</h2>
+      <CodeBlock
+        title="Desfazer git init"
+        language="bash"
+        code={`# Apaga apenas o histórico — arquivos do projeto ficam
+rm -rf .git
+
+# No Windows PowerShell:
+Remove-Item -Recurse -Force .git
+`}
+      />
+
+      <AlertBox type="danger" title="Operação irreversível">
+        Apagar <code>.git/</code> destrói <strong>todo o histórico local</strong>. Se houver branches não-pushados, eles desaparecem para sempre. Faça um <code>git push --all</code> antes se for o caso.
+      </AlertBox>
+
+      <h2>Workflows comuns</h2>
+      <CodeBlock
+        title="Cenário 1: começar projeto novo e mandar para o GitHub"
+        language="bash"
+        code={`mkdir meu-projeto && cd meu-projeto
+git init -b main
+echo "# Meu Projeto" > README.md
+echo "node_modules/" > .gitignore
+git add .
+git commit -m "chore: setup inicial"
+
+# Crie o repo vazio no GitHub primeiro, depois:
+git remote add origin git@github.com:usuario/meu-projeto.git
+git push -u origin main
+`}
+      />
+
+      <CodeBlock
+        title="Cenário 2: importar pasta existente que ainda não está no Git"
+        language="bash"
+        code={`cd projeto-existente
+git init
+git add .
+git status                    # CONFIRA o que vai entrar
+git commit -m "chore: importa código legado"
+
+# Depois adicione um remoto e pushe
+git remote add origin <url>
+git push -u origin main
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/status">Status e Diff</Link> — saiba o estado do seu repo</li>
+        <li><Link href="/gitignore">.gitignore</Link> — proteja-se de commitar lixo</li>
+        <li><Link href="/remotos">Repositórios Remotos</Link> — conecte ao GitHub/GitLab</li>
+        <li><Link href="/manutencao">Manutenção e Performance</Link> — gc, prune, repack</li>
+      </ul>
+    </PageContainer>
+  );
+}

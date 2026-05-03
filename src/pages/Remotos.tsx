@@ -1,145 +1,312 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function Remotos() {
-    return (
-      <PageContainer
-        title="Repositórios Remotos"
-        subtitle="Configure e gerencie conexões com repositórios remotos — origin, upstream e múltiplos remotos."
-        difficulty="iniciante"
-        timeToRead="12 min"
-      >
-        <p>
-          Remotos são apelidos (aliases) para URLs de repositórios Git. O remoto <code>origin</code> é criado automaticamente ao clonar — mas você pode adicionar, remover e renomear remotos conforme sua necessidade.
-        </p>
+export default function Remotos() {
+  return (
+    <PageContainer
+      title="Repositórios Remotos"
+      subtitle="Como o Git conversa com servidores. URLs, protocolos, múltiplos remotes e o conceito de tracking branches."
+      difficulty="intermediario"
+      timeToRead="12 min"
+    >
+      <p>
+        Um <strong>remote</strong> é um apelido para a URL de um repositório Git em outra máquina. Você não digita a URL toda vez — usa o apelido (geralmente <code>origin</code>). Entender remotes é entender como o Git distribuído funciona de verdade.
+      </p>
 
-        <h2>Gerenciando remotos</h2>
-        <CodeBlock
-          title="Operações essenciais com remotos"
-          code={`# Listar remotos configurados
-  git remote
-  git remote -v  # com URLs (verboso)
-  # origin  https://github.com/usuario/projeto.git (fetch)
-  # origin  https://github.com/usuario/projeto.git (push)
+      <AlertBox type="tip" title="origin não é especial">
+        <code>origin</code> é só uma <strong>convenção</strong> — o nome padrão criado pelo <code>git clone</code>. Você pode renomeá-lo, ter vários remotes, ou nenhum. Não há nada de mágico.
+      </AlertBox>
 
-  # Adicionar um novo remoto
-  git remote add origin https://github.com/usuario/projeto.git
-  git remote add upstream https://github.com/original/projeto.git
+      <h2>Listando remotes</h2>
+      <CodeBlock
+        title="git remote"
+        language="bash"
+        code={`# Listar nomes
+git remote
+# origin
 
-  # Renomear remoto
-  git remote rename origin novo-nome
-  git remote rename upstream origin  # trocar origin por upstream
+# Com URLs
+git remote -v
+# origin  git@github.com:usuario/repo.git (fetch)
+# origin  git@github.com:usuario/repo.git (push)
 
-  # Remover remoto
-  git remote remove upstream
-  git remote rm upstream  # abreviação
+# Detalhes completos de um remote
+git remote show origin
+# * remote origin
+#   Fetch URL: git@github.com:usuario/repo.git
+#   Push  URL: git@github.com:usuario/repo.git
+#   HEAD branch: main
+#   Remote branches:
+#     main                        tracked
+#     feature/login               tracked
+#   Local branches configured for 'git pull':
+#     main merges with remote main
+#   Local refs configured for 'git push':
+#     main pushes to main (up to date)
+`}
+      />
 
-  # Ver detalhes de um remoto específico
-  git remote show origin
-  # Mostra: URL, branches de tracking, push e fetch status`}
-        />
+      <h2>Adicionando, removendo, renomeando</h2>
+      <CodeBlock
+        title="Operações básicas"
+        language="bash"
+        code={`# Adicionar
+git remote add upstream git@github.com:original/repo.git
 
-        <h2>origin e upstream — o padrão de fork</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-          <div className="p-4 border border-border rounded-xl bg-primary/5">
-            <h4 className="font-bold mb-2 mt-0 border-0">origin</h4>
-            <p className="text-sm text-muted-foreground">Seu fork ou o repositório ao qual você tem acesso de push. Criado automaticamente no <code>git clone</code>.</p>
-            <code className="text-xs mt-2 block">git push origin meu-branch</code>
-          </div>
-          <div className="p-4 border border-border rounded-xl bg-card">
-            <h4 className="font-bold mb-2 mt-0 border-0">upstream</h4>
-            <p className="text-sm text-muted-foreground">Convenção para o repositório original do qual você fez fork. Usado para sincronizar mudanças do projeto original.</p>
-            <code className="text-xs mt-2 block">git fetch upstream && git merge upstream/main</code>
-          </div>
-        </div>
+# Renomear
+git remote rename origin github
 
-        <CodeBlock
-          title="Configuração completa para contribuição via fork"
-          code={`# 1. Clonar seu fork
-  git clone git@github.com:seu-usuario/projeto.git
-  cd projeto
+# Remover
+git remote remove upstream
+git remote rm upstream
 
-  # 2. Adicionar o repositório original como upstream
-  git remote add upstream https://github.com/original/projeto.git
+# Mudar URL
+git remote set-url origin git@github.com:novo-usuario/repo.git
 
-  # 3. Verificar configuração
-  git remote -v
-  # origin    git@github.com:seu-usuario/projeto.git (fetch)
-  # origin    git@github.com:seu-usuario/projeto.git (push)
-  # upstream  https://github.com/original/projeto.git (fetch)
-  # upstream  https://github.com/original/projeto.git (push)
+# Ver URL específica
+git remote get-url origin
+`}
+      />
 
-  # 4. Sincronizar com upstream periodicamente
-  git fetch upstream
-  git switch main
-  git merge upstream/main
-  git push origin main  # atualizar seu fork`}
-        />
+      <h2>Protocolos: HTTPS vs SSH vs Git</h2>
+      <CodeBlock
+        title="Comparação"
+        language="markdown"
+        code={`HTTPS — https://github.com/user/repo.git
+  ✓ Funciona em qualquer rede (até atrás de firewall corporativo)
+  ✓ Boa para CI/automation com tokens
+  ✗ Pede credencial a cada push (sem credential helper)
 
-        <h2>Mudando a URL de um remoto</h2>
-        <CodeBlock
-          title="Atualizar URL do remoto"
-          code={`# Situação: você mudou de HTTPS para SSH (ou vice-versa)
-  git remote set-url origin git@github.com:usuario/projeto.git
+SSH — git@github.com:user/repo.git
+  ✓ Sem digitar senha (com chave configurada)
+  ✓ Mais seguro para máquinas pessoais
+  ✗ Bloqueado em alguns firewalls (porta 22)
 
-  # Verificar
-  git remote get-url origin
+Git — git://github.com/user/repo.git (somente leitura)
+  ✓ Mais rápido para clones públicos
+  ✗ Não autenticado — não pode pushar
+  ✗ GitHub aposentou em 2022
 
-  # Adicionar URL de push diferente da de fetch (avançado)
-  git remote set-url --push origin git@github.com:usuario/fork.git
+Local — /caminho/para/repo.git
+  ✓ Para repositórios na mesma máquina
+  ✓ Útil em testes
+`}
+      />
 
-  # Situação: repositório foi movido para nova organização
-  git remote set-url origin https://github.com/nova-org/projeto.git`}
-        />
+      <h2>Credential helper — não digite senha de novo</h2>
+      <CodeBlock
+        title="HTTPS sem fricção"
+        language="bash"
+        code={`# Linux: cache em memória por 15 min
+git config --global credential.helper "cache --timeout=900"
 
-        <h2>Trabalhando com múltiplos remotos</h2>
-        <CodeBlock
-          title="Cenários com múltiplos remotos"
-          code={`# Mirror: backup em dois serviços simultaneamente
-  git remote add backup git@gitlab.com:usuario/projeto.git
+# macOS: usa Keychain do sistema
+git config --global credential.helper osxkeychain
 
-  # Push para os dois remotos
-  git push origin main
-  git push backup main
+# Windows: Git Credential Manager (vem com Git for Windows)
+git config --global credential.helper manager
 
-  # Ou via push multiple (avançado)
-  git remote set-url --add --push origin git@gitlab.com:usuario/projeto.git
+# Armazenar permanentemente em arquivo (TEXTO PURO — cuidado!)
+git config --global credential.helper store
 
-  # Ver todos os branches de todos os remotos
-  git branch -r
+# GitHub CLI configura automaticamente
+gh auth login
+`}
+      />
 
-  # Fazer fetch de todos
-  git fetch --all
+      <AlertBox type="warning" title="credential.helper store é texto puro">
+        O modo <code>store</code> grava em <code>~/.git-credentials</code> em texto plano. Em máquina pessoal pode passar; em servidor ou máquina compartilhada, NÃO use. Prefira keychain/manager.
+      </AlertBox>
 
-  # Configurar push padrão para não precisar especificar
-  git push -u origin meu-branch  # -u configura tracking`}
-        />
+      <h2>Tracking branches</h2>
+      <p>Um <strong>tracking branch</strong> é um branch local que "sabe" qual branch remoto ele acompanha. Isso permite <code>git push</code> e <code>git pull</code> sem argumentos.</p>
 
-        <h2>Referências de branches remotos</h2>
-        <CodeBlock
-          title="Como referenciar branches remotos"
-          code={`# Formato: remoto/branch
-  origin/main
-  upstream/develop
-  backup/production
+      <CodeBlock
+        title="Configurando tracking"
+        language="bash"
+        code={`# Criar branch local rastreando um remoto existente
+git switch feature/payments
+# Se origin/feature/payments existe, vira upstream automaticamente
 
-  # Comparar branch local com remoto
-  git diff main origin/main
+# Definir upstream manualmente
+git branch -u origin/feature/payments
+git branch --set-upstream-to=origin/feature/payments feature/payments
 
-  # Criar branch local a partir de remoto
-  git switch --track origin/develop
-  # ou
-  git switch -c develop origin/develop
+# Ver upstreams
+git branch -vv
+# * main             a1b2c3d [origin/main] feat: ...
+#   feature/payments e5f6g7h [origin/feature/payments: ahead 2, behind 1]
 
-  # Ver em qual branch remoto o local está configurado
-  git branch -vv`}
-        />
+# Push criando upstream
+git push -u origin feature/payments
+# Depois disso: basta "git push"
 
-        <AlertBox type="success" title="Dica: git remote show origin">
-          O comando <code>git remote show origin</code> mostra um resumo completo: URL do remoto, branches locais configurados para push/fetch, e quais branches remotos são rastreados. Muito útil para entender a configuração atual.
-        </AlertBox>
-      </PageContainer>
-    );
-  }
-  
+# Auto-criar upstream em todo push novo
+git config --global push.autoSetupRemote true
+`}
+      />
+
+      <h2>Múltiplos remotes — fluxo open source</h2>
+      <CodeBlock
+        title="origin + upstream (fork workflow)"
+        language="bash"
+        code={`# 1. Você forkou um projeto no GitHub
+# 2. Clonou seu fork
+git clone git@github.com:seu-user/projeto.git
+cd projeto
+
+# 3. origin já aponta para seu fork
+git remote -v
+# origin  git@github.com:seu-user/projeto.git (fetch/push)
+
+# 4. Adicione o repo original como "upstream"
+git remote add upstream https://github.com/original-org/projeto.git
+
+# 5. Mantenha sincronizado com upstream
+git fetch upstream
+git switch main
+git rebase upstream/main      # ou: git merge upstream/main
+git push                      # atualiza seu fork
+
+# 6. Trabalhe em features no SEU fork (origin)
+git switch -c feature/x
+# ... edita ...
+git push -u origin feature/x
+
+# 7. Abra PR do seu fork para o upstream
+gh pr create --repo original-org/projeto
+`}
+      />
+
+      <p>Detalhes em <Link href="/forks">Forks</Link>.</p>
+
+      <h2>Push e fetch para múltiplos remotes</h2>
+      <CodeBlock
+        title="Mirror push"
+        language="bash"
+        code={`# Pushar para origin E para backup ao mesmo tempo
+git remote add backup git@gitlab.com:user/repo.git
+
+# Configurar push múltiplo no origin (truque clássico)
+git remote set-url --add --push origin git@github.com:user/repo.git
+git remote set-url --add --push origin git@gitlab.com:user/repo.git
+
+# Agora "git push origin" envia para AMBOS
+git push origin main
+
+# Ver:
+git remote -v
+# origin  git@github.com:user/repo.git (fetch)
+# origin  git@github.com:user/repo.git (push)
+# origin  git@gitlab.com:user/repo.git (push)
+`}
+      />
+
+      <h2>Limpando refs órfãs</h2>
+      <CodeBlock
+        title="Prune"
+        language="bash"
+        code={`# Remove refs locais para branches que foram deletadas no remoto
+git remote prune origin
+git fetch --prune
+
+# Configurar para sempre acontecer no fetch/pull
+git config --global fetch.prune true
+git config --global fetch.pruneTags true
+
+# Listar branches "gone" (remoto deletado, local órfão)
+git branch -vv | grep ': gone]'
+
+# Deletar todos os locais órfãos
+git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -D
+`}
+      />
+
+      <h2>URL aliases — atalhos com insteadOf</h2>
+      <CodeBlock
+        title="Reescrever URLs"
+        language="bash"
+        code={`# Encurtar GitHub via apelido
+git config --global url."git@github.com:".insteadOf "gh:"
+
+# Agora você pode clonar como:
+git clone gh:usuario/repo.git
+
+# Forçar SSH em vez de HTTPS para um host
+git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+# Útil em ambientes corporativos com proxy
+git config --global url."https://corp-proxy.com/github/".insteadOf "https://github.com/"
+`}
+      />
+
+      <h2>Repositórios espelho — bare clone</h2>
+      <CodeBlock
+        title="Backup completo"
+        language="bash"
+        code={`# Clone espelho — TODAS as refs (branches, tags, notes, refs/remotes)
+git clone --mirror git@github.com:user/repo.git
+
+# Atualizar o espelho
+cd repo.git
+git remote update --prune
+
+# Push espelho para outro lugar (migração de servidor)
+git remote set-url origin git@gitlab.com:user/repo.git
+git push --mirror
+`}
+      />
+
+      <h2>Anatomia: o que está em .git/config</h2>
+      <CodeBlock
+        title="Configuração de remotes"
+        language="ini"
+        code={`[remote "origin"]
+	url = git@github.com:usuario/repo.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+
+[remote "upstream"]
+	url = https://github.com/original/repo.git
+	fetch = +refs/heads/*:refs/remotes/upstream/*
+
+[branch "main"]
+	remote = origin
+	merge = refs/heads/main
+	rebase = true
+
+# Você pode editar manualmente:
+git config --edit
+`}
+      />
+
+      <h2>Cheat-sheet</h2>
+      <CodeBlock
+        title="Comandos de remote"
+        language="bash"
+        code={`git remote -v                              # listar com URLs
+git remote add <nome> <url>                # adicionar
+git remote rename <antigo> <novo>          # renomear
+git remote remove <nome>                   # remover
+git remote set-url <nome> <nova-url>       # mudar URL
+git remote show <nome>                     # detalhes
+git remote prune <nome>                    # limpar órfãos
+
+git fetch --all                            # fetch de todos os remotes
+git push -u origin <branch>                # push + upstream
+git branch -vv                             # ver tracking branches
+git config --global push.autoSetupRemote true  # auto-upstream
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/clone">Clone</Link> — variantes e flags importantes</li>
+        <li><Link href="/push">Push e Pull</Link> — operações de sincronização</li>
+        <li><Link href="/fetch">Fetch</Link> — entenda a diferença vs pull</li>
+        <li><Link href="/forks">Forks</Link> — workflow de contribuição open source</li>
+      </ul>
+    </PageContainer>
+  );
+}

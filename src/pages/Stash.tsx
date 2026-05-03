@@ -1,144 +1,257 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function Stash() {
-    return (
-      <PageContainer
-        title="git stash"
-        subtitle="Guarde trabalho em andamento temporariamente e mude de contexto sem perder nada."
-        difficulty="intermediario"
-        timeToRead="12 min"
-      >
-        <p>
-          O <code>git stash</code> "guarda na gaveta" suas mudanças não commitadas — tracked e untracked — para que você possa mudar de branch, fazer pull ou atender uma urgência, voltando ao seu trabalho exatamente como estava.
-        </p>
+export default function Stash() {
+  return (
+    <PageContainer
+      title="Stash"
+      subtitle="Guarde mudanças no bolso para limpar o working directory sem commitar — e recupere quando quiser."
+      difficulty="iniciante"
+      timeToRead="10 min"
+    >
+      <p>
+        <strong>Stash</strong> é o "ctrl+x mental" do Git. Você está no meio de um trabalho, precisa trocar de branch para ver outra coisa, mas não quer commitar lixo. Stash guarda tudo, limpa o working, e devolve depois quando você pedir.
+      </p>
 
-        <h2>Uso básico</h2>
-        <CodeBlock
-          title="Comandos essenciais do stash"
-          code={`# Guardar mudanças atuais
-  git stash
+      <AlertBox type="tip" title="Quando usar stash">
+        Quando você tem mudanças não commitadas e precisa: <strong>trocar de branch</strong>, <strong>fazer um pull</strong>, <strong>rebasear</strong>, ou só <strong>limpar temporariamente</strong>. Para guardar trabalho a longo prazo, prefira commitar em um branch.
+      </AlertBox>
 
-  # Guardar com uma mensagem descritiva (recomendado)
-  git stash push -m "wip: implementando validação de CPF"
+      <h2>Comandos básicos</h2>
+      <CodeBlock
+        title="Stash flow"
+        language="bash"
+        code={`# Guardar todas as mudanças (tracked)
+git stash
+# Saved working directory and index state WIP on main: a1b2c3d feat: ...
 
-  # Listar stashes salvos
-  git stash list
-  # stash@{0}: On main: wip: implementando validação de CPF
-  # stash@{1}: WIP on feature/login: abc1234 feat: botão de login
+# Versão moderna (mesma coisa, mais explícita)
+git stash push
 
-  # Aplicar o stash mais recente (mantém o stash)
-  git stash apply
+# Com mensagem descritiva (★ recomendado)
+git stash push -m "wip: investigando bug do Stripe"
 
-  # Aplicar e remover da lista ao mesmo tempo
-  git stash pop
+# Listar tudo que está stashed
+git stash list
+# stash@{0}: On main: wip: investigando bug do Stripe
+# stash@{1}: WIP on feature/login: a1b2c3d feat: ...
 
-  # Aplicar um stash específico
-  git stash apply stash@{2}
-  git stash pop stash@{1}`}
-        />
+# Aplicar o último stash (e REMOVÊ-LO da pilha)
+git stash pop
 
-        <AlertBox type="info" title="stash apply vs stash pop">
-          Use <code>pop</code> quando tiver certeza que o stash foi aplicado com sucesso e não precisa mais dele. Use <code>apply</code> quando quiser manter o stash na lista como backup (útil se houver conflitos).
-        </AlertBox>
+# Aplicar o último mas MANTER na pilha
+git stash apply
 
-        <h2>Opções avançadas do stash</h2>
-        <CodeBlock
-          title="Stash com mais controle"
-          code={`# Incluir arquivos não rastreados (untracked)
-  git stash push --include-untracked
-  git stash push -u  # abreviação
+# Aplicar um específico
+git stash apply stash@{2}
+git stash pop stash@{2}
+`}
+      />
 
-  # Incluir TUDO: untracked e gitignored
-  git stash push --all
+      <h2>Incluindo arquivos novos (untracked)</h2>
+      <CodeBlock
+        title="-u e -a"
+        language="bash"
+        code={`# Por padrão, git stash IGNORA arquivos não-rastreados (untracked)
+# Para incluí-los:
+git stash -u
+git stash --include-untracked
 
-  # Stash interativo — escolher quais hunks guardar
-  git stash push --patch
+# Para incluir até IGNORADOS (do .gitignore)
+git stash -a
+git stash --all
+`}
+      />
 
-  # Stash de um arquivo ou pasta específica
-  git stash push -m "só src/" -- src/
+      <AlertBox type="warning" title="Untracked é a pegadinha mais comum">
+        Por padrão, <code>git stash</code> NÃO guarda arquivos novos que você ainda não <code>git add</code>-ou. Se você criar um arquivo novo e fizer stash, ele continua no working — pode parecer que sumiu. Use sempre <code>-u</code> para incluir.
+      </AlertBox>
 
-  # Criar um branch a partir do stash
-  git stash branch feature/nova-ideia stash@{0}
-  # Cria branch, faz checkout e aplica o stash`}
-        />
+      <h2>Stash parcial — só alguns arquivos</h2>
+      <CodeBlock
+        title="Pathspec e patch"
+        language="bash"
+        code={`# Stash apenas arquivos específicos
+git stash push src/auth.ts src/login.ts -m "wip: auth"
 
-        <h2>Gerenciando a lista de stashes</h2>
-        <CodeBlock
-          title="Operações na lista de stashes"
-          code={`# Ver conteúdo de um stash sem aplicar
-  git stash show stash@{0}
-  git stash show -p stash@{0}  # patch completo (diff)
+# Modo interativo (escolhe hunks como em git add -p)
+git stash push -p
+git stash --patch
 
-  # Ver stash no formato de diff
-  git stash show --stat stash@{1}
+# Stash mantendo o que já está STAGED
+git stash push --keep-index
+# (útil quando você quer testar SÓ o que vai commitar)
+`}
+      />
 
-  # Remover um stash específico
-  git stash drop stash@{0}
+      <h2>Inspecionando stashes</h2>
+      <CodeBlock
+        title="Ver o conteúdo"
+        language="bash"
+        code={`# Resumo (estatísticas)
+git stash show
+git stash show stash@{1}
 
-  # Limpar TODOS os stashes (cuidado!)
-  git stash clear`}
-        />
+# Diff completo
+git stash show -p
+git stash show -p stash@{1}
 
-        <h2>Cenários comuns de uso</h2>
-        <CodeBlock
-          title="Urgência no meio do trabalho"
-          code={`# Você está no meio de uma feature
-  # Surge um bug crítico em produção
-  git stash push -m 'wip: feature X'
-  git switch main
-  git switch -c hotfix/bug-critico
-  # ... corrige e faz PR ...
-  git switch feature/x
-  git stash pop`}
-        />
+# Ver só os arquivos
+git stash show --name-only
 
-        <CodeBlock
-          title="Código no branch errado"
-          code={`# Você está codando no branch errado (sem ter commitado)
-  git stash push -m 'trabalho no branch errado'
-  git switch feature/correta
-  git stash pop`}
-        />
+# Buscar texto em todos os stashes
+git stash list -p | grep "rateLimit"
+`}
+      />
 
-        <h2>Resolvendo conflitos ao aplicar stash</h2>
-        <CodeBlock
-          title="Stash com conflito"
-          code={`# Ao aplicar stash que tem conflito
-  git stash pop
-  # Auto-merging src/app.js
-  # CONFLICT (content): Merge conflict in src/app.js
+      <h2>Removendo stashes</h2>
+      <CodeBlock
+        title="Limpeza"
+        language="bash"
+        code={`# Remover um stash específico
+git stash drop stash@{0}
 
-  # O stash NÃO é removido da lista quando há conflito
-  # Você precisa resolver e fazer drop manualmente
+# Limpar TODOS os stashes (CUIDADO)
+git stash clear
+`}
+      />
 
-  # 1. Resolver conflitos
-  git add src/app.js
+      <AlertBox type="danger" title="stash drop e clear são destrutivos">
+        Stashes apagados <strong>somem do reflog também</strong> em poucas semanas. Se descartar o errado, recuperar é difícil (mas possível — veja <Link href="/recuperacao">Recuperação</Link>).
+      </AlertBox>
 
-  # 2. Remover o stash manualmente
-  git stash drop stash@{0}`}
-        />
+      <h2>Conflitos ao aplicar stash</h2>
+      <CodeBlock
+        title="Quando o pop dá ruim"
+        language="bash"
+        code={`git stash pop
+# Auto-merging src/auth.ts
+# CONFLICT (content): Merge conflict in src/auth.ts
+# The stash entry is kept in case you need it again.
+# (★ pop NÃO removeu o stash porque deu conflito)
 
-        <AlertBox type="warning" title="Limite do stash: não é backup de longo prazo">
-          O stash é para pausas curtas. Para trabalho que você vai retomar daqui a dias, prefira criar um branch: <code>git switch -c wip/minha-feature</code> e commitar como WIP. Branches têm mais visibilidade e segurança.
-        </AlertBox>
+# Resolva os conflitos como em qualquer merge
+nano src/auth.ts
+git add src/auth.ts
 
-        <h2>Fluxo recomendado com stash</h2>
-        <CodeBlock
-          title="Workflow ideal com stash"
-          code={`# Antes de mudar de contexto:
-  git status  # verificar o que tem pendente
-  git stash push -m "contexto: descrição do que estava fazendo"
+# Agora descarte o stash manualmente
+git stash drop
+`}
+      />
 
-  # Fazer o trabalho no outro contexto...
+      <h2>Transformando stash em branch</h2>
+      <CodeBlock
+        title="git stash branch"
+        language="bash"
+        code={`# Cria branch a partir do commit onde o stash foi feito,
+# aplica o stash, e remove o stash da pilha
+git stash branch experimental-fix stash@{0}
 
-  # Ao retornar:
-  git stash list  # ver o que tem guardado
-  git stash show -p stash@{0}  # revisar o que será aplicado
-  git stash pop  # aplicar e remover`}
-        />
-      </PageContainer>
-    );
-  }
-  
+# Útil quando o stash ficou velho e dá conflito ao aplicar
+# (este comando aplica em cima do contexto original, sem conflito)
+`}
+      />
+
+      <h2>Casos práticos</h2>
+
+      <h3>1. Trocar de branch no meio do trabalho</h3>
+      <CodeBlock
+        title="Cenário clássico"
+        language="bash"
+        code={`# Você está mexendo em feature/auth, mas precisa olhar feature/payments
+git stash push -u -m "wip: investigando bug auth"
+git switch feature/payments
+# ... investiga ...
+git switch feature/auth
+git stash pop
+`}
+      />
+
+      <h3>2. Pull rejeitado por mudanças locais</h3>
+      <CodeBlock
+        title="Stash + pull + pop"
+        language="bash"
+        code={`git pull
+# error: Your local changes to the following files would be overwritten by merge:
+# 	src/auth.ts
+
+git stash
+git pull
+git stash pop
+
+# OU em uma linha (Git ≥ 2.6):
+git pull --autostash
+# Configure como padrão:
+git config --global rebase.autoStash true
+`}
+      />
+
+      <h3>3. Testar como o código fica SEM as mudanças atuais</h3>
+      <CodeBlock
+        title="Stash temporário"
+        language="bash"
+        code={`# Guarda
+git stash
+
+# Testa
+npm test
+
+# Recupera
+git stash pop
+`}
+      />
+
+      <h3>4. Aplicar mesmo trabalho em 2 branches</h3>
+      <CodeBlock
+        title="Apply em vários lugares"
+        language="bash"
+        code={`# No branch A
+git stash push -m "fix common"
+
+# Aplique em A
+git stash apply
+git commit -am "fix: ..."
+
+# Vá pra B e aplique o MESMO stash
+git switch feature-b
+git stash apply
+git commit -am "fix: ..."
+
+# Quando terminar, descarte
+git stash drop
+`}
+      />
+
+      <h2>Stash não é eterno</h2>
+      <p>Stashes ficam no <code>refs/stash</code> e seguem regras do reflog: por padrão, expiram em <strong>30 dias após drop</strong> e <strong>90 dias se nunca aplicados</strong>. Para trabalho importante, sempre prefira commit em uma branch (até temporária).</p>
+
+      <h2>Cheat-sheet</h2>
+      <CodeBlock
+        title="Comandos de stash"
+        language="bash"
+        code={`git stash                          # guarda (tracked)
+git stash -u                       # inclui untracked (★)
+git stash push -m "msg"            # com mensagem
+git stash push -p                  # interativo
+git stash list                     # ver pilha
+git stash show -p [stash@{N}]      # diff
+git stash pop                      # aplica e remove
+git stash apply [stash@{N}]        # aplica e mantém
+git stash drop [stash@{N}]         # remove
+git stash clear                    # remove todos
+git stash branch <nome> [stash@{N}] # vira branch
+git pull --autostash               # pull com stash automático
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/branches">Branches</Link> — para trabalho mais persistente que stash</li>
+        <li><Link href="/reset">Reset e Revert</Link> — outras formas de manipular o estado</li>
+        <li><Link href="/recuperacao">Recuperação</Link> — se você dropou o stash errado</li>
+      </ul>
+    </PageContainer>
+  );
+}

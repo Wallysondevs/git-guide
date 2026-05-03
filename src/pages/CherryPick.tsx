@@ -1,156 +1,298 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function CherryPick() {
-    return (
-      <PageContainer
+export default function CherryPick() {
+  return (
+    <PageContainer
+      title="Cherry-pick"
+      subtitle="Pegue commits específicos de outras branches sem fazer merge — perfeito para hotfixes em release branches."
+      difficulty="intermediario"
+      timeToRead="10 min"
+    >
+      <p>
+        <strong>Cherry-pick</strong> aplica um commit específico (de qualquer branch) na sua branch atual, criando um <em>commit novo</em> com as mesmas mudanças. É como dizer "eu não quero todo o branch dele, só esse commit aqui".
+      </p>
+
+      <AlertBox type="tip" title="Cenário clássico">
+        Você consertou um bug em <code>main</code> mas precisa do mesmo fix em uma branch de release antiga (<code>release/1.5</code>). Cherry-pick é a ferramenta certa.
+      </AlertBox>
+
+      <h2>Comando básico</h2>
+      <CodeBlock
         title="git cherry-pick"
-        subtitle="Aplique commits específicos de qualquer branch no seu branch atual com precisão cirúrgica."
-        difficulty="intermediario"
-        timeToRead="12 min"
-      >
-        <p>
-          O <code>git cherry-pick</code> copia um commit de qualquer branch e o aplica no branch atual. Diferente do merge (que traz tudo) ou do rebase (que reaplica uma sequência), o cherry-pick é cirúrgico — você escolhe exatamente quais commits quer.
-        </p>
+        language="bash"
+        code={`# Aplicar UM commit no branch atual
+git cherry-pick abc1234
 
-        <h2>Quando usar cherry-pick</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-          {[
-            { titulo: "Hotfix em múltiplos branches", desc: "Você corrigiu um bug crítico no main e precisa aplicar a mesma correção em v1.x, v2.x e develop sem fazer merge de tudo." },
-            { titulo: "Resgatando commits perdidos", desc: "Você fez commits no branch errado. Cherry-pick move os commits para o branch correto, então você deleta do branch errado." },
-            { titulo: "Feature parcial", desc: "Um branch tem 10 commits de uma feature, mas você só quer 3 específicos no main agora. Cherry-pick seleciona exatamente esses 3." },
-            { titulo: "Portando correções entre versões", desc: "Manter múltiplas versões em produção: um bugfix do v3 precisa ir para v2 e v1 também." },
-          ].map((item) => (
-            <div key={item.titulo} className="p-4 border border-border rounded-xl bg-card">
-              <h4 className="font-bold mb-1 mt-0 border-0 text-sm">{item.titulo}</h4>
-              <p className="text-sm text-muted-foreground">{item.desc}</p>
-            </div>
-          ))}
-        </div>
+# Vários commits
+git cherry-pick abc1234 def5678 9i0j1k2
 
-        <CodeBlock
-          title="Uso básico"
-          code={`# Aplicar um commit específico no branch atual
-  git cherry-pick abc1234
+# Range de commits (do parent de A até B, inclusive)
+git cherry-pick abc1234^..def5678
 
-  # Aplicar múltiplos commits (ordem importa)
-  git cherry-pick abc1234 def5678 ghi9012
+# Sem commit automático (deixa as mudanças no stage)
+git cherry-pick --no-commit abc1234
+git cherry-pick -n abc1234
 
-  # Aplicar um intervalo de commits (inclusivo)
-  git cherry-pick abc1234..ghi9012
+# Adicionar referência ao commit original
+git cherry-pick -x abc1234
+# Adiciona "(cherry picked from commit abc1234)" na mensagem
+`}
+      />
 
-  # Aplicar sem criar commit (fica staged para você commitar)
-  git cherry-pick --no-commit abc1234
-  git cherry-pick -n abc1234  # abreviação`}
-        />
+      <h2>Conflitos no cherry-pick</h2>
+      <CodeBlock
+        title="Resolver e continuar"
+        language="bash"
+        code={`git cherry-pick abc1234
+# Auto-merging src/auth.ts
+# CONFLICT (content): Merge conflict in src/auth.ts
+# error: could not apply abc1234
 
-        <AlertBox type="info" title="Cherry-pick cria um novo commit com SHA diferente">
-          O commit copiado tem o mesmo conteúdo e mensagem, mas um SHA diferente. Isso é importante: o commit original continua existindo onde estava. Você está <em>copiando</em>, não movendo.
-        </AlertBox>
+# Resolva os conflitos
+nano src/auth.ts
+git add src/auth.ts
 
-        <h2>Fluxo de cherry-pick de hotfix</h2>
-        <CodeBlock
-          title="Exemplo prático: hotfix em múltiplos branches"
-          code={`# 1. Você está no main e corrigiu um bug crítico
-  git log --oneline -3
-  # a1b2c3d fix: corrige vazamento de memória no parser
-  # ...
+# Continue
+git cherry-pick --continue
 
-  # 2. Precisa aplicar em release/v2.0 também
-  git switch release/v2.0
+# OU pular este commit
+git cherry-pick --skip
 
-  # 3. Cherry-pick do commit do fix
-  git cherry-pick a1b2c3d
-  # [release/v2.0 f4e5d6c] fix: corrige vazamento de memória no parser
+# OU cancelar tudo
+git cherry-pick --abort
+`}
+      />
 
-  # 4. O commit está agora em release/v2.0 com SHA diferente
-  git log --oneline -2
-  # f4e5d6c fix: corrige vazamento de memória no parser
-  # ...
+      <h2>Casos práticos</h2>
 
-  # 5. Push para o remoto
-  git push origin release/v2.0`}
-        />
+      <h3>1. Hotfix de main em release antiga</h3>
+      <CodeBlock
+        title="Fluxo clássico"
+        language="bash"
+        code={`# Você corrigiu um bug em main:
+git switch main
+# (commit a1b2c3d "fix: corrige timeout")
 
-        <h2>Resolvendo conflitos durante cherry-pick</h2>
-        <CodeBlock
-          title="Fluxo de resolução de conflitos"
-          code={`# Se cherry-pick encontrar conflito:
-  git cherry-pick abc1234
-  # Auto-merging src/app.js
-  # CONFLICT (content): Merge conflict in src/app.js
-  # error: could not apply abc1234... feat: nova funcionalidade
+# Precisa aplicar o mesmo fix em release/1.5 (que está em produção)
+git switch release/1.5
+git cherry-pick a1b2c3d
+git push
 
-  # 1. Ver arquivos em conflito
-  git status
-  git diff
+# Crie tag para a nova versão
+git tag -a v1.5.1 -m "Patch v1.5.1: fix timeout"
+git push origin v1.5.1
+`}
+      />
 
-  # 2. Resolver conflitos manualmente nos arquivos
+      <h3>2. "Salvar" trabalho de uma branch que vai ser descartada</h3>
+      <CodeBlock
+        title="Resgate seletivo"
+        language="bash"
+        code={`# A branch experimental tem 20 commits, só 3 valem a pena
+git log feature/experimental --oneline
+# 1aa... commit ruim
+# 2bb... commit bom ★
+# 3cc... commit bom ★
+# 4dd... commit ruim
+# 5ee... commit bom ★
+# ... (mais 15 ruins)
 
-  # 3. Marcar como resolvido
-  git add src/app.js
+git switch main
+git cherry-pick 2bb 3cc 5ee
+`}
+      />
 
-  # 4. Continuar o cherry-pick
-  git cherry-pick --continue
+      <h3>3. Mover commit do branch errado</h3>
+      <CodeBlock
+        title="Você commitou na branch errada"
+        language="bash"
+        code={`# Estava em main, fez commit que devia ir em feature/x
+git log --oneline -1
+# abc1234 feat: nova feature
 
-  # OU abortar completamente
-  git cherry-pick --abort
+# Vá para feature/x e traga o commit
+git switch feature/x
+git cherry-pick abc1234
 
-  # OU pular este commit e continuar com próximos
-  git cherry-pick --skip`}
-        />
+# Volte e remova de main
+git switch main
+git reset --hard HEAD~1     # se ainda não pushou
+# ou: git revert abc1234    # se já pushou
+`}
+      />
 
-        <h2>Opções avançadas</h2>
-        <div className="overflow-x-auto my-6">
-          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-3 text-left">Opção</th>
-                <th className="p-3 text-left">Efeito</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ["-n / --no-commit", "Aplica mudanças mas não cria commit — você commita manualmente"],
-                ["-e / --edit", "Abre editor para modificar a mensagem do commit"],
-                ["-x", "Adiciona referência ao commit original na mensagem"],
-                ["--signoff", "Adiciona linha Signed-off-by à mensagem"],
-                ["--allow-empty", "Permite cherry-pick de commits vazios"],
-                ["--strategy-option=theirs", "Em conflito, usa a versão do commit sendo aplicado"],
-              ].map(([opt, efeito], i) => (
-                <tr key={i} className="border-t border-border">
-                  <td className="p-3 font-mono text-primary text-xs">{opt}</td>
-                  <td className="p-3 text-muted-foreground text-sm">{efeito}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <h3>4. Backport de feature</h3>
+      <CodeBlock
+        title="Range para múltiplos commits"
+        language="bash"
+        code={`# Trazer commits A..D (4 commits) de feature/new para release/old
+git switch release/old
+git cherry-pick A^..D
+# A^ = parent de A (incluindo A no range)
+`}
+      />
 
-        <CodeBlock
-          title="Cherry-pick com rastreabilidade"
-          code={`# Usar -x para adicionar referência ao commit original
-  git cherry-pick -x abc1234
-  # A mensagem do commit fica:
-  # fix: corrige bug no login
-  #
-  # (cherry picked from commit abc1234)
+      <h2>Opções úteis</h2>
+      <CodeBlock
+        title="Variações"
+        language="bash"
+        code={`# Manter o autor original do commit (você fica como committer)
+git cherry-pick abc1234         # ★ comportamento padrão
 
-  # Usar -e para editar a mensagem
-  git cherry-pick -e abc1234
-  # Abre editor — você pode adicionar contexto
+# Sobrescrever o autor para você
+git cherry-pick --reset-author abc1234
 
-  # Cherry-pick em loop (script)
-  for commit in abc123 def456 ghi789; do
-    git cherry-pick -x $commit
-  done`}
-        />
+# Adicionar Sign-off (DCO)
+git cherry-pick -s abc1234
 
-        <AlertBox type="warning" title="Cherry-pick com cuidado em contexto de equipe">
-          O cherry-pick duplica commits (mesmo conteúdo, SHA diferente). Se outro desenvolvedor fizer merge do branch original depois, o Git pode tentar aplicar o mesmo patch novamente, criando commits duplicados. Use com moderação e prefira merge/rebase quando possível.
-        </AlertBox>
-      </PageContainer>
-    );
+# Adicionar referência ao commit original (auditoria)
+git cherry-pick -x abc1234
+# A mensagem ganha:
+#   feat: ...
+#
+#   (cherry picked from commit abc1234)
+
+# Estratégia de resolução em conflito
+git cherry-pick -X ours abc1234     # prefere nosso lado
+git cherry-pick -X theirs abc1234   # prefere o lado deles
+
+# Cherry-pick "vazio" — quando o commit já está aplicado
+git cherry-pick --allow-empty abc1234
+`}
+      />
+
+      <h2>Cherry-pick de merge commits</h2>
+      <CodeBlock
+        title="-m mainline"
+        language="bash"
+        code={`# Merge commits têm 2 pais — escolha qual usar como base
+git cherry-pick -m 1 <merge-hash>
+# -m 1 = main (preserva mudanças do branch que VEIO no merge)
+# -m 2 = inverso
+
+# Geralmente -m 1 é o que você quer
+`}
+      />
+
+      <h2>Verificando antes de aplicar</h2>
+      <CodeBlock
+        title="Preview"
+        language="bash"
+        code={`# Veja o commit completo antes
+git show abc1234
+
+# Veja só o diff
+git show abc1234 --stat
+
+# Simula a aplicação sem commitar
+git cherry-pick --no-commit abc1234
+git status
+git diff --staged
+
+# Decida:
+git commit              # aceitar
+git reset --hard HEAD   # descartar
+`}
+      />
+
+      <h2>Histórico paralelo: o problema dos hashes diferentes</h2>
+      <p>Cherry-pick cria um <strong>commit novo</strong> com hash diferente, mesmo que o conteúdo seja igual. Isso pode causar confusão:</p>
+
+      <CodeBlock
+        title="Cherry-pick vs merge"
+        language="markdown"
+        code={`Branch original:
+  main:    A───B───C───D───E
+                              \\
+  release/1.5: A───B───C───X      ← hotfix X cherry-picked de E
+
+Hashes:
+  E (em main):       a1b2c3d
+  X (em release):    7p8q9r0     ← MESMO conteúdo, hash diferente
+
+Implicação: ao mergear release/1.5 → main no futuro,
+o Git pode tratar X como "commit novo" e haver conflito (mesmo conteúdo).
+
+Solução: use git rebase --interactive ou git merge -s ours.
+Ou prefira cherry-pick -x para deixar claro o link.
+`}
+      />
+
+      <AlertBox type="warning" title="Não abuse de cherry-pick">
+        Cherry-pick é ótimo para hotfixes e backports pontuais. Se você está fazendo cherry-pick de 20+ commits, talvez você devesse fazer <code>merge</code> ou <code>rebase</code>. Cherry-pick excessivo divergem históricos.
+      </AlertBox>
+
+      <h2>Workflow profissional: backports automatizados</h2>
+      <CodeBlock
+        title="Script para múltiplas releases"
+        language="bash"
+        code={`#!/bin/bash
+# backport.sh — aplica fix em múltiplas branches de release
+
+COMMIT=$1
+RELEASES="release/1.5 release/1.6 release/2.0"
+
+for branch in $RELEASES; do
+  echo "→ Backportando $COMMIT para $branch"
+  git switch "$branch"
+  git pull
+  git cherry-pick -x "$COMMIT" || {
+    echo "❌ Conflito em $branch — resolva manualmente"
+    exit 1
   }
-  
+  git push
+done
+
+git switch main
+echo "✓ Backport completo"
+
+# Uso:
+# ./backport.sh a1b2c3d
+`}
+      />
+
+      <h2>Detectando o que falta backportar</h2>
+      <CodeBlock
+        title="git cherry"
+        language="bash"
+        code={`# "Quais commits de main NÃO estão em release/1.5?"
+git cherry release/1.5 main
+# + a1b2c3d feat: ...     ← está em main, falta em release
+# - 7p8q9r0 fix: ...      ← já backportado (cherry-pick detectado)
+
+# Resumo
+git cherry release/1.5 main -v | grep '^+' | wc -l
+`}
+      />
+
+      <h2>Cheat-sheet</h2>
+      <CodeBlock
+        title="Comandos de cherry-pick"
+        language="bash"
+        code={`git cherry-pick <hash>             # aplicar 1 commit
+git cherry-pick A B C              # vários
+git cherry-pick A^..B              # range
+git cherry-pick -x <hash>          # com referência ao original
+git cherry-pick -n <hash>          # sem commit automático
+git cherry-pick -m 1 <merge>       # de merge commit
+
+git cherry-pick --continue         # após resolver conflito
+git cherry-pick --skip             # pular commit
+git cherry-pick --abort            # cancelar
+
+git cherry <upstream> <branch>     # ver o que falta backportar
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/rebase">Rebase</Link> — alternativa para histórico linear</li>
+        <li><Link href="/merge">Merge</Link> — para integrar branch inteira</li>
+        <li><Link href="/conflitos">Conflitos</Link> — quando cherry-pick conflitar</li>
+      </ul>
+    </PageContainer>
+  );
+}

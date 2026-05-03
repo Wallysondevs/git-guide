@@ -1,177 +1,292 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function Fetch() {
-    return (
-      <PageContainer
-        title="git fetch"
-        subtitle="Sincronize seu repositório local com as mudanças remotas sem modificar seu trabalho atual."
-        difficulty="iniciante"
-        timeToRead="10 min"
-      >
-        <p>
-          O <code>git fetch</code> baixa commits, branches e tags do repositório remoto para o seu repositório local — mas não toca no seu working directory nem faz merge automático. É a forma segura de ver o que mudou sem afetar seu trabalho.
-        </p>
+export default function Fetch() {
+  return (
+    <PageContainer
+      title="Fetch"
+      subtitle="O comando que separa o usuário casual do power user. Baixa mudanças sem aplicar — você inspeciona antes de integrar."
+      difficulty="intermediario"
+      timeToRead="9 min"
+    >
+      <p>
+        <code>git fetch</code> baixa commits, branches e tags do remoto para os <strong>refs locais de tracking</strong> (<code>origin/main</code>, <code>origin/feature/x</code>) — <strong>sem tocar</strong> nos seus arquivos ou no seu branch atual. É o equivalente a "olha, o servidor tem novidades, mas eu não vou aplicar nada ainda".
+      </p>
 
-        <h2>Fetch vs Pull — a diferença fundamental</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-          <div className="p-4 border border-border rounded-xl bg-primary/5">
-            <h4 className="font-bold mb-2 mt-0 border-0 text-primary">git fetch (seguro)</h4>
-            <ul className="text-sm space-y-1 text-muted-foreground">
-              <li>✅ Baixa mudanças do remoto</li>
-              <li>✅ Não modifica working directory</li>
-              <li>✅ Você decide quando integrar</li>
-              <li>✅ Pode revisar antes de incorporar</li>
-              <li>ℹ️ fetch = download sem merge</li>
-            </ul>
-          </div>
-          <div className="p-4 border border-border rounded-xl bg-destructive/5">
-            <h4 className="font-bold mb-2 mt-0 border-0 text-destructive">git pull (automático)</h4>
-            <ul className="text-sm space-y-1 text-muted-foreground">
-              <li>⚠️ Faz fetch + merge automaticamente</li>
-              <li>⚠️ Modifica o branch atual</li>
-              <li>⚠️ Pode criar conflitos inesperados</li>
-              <li>ℹ️ pull = fetch + merge (ou rebase)</li>
-            </ul>
-          </div>
-        </div>
+      <AlertBox type="tip" title="Por que adotar fetch como padrão">
+        Você sempre vê o que vem antes de mesclar. Zero surpresas. <code>pull</code> mistura "ver" e "aplicar" em um passo só — em equipes grandes, isso causa caos.
+      </AlertBox>
 
-        <h2>Uso básico</h2>
-        <CodeBlock
-          title="git fetch — comandos essenciais"
-          code={`# Buscar de todos os remotos
-  git fetch
+      <h2>Comandos básicos</h2>
+      <CodeBlock
+        title="Variações de fetch"
+        language="bash"
+        code={`# Fetch do origin (padrão)
+git fetch
 
-  # Buscar de um remoto específico
-  git fetch origin
+# De um remote específico
+git fetch upstream
 
-  # Buscar de todos os remotos configurados
-  git fetch --all
+# De TODOS os remotes configurados
+git fetch --all
 
-  # Buscar um branch específico
-  git fetch origin main
-  git fetch origin feature/login
+# De um branch específico
+git fetch origin main
 
-  # Buscar e remover branches remotos deletados
-  git fetch --prune
-  git fetch -p  # abreviação de --prune`}
-        />
+# Limpando refs órfãs (branches deletadas no remoto)
+git fetch --prune
+git fetch -p
 
-        <AlertBox type="success" title="Use sempre git fetch antes de começar a trabalhar">
-          Fazer <code>git fetch origin</code> antes de começar o dia garante que você sabe o que mudou. Combine com <code>git log origin/main..HEAD</code> para ver a diferença entre seu branch e o remoto.
-        </AlertBox>
+# Inclui tags removidas
+git fetch --prune --prune-tags
 
-        <h2>Inspecionando o que foi baixado</h2>
-        <CodeBlock
-          title="Revisando mudanças após fetch"
-          code={`# Ver commits que existem no remoto mas não no local
-  git log main..origin/main --oneline
+# Configurar prune como padrão (★ recomendado)
+git config --global fetch.prune true
+`}
+      />
 
-  # Ver commits locais que não foram para o remoto
-  git log origin/main..main --oneline
+      <h2>O que fetch faz por dentro</h2>
+      <CodeBlock
+        title="Refs de tracking"
+        language="bash"
+        code={`# Antes do fetch
+git log origin/main --oneline -3
+# a1b2c3d feat: ...
+# e5f6g7h fix: ...
+# 9i0j1k2 chore: ...
 
-  # Ver diferença completa dos arquivos
-  git diff main origin/main
+# Servidor recebeu novos commits...
 
-  # Ver branches remotos disponíveis
-  git branch -r
+git fetch
+# remote: Counting objects: 5, done.
+# remote: Compressing objects: 100% (3/3), done.
+# Unpacking objects: 100% (5/5), done.
+# From github.com:user/repo
+#    a1b2c3d..7p8q9r0  main       -> origin/main
 
-  # Ver todos os branches (local + remoto)
-  git branch -a
+# Agora origin/main aponta para o NOVO commit
+git log origin/main --oneline -3
+# 7p8q9r0 feat: nova feature ★
+# 5l6m7n8 fix: correção
+# a1b2c3d feat: ...
 
-  # Ver o estado de sincronização
-  git status
-  # Mostra: "Your branch is behind 'origin/main' by 3 commits"`}
-        />
+# MAS seu branch local main NÃO mudou
+git log main --oneline -1
+# a1b2c3d feat: ...   ← ainda no commit antigo
+`}
+      />
 
-        <h2>Integrando após o fetch</h2>
-        <CodeBlock
-          title="Opções para integrar após fetch"
-          code={`# Opção 1: merge (cria commit de merge)
-  git fetch origin
-  git merge origin/main
+      <h2>Inspecionando o que veio</h2>
+      <CodeBlock
+        title="Antes de mesclar"
+        language="bash"
+        code={`# Quais commits novos vieram?
+git log HEAD..origin/main --oneline
+# 7p8q9r0 feat: nova feature
+# 5l6m7n8 fix: correção
 
-  # Opção 2: rebase (histórico linear)
-  git fetch origin
-  git rebase origin/main
+# Quais arquivos mudaram?
+git diff HEAD origin/main --stat
 
-  # Opção 3: fast-forward apenas (seguro, falha se divergiu)
-  git fetch origin
-  git merge --ff-only origin/main
+# Diff completo
+git diff HEAD origin/main
 
-  # Verificar antes de integrar
-  git fetch origin
-  git log --oneline --graph main..origin/main  # ver o que vem
-  git merge origin/main  # incorporar`}
-        />
+# Quem mandou os commits?
+git shortlog HEAD..origin/main
 
-        <AlertBox type="info" title="git pull = git fetch + git merge">
-          <code>git pull</code> é equivalente a fazer <code>git fetch</code> seguido de <code>git merge</code> (ou <code>git rebase</code> se configurado). Prefira <code>fetch + rebase</code> para manter histórico linear: <code>git pull --rebase</code>.
-        </AlertBox>
+# Você tem coisa que eles não têm?
+git log origin/main..HEAD --oneline
+# (commits locais não pushados)
 
-        <h2>Configurando fetch automático</h2>
-        <CodeBlock
-          title="Configurações úteis de fetch"
-          code={`# Configurar pull para fazer rebase em vez de merge (globalmente)
-  git config --global pull.rebase true
+# Visualização lado a lado
+git log --left-right --oneline HEAD...origin/main
+# < a1b2c3d local commit
+# > 7p8q9r0 remote commit
+`}
+      />
 
-  # Fetch automático com prune (remove refs de branches deletados)
-  git config --global fetch.prune true
+      <h2>Aplicando depois de inspecionar</h2>
+      <CodeBlock
+        title="Merge ou rebase manual"
+        language="bash"
+        code={`# Após git fetch, você decide:
 
-  # Ver configuração atual
-  git config --list | grep fetch
+# Opção A — merge (cria merge commit se divergir)
+git merge origin/main
 
-  # Fetch + ver log do que mudou (script útil)
-  git fetch --prune && git log --oneline --graph ORIG_HEAD..HEAD`}
-        />
+# Opção B — rebase (linear)
+git rebase origin/main
 
-        <h2>Trabalhando com múltiplos remotos</h2>
-        <CodeBlock
-          title="Fetch com vários remotos"
-          code={`# Adicionar segundo remoto (ex: upstream de um fork)
-  git remote add upstream https://github.com/original/projeto.git
+# Opção C — fast-forward só
+git merge --ff-only origin/main
 
-  # Buscar de todos os remotos
-  git fetch --all
+# Opção D — descartar local e usar o remoto
+git reset --hard origin/main      # ⚠️ perde commits locais
 
-  # Ver branches de todos os remotos
-  git branch -r
-  # origin/main
-  # origin/develop
-  # upstream/main
-  # upstream/feature/nova
+# Opção E — não fazer nada, esperar mais
+# (você só queria ver, sem aplicar)
+`}
+      />
 
-  # Integrar mudanças do upstream
-  git fetch upstream
-  git merge upstream/main
-  # ou
-  git rebase upstream/main`}
-        />
+      <h2>Fetch + reset para "resetar minha branch para o remoto"</h2>
+      <CodeBlock
+        title="Caso comum"
+        language="bash"
+        code={`# Cenário: bagunçou local, quer apenas espelhar o remoto exatamente
+git fetch origin
+git switch main
+git reset --hard origin/main
 
-        <h2>Removendo referências obsoletas</h2>
-        <CodeBlock
-          title="Limpeza de branches remotos deletados"
-          code={`# Ver quais refs seriam removidas (dry run)
-  git fetch --prune --dry-run
+# OU em uma linha:
+git fetch origin && git reset --hard origin/main
+`}
+      />
 
-  # Remover refs de branches que foram deletados no remoto
-  git fetch --prune
+      <AlertBox type="danger" title="reset --hard descarta tudo">
+        Mudanças não commitadas SOMEM. Commits locais não pushados também. Faça <code>git stash</code> antes se houver dúvida — ou <code>git branch backup</code> para guardar o estado atual.
+      </AlertBox>
 
-  # Remover refs antigas manualmente
-  git remote prune origin
+      <h2>Refspecs — controle fino</h2>
+      <p>Quando você adiciona um remote, o Git define um <strong>refspec</strong> — um mapeamento de "onde buscar" para "onde guardar localmente".</p>
 
-  # Ver branches que já foram mergeados no main
-  git branch -r --merged main
+      <CodeBlock
+        title="Refspec padrão"
+        language="ini"
+        code={`# .git/config
+[remote "origin"]
+    url = git@github.com:user/repo.git
+    fetch = +refs/heads/*:refs/remotes/origin/*
 
-  # Configurar prune automático em todo fetch
-  git config --global fetch.prune true`}
-        />
+# Lê-se: "ao fazer fetch, traga TODAS as branches (refs/heads/*) do remoto
+#  e guarde sob refs/remotes/origin/* localmente"
+# O '+' permite atualização não-fast-forward (necessário para força/rebase no remoto)
+`}
+      />
 
-        <AlertBox type="warning" title="Fetch não baixa tags automaticamente">
-          Por padrão, <code>git fetch</code> baixa tags anotadas que apontem para commits baixados. Para baixar todas as tags explicitamente: <code>git fetch --tags</code>. Para fetch de uma tag específica: <code>git fetch origin refs/tags/v2.0:refs/tags/v2.0</code>.
-        </AlertBox>
-      </PageContainer>
-    );
-  }
-  
+      <CodeBlock
+        title="Refspecs customizados"
+        language="bash"
+        code={`# Trazer SÓ uma branch específica
+git config --add remote.origin.fetch "+refs/heads/main:refs/remotes/origin/main"
+
+# Trazer notas (notes)
+git config --add remote.origin.fetch "+refs/notes/*:refs/notes/*"
+
+# Trazer pull requests do GitHub (truque famoso!)
+git config --add remote.origin.fetch "+refs/pull/*/head:refs/remotes/origin/pr/*"
+git fetch origin
+git switch pr/123      # entra no estado do PR #123
+`}
+      />
+
+      <h2>Atualização em background</h2>
+      <CodeBlock
+        title="Auto-fetch periódico"
+        language="bash"
+        code={`# Configurar fetch automático em background (Git ≥ 2.31)
+git maintenance start
+
+# Adicionar este repo ao maintenance
+git maintenance register
+
+# Ver agendamento
+git maintenance run --schedule=daily
+
+# O Git roda fetch + gc + commit-graph automaticamente
+# Resultado: git status / log são instantâneos mesmo em repos enormes
+
+# Desativar
+git maintenance unregister
+git maintenance stop
+`}
+      />
+
+      <p>Detalhes em <Link href="/manutencao">Manutenção e Performance</Link>.</p>
+
+      <h2>Negotiation — protocol v2</h2>
+      <CodeBlock
+        title="Fetch mais rápido"
+        language="bash"
+        code={`# Habilitar protocolo v2 (★ muito mais rápido em repos grandes)
+git config --global protocol.version 2
+
+# Desde Git 2.26 é o padrão para HTTPS, então geralmente já está ativo
+git config --get protocol.version
+
+# Para fetches MUITO grandes, aumente o buffer
+git config --global http.postBuffer 524288000   # 500MB
+`}
+      />
+
+      <h2>Casos práticos</h2>
+
+      <h3>1. Olhar uma feature de um colega sem trocar de branch</h3>
+      <CodeBlock
+        title="Inspeção segura"
+        language="bash"
+        code={`git fetch origin
+
+# Veja o log da branch dele
+git log origin/feature/maria --oneline -10
+
+# Diff vs main
+git diff main origin/feature/maria
+
+# Quer testar? Crie branch local
+git switch -c teste-maria origin/feature/maria
+`}
+      />
+
+      <h3>2. Sincronizar TUDO (todos os remotes)</h3>
+      <CodeBlock
+        title="Em projetos com origin + upstream"
+        language="bash"
+        code={`git fetch --all --prune --tags
+`}
+      />
+
+      <h3>3. Verificar se tem update sem mexer em nada</h3>
+      <CodeBlock
+        title="Useful em scripts"
+        language="bash"
+        code={`# Atualiza refs e mostra o status sem aplicar
+git fetch
+git status -sb
+# ## main...origin/main [behind 3]    ← 3 commits novos no remoto
+`}
+      />
+
+      <h2>Cheat-sheet</h2>
+      <CodeBlock
+        title="Comandos de fetch"
+        language="bash"
+        code={`git fetch                                # do origin
+git fetch --all                          # de todos os remotes
+git fetch --prune                        # limpa refs órfãs
+git fetch upstream                       # de remote específico
+git fetch origin main                    # branch específica
+
+git log HEAD..origin/main --oneline      # o que veio (★)
+git diff HEAD origin/main                # diff completo
+git shortlog HEAD..origin/main           # quem mandou
+
+git merge origin/main                    # aplicar via merge
+git rebase origin/main                   # aplicar via rebase
+git reset --hard origin/main             # espelhar remoto (perde local)
+
+git config --global fetch.prune true     # auto-prune
+git maintenance start                    # background fetch
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/push">Push e Pull</Link> — quando inevitável usar pull</li>
+        <li><Link href="/remotos">Repositórios Remotos</Link> — múltiplos remotes</li>
+        <li><Link href="/manutencao">Manutenção</Link> — auto-maintenance e gc</li>
+      </ul>
+    </PageContainer>
+  );
+}

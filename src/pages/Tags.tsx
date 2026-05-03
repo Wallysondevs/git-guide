@@ -1,134 +1,276 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function Tags() {
-    return (
-      <PageContainer
-        title="Tags do Git"
-        subtitle="Marque pontos específicos da história com versões, releases e marcos importantes do projeto."
-        difficulty="iniciante"
-        timeToRead="10 min"
-      >
-        <p>
-          Tags são referências imutáveis a commits específicos. Diferente de branches, que avançam com novos commits, uma tag sempre aponta para o mesmo ponto na história. Usadas principalmente para marcar versões de release: <code>v1.0.0</code>, <code>v2.3.1</code>.
-        </p>
+export default function Tags() {
+  return (
+    <PageContainer
+      title="Tags e Versões"
+      subtitle="Marque pontos importantes do histórico — releases, deploys, snapshots — com tags leves ou anotadas."
+      difficulty="iniciante"
+      timeToRead="9 min"
+    >
+      <p>
+        <strong>Tags</strong> são ponteiros <em>imutáveis</em> para um commit específico. Diferente de branches, que se movem, tags ficam paradas — perfeitas para marcar releases, versões e estados estáveis do código.
+      </p>
 
-        <h2>Tipos de tags</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-          <div className="p-4 border border-border rounded-xl bg-card">
-            <h4 className="font-bold mb-2 mt-0 border-0">Tag leve (lightweight)</h4>
-            <p className="text-sm text-muted-foreground mb-2">Apenas um ponteiro para um commit. Sem metadados extras. Mais simples, menos informação.</p>
-            <code className="text-xs text-primary">git tag v1.0.0</code>
-          </div>
-          <div className="p-4 border border-border rounded-xl bg-primary/5">
-            <h4 className="font-bold mb-2 mt-0 border-0">Tag anotada (annotated) ⭐</h4>
-            <p className="text-sm text-muted-foreground mb-2">Objeto completo com autor, data, mensagem e pode ser assinada com GPG. Recomendada para releases públicas.</p>
-            <code className="text-xs text-primary">git tag -a v1.0.0 -m "Release 1.0.0"</code>
-          </div>
-        </div>
+      <AlertBox type="tip" title="Dois tipos de tag">
+        <strong>Lightweight</strong>: só um apelido para o hash. <strong>Annotated</strong>: objeto Git completo com autor, data, mensagem e (opcionalmente) assinatura. Para releases públicas, use <em>sempre</em> annotated.
+      </AlertBox>
 
-        <h2>Criando e gerenciando tags</h2>
-        <CodeBlock
-          title="Operações com tags"
-          code={`# Tag leve no commit atual
-  git tag v1.0.0
+      <h2>Criando tags</h2>
+      <CodeBlock
+        title="Lightweight vs Annotated"
+        language="bash"
+        code={`# Lightweight — só um nome para o commit atual
+git tag v1.0.0
 
-  # Tag anotada com mensagem (recomendado para releases)
-  git tag -a v1.0.0 -m "Release 1.0.0 — estável para produção"
+# Annotated (★ recomendado para releases)
+git tag -a v1.0.0 -m "Release 1.0.0 — primeira versão estável"
 
-  # Tag em um commit específico (qualquer ponto da história)
-  git tag -a v0.9.0 abc1234 -m "Beta release"
+# Annotated assinada (criptograficamente)
+git tag -s v1.0.0 -m "Release 1.0.0"
+# (precisa de chave GPG/SSH configurada — veja Signing)
 
-  # Listar todas as tags
-  git tag
-  git tag -l  # equivalente
+# Tag em commit específico (não no atual)
+git tag -a v0.9.5 abc1234 -m "..."
+`}
+      />
 
-  # Listar tags com padrão
-  git tag -l "v1.*"    # todas v1.x.x
-  git tag -l "v2.0.*"  # v2.0.x apenas
+      <h2>Listando tags</h2>
+      <CodeBlock
+        title="Várias formas de ver"
+        language="bash"
+        code={`# Todas as tags
+git tag
 
-  # Ver detalhes de uma tag anotada
-  git show v1.0.0
+# Filtrando por padrão
+git tag -l "v1.*"
+git tag --list "v2.0.*"
 
-  # Verificar qual commit uma tag aponta
-  git rev-parse v1.0.0`}
-        />
+# Com mensagem (para annotated)
+git tag -n
+git tag -n5         # mostra até 5 linhas da mensagem
 
-        <AlertBox type="info" title="Tags não são enviadas automaticamente com git push">
-          Diferente de branches, <code>git push</code> não envia tags. Você precisa enviá-las explicitamente.
-        </AlertBox>
+# Ordenadas por versão semântica
+git tag --sort=-v:refname
 
-        <h2>Compartilhando tags (push)</h2>
-        <CodeBlock
-          title="Enviando tags para o remoto"
-          code={`# Enviar uma tag específica
-  git push origin v1.0.0
+# Ordenadas por data de criação
+git tag --sort=-creatordate
 
-  # Enviar TODAS as tags de uma vez
-  git push origin --tags
+# A última tag (versão semântica)
+git describe --tags --abbrev=0
 
-  # Enviar todas as tags anotadas (não as leves)
-  git push origin --follow-tags
+# A última tag + commits desde então
+git describe --tags
+# v1.0.0-3-ga1b2c3d   ← 3 commits depois de v1.0.0, no commit a1b2c3d
+`}
+      />
 
-  # Deletar uma tag do remoto
-  git push origin --delete v1.0.0
-  git push origin :refs/tags/v1.0.0  # sintaxe alternativa`}
-        />
+      <h2>Inspecionando tags</h2>
+      <CodeBlock
+        title="git show"
+        language="bash"
+        code={`# Ver tag annotated (mensagem + commit + diff)
+git show v1.0.0
 
-        <h2>Navegando por tags</h2>
-        <CodeBlock
-          title="Usando tags para navegar no histórico"
-          code={`# Fazer checkout de uma tag (detached HEAD)
-  git checkout v1.0.0
+# Saída de annotated:
+# tag v1.0.0
+# Tagger: Maria <maria@empresa.com>
+# Date:   Fri Mar 1 14:00:00 2026 -0300
+#
+# Release 1.0.0 — primeira versão estável
+#
+# commit a1b2c3d (tag: v1.0.0)
+# Author: ...
+# ...
 
-  # Criar um branch a partir de uma tag
-  git switch -c hotfix/v1.0.1 v1.0.0
+# Para lightweight, mostra direto o commit
+git show v0.9.0
 
-  # Comparar diferenças entre versões
-  git diff v1.0.0 v2.0.0
-  git diff v1.0.0 v2.0.0 -- src/app.js  # arquivo específico
+# Diff entre 2 tags
+git diff v1.0.0..v1.1.0
+git log v1.0.0..v1.1.0 --oneline
+`}
+      />
 
-  # Log entre duas versões
-  git log v1.0.0..v2.0.0 --oneline
+      <h2>Pushando tags</h2>
+      <CodeBlock
+        title="Tags NÃO vão no push padrão"
+        language="bash"
+        code={`# Tag específica
+git push origin v1.0.0
 
-  # Ver qual tag descreve o commit atual
-  git describe --tags
-  # Saída: v1.0.0-15-gabc1234
-  # = 15 commits depois da tag v1.0.0, no commit abc1234`}
-        />
+# Todas as tags de uma vez
+git push origin --tags
 
-        <h2>Versionamento semântico com tags</h2>
-        <div className="overflow-x-auto my-6">
-          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-3 text-left">Versão</th>
-                <th className="p-3 text-left">Incrementar quando</th>
-                <th className="p-3 text-left">Exemplo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ["MAJOR (X.0.0)", "Mudanças incompatíveis com versão anterior (breaking changes)", "v1.0.0 → v2.0.0"],
-                ["MINOR (0.X.0)", "Nova funcionalidade compatível com versão anterior", "v1.0.0 → v1.1.0"],
-                ["PATCH (0.0.X)", "Correção de bugs compatível com versão anterior", "v1.0.0 → v1.0.1"],
-                ["Pre-release", "Versões de teste antes da release oficial", "v2.0.0-alpha.1, v2.0.0-rc.1"],
-              ].map(([versao, quando, ex], i) => (
-                <tr key={i} className="border-t border-border">
-                  <td className="p-3 font-mono text-primary text-sm">{versao}</td>
-                  <td className="p-3 text-muted-foreground text-sm">{quando}</td>
-                  <td className="p-3 text-sm">{ex}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+# Só annotated tags (filtra leves)
+git push origin --follow-tags
 
-        <AlertBox type="success" title="Automatize tags com GitHub Actions">
-          Configure um workflow para criar tags automaticamente ao fazer push em main, baseando-se nos prefixos dos commits (feat: → minor, fix: → patch, breaking: → major). Ferramentas como semantic-release fazem isso.
-        </AlertBox>
-      </PageContainer>
-    );
-  }
-  
+# Configurar para SEMPRE incluir annotated tags em git push
+git config --global push.followTags true
+`}
+      />
+
+      <AlertBox type="warning" title="--tags vs --follow-tags">
+        <code>--tags</code> envia <strong>todas</strong>, inclusive lightweight pessoais que você não quer compartilhar. <code>--follow-tags</code> envia só as annotated relacionadas aos commits sendo pushados — é o que você quer 99% das vezes.
+      </AlertBox>
+
+      <h2>Deletando tags</h2>
+      <CodeBlock
+        title="Local e remoto"
+        language="bash"
+        code={`# Deletar local
+git tag -d v0.9.0
+
+# Deletar remoto
+git push origin --delete v0.9.0
+git push origin :refs/tags/v0.9.0     # forma antiga, mesmo efeito
+
+# Mover uma tag (deletar e recriar)
+git tag -d v1.0.0
+git tag -a v1.0.0 abc1234 -m "..."
+git push origin --delete v1.0.0
+git push origin v1.0.0
+`}
+      />
+
+      <AlertBox type="danger" title="Mover tag publicada é problemático">
+        Tags são uma "promessa": <code>v1.0.0</code> deve sempre apontar para o mesmo commit. Se você mover, quem já clonou tem a tag <em>antiga</em> — gera confusão e quebra builds reproduzíveis. Crie uma nova versão (<code>v1.0.1</code>).
+      </AlertBox>
+
+      <h2>Checkout de tags</h2>
+      <CodeBlock
+        title="Voltando no tempo"
+        language="bash"
+        code={`# Trocar para o estado de uma tag (entra em detached HEAD)
+git switch --detach v1.0.0
+git checkout v1.0.0
+
+# Para fazer modificações, crie um branch a partir da tag
+git switch -c hotfix-1.0.1 v1.0.0
+`}
+      />
+
+      <h2>Versionamento semântico (SemVer)</h2>
+      <p>O padrão mais usado para tags de release é o <strong>SemVer</strong>: <code>MAJOR.MINOR.PATCH</code>.</p>
+
+      <CodeBlock
+        title="Exemplo de SemVer"
+        language="markdown"
+        code={`v1.0.0      ← primeira release estável
+v1.0.1      ← bugfix (PATCH)
+v1.1.0      ← nova feature compatível (MINOR)
+v2.0.0      ← breaking change (MAJOR)
+
+Pré-releases:
+v2.0.0-alpha.1
+v2.0.0-beta.2
+v2.0.0-rc.1   ← release candidate
+
+Build metadata:
+v1.0.0+build.20260301
+`}
+      />
+
+      <h2>Generando changelog automaticamente</h2>
+      <CodeBlock
+        title="Entre 2 tags"
+        language="bash"
+        code={`# Lista commits entre tags
+git log v1.0.0..v1.1.0 --oneline
+
+# Formatado como changelog markdown
+git log v1.0.0..v1.1.0 --pretty=format:"- %s (%h)"
+
+# Filtrando só feat e fix (Conventional Commits)
+git log v1.0.0..v1.1.0 --pretty=format:"- %s" --grep="^feat\\|^fix"
+
+# Agrupado por autor
+git shortlog v1.0.0..v1.1.0
+`}
+      />
+
+      <p>Para automatizar 100%, veja ferramentas como <code>standard-version</code>, <code>release-please</code> ou <code>semantic-release</code> — todas baseadas em <Link href="/conventional-commits">Conventional Commits</Link>.</p>
+
+      <h2>Workflow de release</h2>
+      <CodeBlock
+        title="Release de v1.5.0"
+        language="bash"
+        code={`# 1. Garanta main atualizada
+git switch main
+git pull
+
+# 2. Rode testes, build, smoke tests
+npm test && npm run build
+
+# 3. Atualize versão no package.json (ou outro arquivo)
+npm version 1.5.0 --no-git-tag-version
+git add package.json package-lock.json
+git commit -m "chore(release): v1.5.0"
+
+# 4. Crie a tag annotated
+git tag -a v1.5.0 -m "Release 1.5.0"
+
+# 5. Push commits + tag
+git push origin main
+git push origin v1.5.0
+# OU em uma linha (se push.followTags=true):
+git push --follow-tags
+
+# 6. Publique no GitHub Releases (gh CLI)
+gh release create v1.5.0 --generate-notes
+`}
+      />
+
+      <h2>Tags assinadas (verified releases)</h2>
+      <CodeBlock
+        title="GPG/SSH signed tags"
+        language="bash"
+        code={`# Configurar (uma vez)
+git config --global user.signingkey <KEY-ID>
+git config --global tag.gpgSign true
+
+# Criar tag assinada
+git tag -s v1.5.0 -m "Release 1.5.0"
+
+# Verificar
+git tag -v v1.5.0
+# object a1b2c3d
+# type commit
+# tag v1.5.0
+# tagger Maria <maria@empresa.com>
+# gpg: Good signature from "Maria <maria@empresa.com>"
+`}
+      />
+
+      <p>Detalhes em <Link href="/signing">Assinatura GPG/SSH</Link>.</p>
+
+      <h2>Cheat-sheet</h2>
+      <CodeBlock
+        title="Comandos de tag"
+        language="bash"
+        code={`git tag                            # listar
+git tag v1.0.0                     # criar lightweight
+git tag -a v1.0.0 -m "msg"         # annotated (★)
+git tag -s v1.0.0 -m "msg"         # signed
+git tag -d v0.9.0                  # deletar local
+git push origin v1.0.0             # push uma
+git push --follow-tags             # push annotated junto com commits
+git push origin --delete v0.9.0    # deletar remoto
+git describe --tags                # tag mais recente + offset
+git show v1.0.0                    # inspecionar
+git diff v1.0.0..v1.1.0            # entre tags
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/conventional-commits">Conventional Commits</Link> — combina perfeitamente com SemVer</li>
+        <li><Link href="/signing">Assinatura GPG/SSH</Link> — releases verificadas</li>
+        <li><Link href="/github">Usando GitHub</Link> — Releases, drafts e CI</li>
+      </ul>
+    </PageContainer>
+  );
+}

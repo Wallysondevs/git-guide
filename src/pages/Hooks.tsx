@@ -1,148 +1,426 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function Hooks() {
-    return (
-      <PageContainer
-        title="Git Hooks"
-        subtitle="Automatize tarefas com scripts executados automaticamente em eventos do Git."
-        difficulty="avancado"
-        timeToRead="14 min"
-      >
-        <p>
-          Hooks são scripts executados automaticamente pelo Git antes ou depois de eventos como commit, push e merge. Eles permitem automatizar linting, testes, formatação e validações sem depender de memória humana.
-        </p>
+export default function Hooks() {
+  return (
+    <PageContainer
+      title="Git Hooks"
+      subtitle="Scripts que rodam automaticamente em eventos do Git — bloquear commits ruins, rodar testes, formatar código antes do push."
+      difficulty="intermediario"
+      timeToRead="13 min"
+    >
+      <p>
+        <strong>Hooks</strong> são scripts que o Git executa em momentos específicos: antes de um commit, depois de um merge, antes de um push. Eles são a base de toda automação local — desde lint até validação de mensagens, geração de docs e bloqueio de segredos.
+      </p>
 
-        <h2>Tipos de hooks disponíveis</h2>
-        <div className="overflow-x-auto my-6">
-          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-3 text-left">Hook</th>
-                <th className="p-3 text-left">Quando executa</th>
-                <th className="p-3 text-left">Uso típico</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ["pre-commit", "Antes de criar o commit", "Lint, testes unitários, formatação"],
-                ["commit-msg", "Após digitar a mensagem", "Validar formato da mensagem (Conventional Commits)"],
-                ["post-commit", "Após commit ser criado", "Notificações, logs"],
-                ["pre-push", "Antes de enviar para remoto", "Testes de integração, build"],
-                ["pre-rebase", "Antes de iniciar rebase", "Avisos de proteção de branch"],
-                ["post-merge", "Após merge ser completado", "npm install se package.json mudou"],
-                ["post-checkout", "Após trocar de branch", "Atualizar dependências, ambiente"],
-                ["pre-receive", "Lado do servidor — recebe push", "Validações no servidor Git"],
-              ].map(([hook, quando, uso], i) => (
-                <tr key={i} className="border-t border-border">
-                  <td className="p-3 font-mono text-primary text-xs">{hook}</td>
-                  <td className="p-3 text-muted-foreground text-sm">{quando}</td>
-                  <td className="p-3 text-sm">{uso}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <AlertBox type="tip" title="Onde moram">
+        Por padrão em <code>.git/hooks/</code> — que <strong>não é versionado</strong>. Para compartilhar hooks com o time, use <code>core.hooksPath</code> apontando para uma pasta versionada.
+      </AlertBox>
 
-        <h2>Criando um hook manualmente</h2>
-        <CodeBlock
-          title="Hook pre-commit simples"
-          code={`# Os hooks ficam em .git/hooks/
-  ls .git/hooks/
-  # pre-commit.sample  commit-msg.sample  ...
+      <h2>Estrutura de um hook</h2>
+      <CodeBlock
+        title="Anatomia"
+        language="bash"
+        code={`# Hooks são scripts executáveis em qualquer linguagem
+ls .git/hooks/
+# applypatch-msg.sample
+# commit-msg.sample
+# pre-commit.sample
+# pre-push.sample
+# ... etc
 
-  # Criar hook pre-commit
-  cat > .git/hooks/pre-commit << 'EOF'
-  #!/bin/sh
-  # Roda ESLint antes de cada commit
-  npm run lint
+# Os .sample não rodam — só servem de exemplo
+# Para ATIVAR, remova o .sample e dê chmod +x
+
+cp .git/hooks/pre-commit.sample .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+nano .git/hooks/pre-commit
+`}
+      />
+
+      <h2>Os hooks mais úteis</h2>
+      <CodeBlock
+        title="Mapa rápido"
+        language="markdown"
+        code={`CLIENT-SIDE (no seu computador)
+  pre-commit          → ANTES do editor abrir / commit ser feito
+  prepare-commit-msg  → Antes do editor de mensagem abrir (preencher template)
+  commit-msg          → Validar a mensagem de commit
+  post-commit         → Após commit (notificações, logs)
+  pre-push            → Antes de push para remoto
+  pre-rebase          → Antes de rebase começar
+  post-merge          → Após merge concluído (npm install, migrations)
+  post-checkout       → Após troca de branch (limpar caches)
+
+SERVER-SIDE (no servidor Git)
+  pre-receive         → Antes de aceitar push
+  update              → Para cada branch que vai ser atualizada
+  post-receive        → Após aceitar push (notificar, deploy)
+`}
+      />
+
+      <h2>pre-commit — o mais útil</h2>
+      <CodeBlock
+        title="Bloqueia console.log e prettier check"
+        language="bash"
+        code={`#!/bin/sh
+# .git/hooks/pre-commit
+
+# Bloquear console.log em arquivos staged
+if git diff --cached --name-only --diff-filter=ACM | xargs grep -l 'console\\.log' 2>/dev/null; then
+  echo "❌ console.log detectado nos arquivos staged. Remova antes de commitar."
+  exit 1
+fi
+
+# Rodar prettier check
+npx prettier --check $(git diff --cached --name-only --diff-filter=ACM | grep -E '\\.(js|ts|jsx|tsx|css|md)$') 2>/dev/null
+
+if [ $? -ne 0 ]; then
+  echo "❌ Prettier check falhou. Rode: npx prettier --write ."
+  exit 1
+fi
+
+# Rodar ESLint só nos arquivos staged
+files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\\.(js|ts|jsx|tsx)$')
+if [ -n "$files" ]; then
+  npx eslint $files
   if [ $? -ne 0 ]; then
-    echo "❌ Lint falhou! Commit bloqueado."
+    echo "❌ ESLint encontrou problemas."
     exit 1
   fi
-  echo "✅ Lint passou!"
+fi
+
+exit 0
+`}
+      />
+
+      <CodeBlock
+        title="Bloquear arquivos grandes (> 5MB)"
+        language="bash"
+        code={`#!/bin/sh
+# .git/hooks/pre-commit
+
+max_size=5242880    # 5MB em bytes
+oversize=$(git diff --cached --name-only --diff-filter=ACM | while read f; do
+  if [ -f "$f" ]; then
+    size=$(stat -c%s "$f" 2>/dev/null || stat -f%z "$f")
+    if [ "$size" -gt "$max_size" ]; then
+      echo "$f ($size bytes)"
+    fi
+  fi
+done)
+
+if [ -n "$oversize" ]; then
+  echo "❌ Arquivos grandes detectados:"
+  echo "$oversize"
+  echo "Use Git LFS ou ajuste .gitignore"
+  exit 1
+fi
+`}
+      />
+
+      <CodeBlock
+        title="Detectar segredos vazados"
+        language="bash"
+        code={`#!/bin/sh
+# .git/hooks/pre-commit
+
+# Padrões de segredos
+patterns='(api[_-]?key|secret|password|token|aws[_-]?access)\\s*[=:]\\s*["\\x27]?[a-zA-Z0-9]{20,}'
+
+leaks=$(git diff --cached -U0 | grep -iE "$patterns" | grep -v '^---\\|^+++')
+
+if [ -n "$leaks" ]; then
+  echo "❌ Possível segredo detectado:"
+  echo "$leaks"
+  echo ""
+  echo "Para forçar (NÃO recomendado): git commit --no-verify"
+  exit 1
+fi
+`}
+      />
+
+      <h2>commit-msg — validar mensagens</h2>
+      <CodeBlock
+        title="Conventional Commits validator"
+        language="bash"
+        code={`#!/bin/sh
+# .git/hooks/commit-msg
+# Recebe o caminho do arquivo de mensagem como $1
+
+msg=$(cat "$1")
+pattern='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\\([a-z0-9-]+\\))?!?: .{1,72}$'
+
+# Pula se for merge ou revert
+if echo "$msg" | grep -qE '^(Merge|Revert)'; then
   exit 0
-  EOF
+fi
 
-  chmod +x .git/hooks/pre-commit
+if ! echo "$msg" | head -1 | grep -qE "$pattern"; then
+  echo "❌ Mensagem fora do padrão Conventional Commits"
+  echo ""
+  echo "Formato: tipo(escopo opcional): descrição (até 72 chars)"
+  echo ""
+  echo "Tipos válidos: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+  echo ""
+  echo "Exemplos:"
+  echo "  feat: adiciona login"
+  echo "  fix(auth): corrige timeout"
+  echo "  refactor!: remove API legada"
+  exit 1
+fi
+`}
+      />
 
-  # Testar o hook
-  git commit -m "test"  # vai rodar o lint automaticamente`}
-        />
+      <h2>pre-push — testes antes do push</h2>
+      <CodeBlock
+        title="Roda CI local"
+        language="bash"
+        code={`#!/bin/sh
+# .git/hooks/pre-push
 
-        <AlertBox type="warning" title="Hooks em .git/hooks não são versionados">
-          A pasta <code>.git/</code> não é commitada. Hooks criados diretamente lá não são compartilhados com a equipe. Use ferramentas como Husky ou lefthook para versionar e distribuir hooks.
-        </AlertBox>
+# Recebe stdin: <local-ref> <local-sha> <remote-ref> <remote-sha>
+# Por branch sendo pushado
 
-        <h2>Husky — hooks versionados e compartilhados</h2>
-        <CodeBlock
-          title="Configurando Husky em projeto Node.js"
-          code={`# Instalar Husky
-  npm install --save-dev husky
+# Bloqueia push em main direto
+protected="main master production"
+while read local_ref local_sha remote_ref remote_sha; do
+  branch=\${remote_ref##refs/heads/}
+  for p in $protected; do
+    if [ "$branch" = "$p" ]; then
+      echo "❌ Push direto em '$branch' bloqueado. Use Pull Request."
+      exit 1
+    fi
+  done
+done
 
-  # Inicializar
-  npx husky init
+# Roda testes
+echo "🧪 Rodando testes..."
+npm test
+if [ $? -ne 0 ]; then
+  echo "❌ Testes falharam. Push cancelado."
+  exit 1
+fi
 
-  # Isso cria:
-  # .husky/pre-commit  (arquivo de hook)
-  # e adiciona ao package.json:
-  # "prepare": "husky"
+# Roda build
+echo "🏗  Rodando build..."
+npm run build
+if [ $? -ne 0 ]; then
+  echo "❌ Build falhou. Push cancelado."
+  exit 1
+fi
+`}
+      />
 
-  # Configurar hook pre-commit
-  echo "npm run lint" > .husky/pre-commit
-  echo "npm test" >> .husky/pre-commit
+      <h2>Compartilhando hooks com o time</h2>
+      <CodeBlock
+        title="core.hooksPath versionado"
+        language="bash"
+        code={`# 1. Crie pasta versionada
+mkdir .githooks
 
-  # Configurar hook commit-msg (validar mensagem)
-  echo "npx commitlint --edit $1" > .husky/commit-msg
+# 2. Mova/crie hooks lá dentro
+cat > .githooks/pre-commit <<'EOF'
+#!/bin/sh
+npm run lint
+EOF
+chmod +x .githooks/pre-commit
 
-  # Commitar os hooks
-  git add .husky package.json
-  git commit -m "chore: adiciona hooks com Husky"`}
-        />
+# 3. Configure o Git pra usar a pasta
+git config core.hooksPath .githooks
 
-        <h2>commit-msg — validando mensagens</h2>
-        <CodeBlock
-          title="Validando Conventional Commits"
-          code={`# Instalar commitlint
-  npm install --save-dev @commitlint/cli @commitlint/config-conventional
+# 4. Comite — todo mundo do time herda
+git add .githooks
+git commit -m "chore: hooks compartilhados"
 
-  # Criar configuração
-  echo "module.exports = { extends: ['@commitlint/config-conventional'] };" > commitlint.config.js
+# 5. Para que NOVOS clones aplique automaticamente, adicione um setup script:
+cat > scripts/setup.sh <<'EOF'
+#!/bin/sh
+git config core.hooksPath .githooks
+echo "✓ Hooks configurados"
+EOF
 
-  # Hook commit-msg
-  cat > .husky/commit-msg << 'EOF'
-  npx commitlint --edit "$1"
-  EOF
+# Use postinstall do package.json:
+# "scripts": { "postinstall": "sh scripts/setup.sh" }
+`}
+      />
 
-  # Agora commits com mensagens inválidas são bloqueados:
-  git commit -m "alterações"
-  # ✖ subject may not be empty [subject-empty]
-  # ✖ type may not be empty [type-empty]
+      <h2>Husky — gerenciador de hooks moderno</h2>
+      <CodeBlock
+        title="Para projetos Node.js"
+        language="bash"
+        code={`# Instalar
+npm install --save-dev husky lint-staged
 
-  # Mensagem válida:
-  git commit -m "feat: adiciona validação de email"`}
-        />
+# Inicializar
+npx husky init
 
-        <h2>Pular hooks em emergências</h2>
-        <CodeBlock
-          title="Ignorando hooks temporariamente"
-          code={`# Pular hooks de pre-commit e commit-msg
-  git commit --no-verify -m "WIP: commit de emergência"
-  git commit -n -m "fix: hotfix urgente"  # -n = --no-verify
+# Adicionar hook
+echo "npx lint-staged" > .husky/pre-commit
 
-  # Pular hook de pre-push
-  git push --no-verify
-
-  # Desabilitar Husky temporariamente (env var)
-  HUSKY=0 git commit -m "deploy de emergência"
-  HUSKY=0 git push`}
-        />
-
-        <AlertBox type="success" title="Hooks são o seu QA automatizado local">
-          Um bom conjunto de hooks evita que erros óbvios (código com lint errors, testes quebrados, mensagens de commit inválidas) cheguem ao repositório remoto. Invista tempo configurando-os — economizará muito mais tempo em revisões.
-        </AlertBox>
-      </PageContainer>
-    );
+# package.json
+{
+  "scripts": {
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx}": ["prettier --write", "eslint --fix"],
+    "*.{md,json,yml}": ["prettier --write"]
   }
-  
+}
+
+# Commit + push do .husky/ — todo mundo recebe
+`}
+      />
+
+      <h2>pre-commit framework — universal</h2>
+      <CodeBlock
+        title="Para qualquer linguagem"
+        language="bash"
+        code={`# pip install pre-commit  ou  brew install pre-commit
+# Cria .pre-commit-config.yaml na raiz
+
+cat > .pre-commit-config.yaml <<'EOF'
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: detect-private-key
+
+  - repo: https://github.com/psf/black
+    rev: 24.0.0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.13.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+EOF
+
+# Instalar os hooks
+pre-commit install
+pre-commit install --hook-type commit-msg
+
+# Rodar manualmente em todos os arquivos
+pre-commit run --all-files
+`}
+      />
+
+      <h2>post-merge — automação útil</h2>
+      <CodeBlock
+        title="Auto-install após pull"
+        language="bash"
+        code={`#!/bin/sh
+# .githooks/post-merge
+
+# Detecta se package.json mudou e roda npm install
+changed_files=$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD)
+if echo "$changed_files" | grep -q "package-lock.json"; then
+  echo "📦 package-lock.json mudou — rodando npm ci"
+  npm ci
+fi
+
+# Detecta migrations
+if echo "$changed_files" | grep -q "^migrations/"; then
+  echo "🗄️  Migrations novas — rodando..."
+  npm run db:migrate
+fi
+`}
+      />
+
+      <h2>Pulando hooks (quando necessário)</h2>
+      <CodeBlock
+        title="--no-verify"
+        language="bash"
+        code={`# Pular pre-commit + commit-msg
+git commit --no-verify -m "..."
+git commit -n -m "..."
+
+# Pular pre-push
+git push --no-verify
+
+# Variável de ambiente
+HUSKY=0 git commit -m "..."
+`}
+      />
+
+      <AlertBox type="warning" title="Use --no-verify com responsabilidade">
+        Hooks existem por razões. Pular ocasionalmente é ok (commit "wip" no fim do dia). Pular sempre vira "para que serve isso então?".
+      </AlertBox>
+
+      <h2>Hooks server-side (auto-hospedado)</h2>
+      <CodeBlock
+        title="pre-receive — bloquear no servidor"
+        language="bash"
+        code={`#!/bin/sh
+# hooks/pre-receive (em repo bare no servidor)
+
+while read oldrev newrev refname; do
+  branch=\${refname##refs/heads/}
+
+  # Bloqueia force-push em main
+  if [ "$branch" = "main" ] && [ "$oldrev" != "0000000000000000000000000000000000000000" ]; then
+    base=$(git merge-base "$oldrev" "$newrev")
+    if [ "$base" != "$oldrev" ]; then
+      echo "❌ Force-push em main bloqueado"
+      exit 1
+    fi
+  fi
+
+  # Validar todas as mensagens dos novos commits
+  for sha in $(git rev-list "$oldrev..$newrev"); do
+    msg=$(git log -1 --format=%s "$sha")
+    if ! echo "$msg" | grep -qE '^(feat|fix|docs|chore|refactor|perf|test|ci|build)(\\(.+\\))?!?: '; then
+      echo "❌ Commit $sha fora do padrão Conventional Commits"
+      exit 1
+    fi
+  done
+done
+`}
+      />
+
+      <h2>Cheat-sheet</h2>
+      <CodeBlock
+        title="Hooks essenciais"
+        language="bash"
+        code={`# Ativar (remover .sample, chmod +x)
+chmod +x .git/hooks/<hook>
+
+# Compartilhar
+mkdir .githooks
+git config core.hooksPath .githooks
+
+# Pular
+git commit --no-verify
+
+# Husky (Node.js)
+npm i -D husky lint-staged
+npx husky init
+
+# pre-commit (universal)
+pip install pre-commit
+pre-commit install
+
+# Hooks mais úteis:
+# pre-commit, commit-msg, pre-push, post-merge
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/configuracao">Configurações</Link> — outras automações</li>
+        <li><Link href="/conventional-commits">Conventional Commits</Link> — padrão para validar</li>
+        <li><Link href="/signing">Signing</Link> — hooks que exigem assinatura</li>
+      </ul>
+    </PageContainer>
+  );
+}

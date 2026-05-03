@@ -1,143 +1,313 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function Merge() {
-    return (
-      <PageContainer
+export default function Merge() {
+  return (
+    <PageContainer
+      title="Merge"
+      subtitle="Combine branches preservando o histórico — fast-forward, three-way merge, squash e quando usar cada um."
+      difficulty="intermediario"
+      timeToRead="14 min"
+    >
+      <p>
+        <strong>Merge</strong> é como você integra trabalho feito em uma branch de volta para outra. O Git tem 3 estratégias principais — escolher a certa em cada situação preserva clareza no histórico e evita conflitos desnecessários.
+      </p>
+
+      <AlertBox type="tip" title="Merge vs Rebase em uma frase">
+        <strong>Merge preserva</strong> a história real (com bifurcações). <strong>Rebase reescreve</strong> para parecer linear. Não existe certo — existe contexto.
+      </AlertBox>
+
+      <h2>O comando básico</h2>
+      <CodeBlock
         title="git merge"
-        subtitle="Combine o trabalho de diferentes branches preservando o histórico completo de cada um."
-        difficulty="intermediario"
-        timeToRead="14 min"
-      >
-        <p>
-          O <code>git merge</code> integra as mudanças de um branch em outro. Existem diferentes estratégias de merge com trade-offs entre clareza do histórico e simplicidade — escolher a certa faz toda a diferença na legibilidade do projeto.
-        </p>
+        language="bash"
+        code={`# Estando em main, traz feature
+git switch main
+git merge feature/login
 
-        <h2>Tipos de merge</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
-          {[
-            { tipo: "Fast-Forward", desc: "Quando o branch alvo não divergiu: apenas move o ponteiro. Histórico linear, sem commit de merge.", cmd: "--ff (padrão)" },
-            { tipo: "Merge Commit", desc: "Cria um commit extra que une os dois históricos. Preserva o contexto de quando cada feature foi desenvolvida.", cmd: "--no-ff" },
-            { tipo: "Squash", desc: "Combina todos os commits do branch em um só no destino. Histórico limpo mas perde detalhes do desenvolvimento.", cmd: "--squash" },
-          ].map((item) => (
-            <div key={item.tipo} className="p-4 border border-border rounded-xl bg-card">
-              <h4 className="font-bold mb-1 mt-0 border-0 text-sm text-primary">{item.tipo}</h4>
-              <p className="text-xs text-muted-foreground mb-2">{item.desc}</p>
-              <code className="text-xs bg-muted px-2 py-0.5 rounded">{item.cmd}</code>
-            </div>
-          ))}
-        </div>
+# Saída possível 1 — fast-forward
+# Updating a1b2c3d..e5f6g7h
+# Fast-forward
+#  src/auth.ts | 24 ++++++++++++++++++++++++
+#  1 file changed, 24 insertions(+)
 
-        <CodeBlock
-          title="Exemplos de cada tipo de merge"
-          code={`# Fast-Forward (padrão quando possível)
-  git switch main
-  git merge feature/login
-  # Se não houve commits no main desde que feature/login divergiu:
-  # → apenas move o ponteiro, sem criar commit de merge
+# Saída possível 2 — three-way merge (cria merge commit)
+# Merge made by the 'ort' strategy.
+#  src/auth.ts | 24 ++++++++++++++++++++++++
+#  1 file changed, 24 insertions(+)
+`}
+      />
 
-  # Forçar merge commit (mesmo quando fast-forward seria possível)
-  git merge --no-ff feature/login
-  # Útil para manter registro visual de quando cada feature foi integrada
+      <h2>Fast-forward — quando o Git só "anda"</h2>
+      <CodeBlock
+        title="Visualizando"
+        language="markdown"
+        code={`Antes:
+  main:    A───B───C
+                    \\
+  feature:           D───E
 
-  # Squash: comprime todos os commits da feature em um
-  git merge --squash feature/login
-  git commit -m "feat: implementa sistema de login completo"
-  # Os commits individuais não aparecem no histórico do main
+Após "git merge feature" (fast-forward):
+  main:    A───B───C───D───E
+  feature:             D───E
 
-  # Apenas verificar se há conflitos sem fazer merge
-  git merge --no-commit --no-ff feature/login
-  git merge --abort  # abortar se não quiser`}
-        />
+Não há divergência — main só "alcança" feature.
+Nenhum merge commit é criado.
+`}
+      />
 
-        <h2>Estratégias de merge</h2>
-        <CodeBlock
-          title="Estratégias avançadas"
-          code={`# Estratégia ort (padrão no Git moderno)
-  git merge -s ort feature/login
+      <CodeBlock
+        title="Forçar / proibir fast-forward"
+        language="bash"
+        code={`# Forçar criação de merge commit (mesmo se ff fosse possível)
+git merge --no-ff feature/login
 
-  # Estratégia recursive com opções
-  git merge -X theirs feature/login  # em conflito, usa versão do branch
-  git merge -X ours feature/login    # em conflito, usa versão do main
+# Só permitir se for fast-forward (senão falha)
+git merge --ff-only feature/login
 
-  # Ignorar mudanças de whitespace
-  git merge -Xignore-all-space feature/login
-  git merge -Xignore-space-change feature/login
+# Configurar globalmente para sempre criar merge commit
+git config --global merge.ff false
 
-  # Merge de um commit específico (sem branch)
-  git merge abc1234`}
-        />
+# Configurar para só permitir ff (no pull, força rebase em conflito)
+git config --global pull.ff only
+`}
+      />
 
-        <AlertBox type="info" title="Quando usar --no-ff">
-          Use <code>--no-ff</code> para features e releases. O commit de merge cria um "nó" visual no histórico que mostra claramente: "aqui a feature X foi integrada no dia Y". Sem isso, os commits da feature ficam misturados no histórico linear do main.
-        </AlertBox>
+      <AlertBox type="note" title="--no-ff é controverso, mas útil">
+        Forçar merge commit (<code>--no-ff</code>) torna explícito <strong>quando uma feature foi integrada</strong>. Útil para auditoria, releases e changelogs. Times que preferem histórico linear evitam isso.
+      </AlertBox>
 
-        <h2>Resolvendo conflitos de merge</h2>
-        <CodeBlock
-          title="Fluxo completo de resolução de conflito"
-          code={`# Merge que gera conflito
-  git merge feature/login
-  # CONFLICT (content): Merge conflict in src/auth.js
-  # Automatic merge failed; fix conflicts and then commit the result.
+      <h2>Three-way merge — quando há divergência</h2>
+      <CodeBlock
+        title="Visualizando"
+        language="markdown"
+        code={`Antes:
+  main:    A───B───C───F   ← main avançou também
+                    \\
+  feature:           D───E
 
-  # 1. Ver arquivos em conflito
-  git status
-  # both modified: src/auth.js
+Após "git merge feature":
+  main:    A───B───C───F───M    ← merge commit
+                    \\     /
+  feature:           D───E
 
-  # 2. Abrir o arquivo e ver os marcadores
-  # <<<<<<< HEAD (sua versão)
-  # function login(user) { ... }
-  # =======
-  # function authenticate(credentials) { ... }
-  # >>>>>>> feature/login (versão entrando)
+M = merge commit, com 2 pais (F e E).
+Estado final é a "soma" das mudanças de F e E.
+`}
+      />
 
-  # 3. Usar uma ferramenta de merge visual
-  git mergetool  # abre ferramenta configurada (vimdiff, meld, etc.)
+      <h2>Squash merge — comprime tudo em 1 commit</h2>
+      <CodeBlock
+        title="git merge --squash"
+        language="bash"
+        code={`git switch main
+git merge --squash feature/login
+# Não cria commit automaticamente — coloca tudo no stage
 
-  # 4. Após resolver cada arquivo
-  git add src/auth.js
+git status
+# Changes to be committed:
+#         modified:   src/auth.ts
+#         new file:   src/totp.ts
 
-  # 5. Finalizar o merge
-  git commit  # mensagem pré-preenchida com info do merge
+git commit -m "feat(auth): MFA via TOTP (#234)"
+# Único commit com TODO o trabalho da feature
+`}
+      />
 
-  # OU abortar tudo
-  git merge --abort`}
-        />
+      <CodeBlock
+        title="Visualização do squash"
+        language="markdown"
+        code={`Antes:
+  main:    A───B
+              \\
+  feature:    D───E───F (3 commits "wip")
 
-        <h2>Comparando merge vs rebase</h2>
-        <div className="overflow-x-auto my-6">
-          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-3 text-left">Critério</th>
-                <th className="p-3 text-left">git merge</th>
-                <th className="p-3 text-left">git rebase</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ["Histórico", "Preserva exatamente como aconteceu", "Reescreve para ficar linear"],
-                ["Commit extra", "Sim (commit de merge)", "Não"],
-                ["Conflitos", "Resolve uma vez", "Pode resolver para cada commit"],
-                ["Segurança", "Seguro em branches públicos", "Nunca em branches públicos/compartilhados"],
-                ["Reversibilidade", "Fácil (reverter o commit de merge)", "Mais complexo"],
-                ["Uso ideal", "Integrar features finalizadas", "Atualizar branch local antes do push"],
-              ].map(([crit, merge, rebase], i) => (
-                <tr key={i} className="border-t border-border">
-                  <td className="p-3 font-medium text-sm">{crit}</td>
-                  <td className="p-3 text-green-400 text-sm">{merge}</td>
-                  <td className="p-3 text-blue-400 text-sm">{rebase}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+Após squash:
+  main:    A───B───S   ← S = único commit com soma de D+E+F
+  feature: D───E───F   ← intacta, mas "esquecida"
+`}
+      />
 
-        <AlertBox type="success" title="Regra simples: merge para integrar, rebase para atualizar">
-          Use merge ao integrar uma feature no main (cria registro histórico). Use rebase ao atualizar seu branch local com as mudanças do main (antes de abrir PR). Esta combinação dá o melhor dos dois mundos.
-        </AlertBox>
-      </PageContainer>
-    );
-  }
-  
+      <h2>Quando usar cada estratégia</h2>
+      <CodeBlock
+        title="Guia de decisão"
+        language="markdown"
+        code={`Fast-forward
+  ✓ branches curtas, isoladas, sem divergência
+  ✗ perde a noção de "quando uma feature entrou"
+
+Merge commit (--no-ff)
+  ✓ features importantes, releases, branches longas
+  ✓ preserva contexto histórico
+  ✗ histórico fica "ramificado"
+
+Squash merge
+  ✓ muitos commits "wip" / "fix typo" que não querem ir pro histórico
+  ✓ PRs pequenos com 1 mudança lógica
+  ✗ perde rastro de quem contribuiu pedaços
+
+Rebase + merge ff
+  ✓ histórico linear puro (estilo trunk-based)
+  ✗ reescreve commits — não fazer em branches compartilhadas
+`}
+      />
+
+      <h2>Estratégias de merge (algoritmos)</h2>
+      <CodeBlock
+        title="-X e -s"
+        language="bash"
+        code={`# Estratégia padrão: ort (octopus recursive)
+git merge feature
+
+# Resolver conflitos preferindo "nosso" lado em ambíguos
+git merge -X ours feature
+
+# Resolver preferindo "deles"
+git merge -X theirs feature
+
+# Ignorar mudanças de espaço em branco
+git merge -X ignore-all-space feature
+
+# Estratégia "ours" — DESCARTA totalmente as mudanças de feature, mas
+# mantém o merge commit (útil para "marcar" branches abandonadas)
+git merge -s ours feature
+
+# Resolução de subárvores
+git merge -s subtree subprojeto-branch
+`}
+      />
+
+      <AlertBox type="warning" title="Não confunda -X ours com -s ours">
+        <code>-X ours</code> resolve <strong>conflitos</strong> a favor do nosso lado (mas integra o resto). <code>-s ours</code> <strong>descarta tudo</strong> do outro branch, criando um merge "fake".
+      </AlertBox>
+
+      <h2>Cancelando um merge em andamento</h2>
+      <CodeBlock
+        title="Abort"
+        language="bash"
+        code={`# Conflito apareceu, você quer desistir
+git merge --abort
+
+# Volta tudo ao estado anterior ao merge
+# (--abort funciona enquanto há conflito não resolvido)
+`}
+      />
+
+      <h2>Desfazendo um merge JÁ COMMITADO</h2>
+      <CodeBlock
+        title="Reset vs Revert"
+        language="bash"
+        code={`# Cenário: o merge ainda não foi pushado
+git reset --hard HEAD~1
+# (volta o ponteiro para antes do merge)
+
+# Cenário: o merge JÁ foi pushado e outros já clonaram
+git revert -m 1 <hash-do-merge>
+# (cria um commit novo que desfaz o merge — seguro)
+# -m 1 indica qual "mainline" preservar (geralmente main = pai 1)
+`}
+      />
+
+      <p>Detalhes em <Link href="/reset">Reset e Revert</Link>.</p>
+
+      <h2>Pré-visualizando um merge</h2>
+      <CodeBlock
+        title="Veja o que vai acontecer"
+        language="bash"
+        code={`# Quais commits seriam trazidos?
+git log main..feature --oneline
+
+# Quais arquivos mudariam?
+git diff main..feature --name-status
+
+# Diff completo
+git diff main...feature
+
+# Simulação real (sem commitar)
+git merge --no-commit --no-ff feature
+# inspecione, depois:
+git merge --abort         # desistir
+# OU
+git commit                # confirmar
+`}
+      />
+
+      <h2>Cenário prático: integrar feature longa</h2>
+      <CodeBlock
+        title="Workflow seguro"
+        language="bash"
+        code={`# 1. Atualize main
+git switch main
+git pull
+
+# 2. Vá para a feature e atualize com main (rebase ou merge)
+git switch feature/x
+git rebase main           # OU: git merge main
+
+# 3. Resolva conflitos se houver, rode testes
+npm test
+
+# 4. Volte para main e mergeie (escolha a estratégia)
+git switch main
+git merge --no-ff feature/x -m "Merge feature/x: adiciona X"
+
+# 5. Pushe
+git push
+
+# 6. Limpe a branch
+git branch -d feature/x
+git push origin --delete feature/x
+`}
+      />
+
+      <h2>Resolvendo conflitos</h2>
+      <p>Quando o Git não consegue mesclar automaticamente, ele para e marca arquivos com <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>. Para o passo a passo completo, veja <Link href="/conflitos">Resolvendo Conflitos</Link>.</p>
+
+      <CodeBlock
+        title="Resumo rápido"
+        language="bash"
+        code={`# Após "git merge feature" dar conflito:
+git status
+# both modified:   src/auth.ts
+
+# Edite o arquivo, escolha entre <<<<<<< HEAD e >>>>>>> feature
+nano src/auth.ts
+
+# Marque como resolvido
+git add src/auth.ts
+
+# Conclua o merge
+git commit
+`}
+      />
+
+      <h2>Cheat-sheet</h2>
+      <CodeBlock
+        title="Comandos de merge"
+        language="bash"
+        code={`git merge feature              # merge padrão
+git merge --no-ff feature      # força merge commit
+git merge --ff-only feature    # só ff, falha senão
+git merge --squash feature     # tudo em 1 commit
+git merge --abort              # cancelar em andamento
+git merge -X ours feature      # prefere nosso lado em conflitos
+git merge -X theirs feature    # prefere o lado deles
+git revert -m 1 <merge-hash>   # desfaz merge pushado
+
+git log main..feature          # preview: o que viria
+git diff main...feature        # preview: diff completo
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/conflitos">Resolvendo Conflitos</Link> — guia completo</li>
+        <li><Link href="/rebase">Rebase</Link> — alternativa que linearize histórico</li>
+        <li><Link href="/cherry-pick">Cherry-pick</Link> — leve commits específicos sem merge</li>
+        <li><Link href="/fluxos">Fluxos de Trabalho</Link> — quando usar merge vs rebase</li>
+      </ul>
+    </PageContainer>
+  );
+}

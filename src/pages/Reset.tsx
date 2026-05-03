@@ -1,137 +1,303 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function Reset() {
-    return (
-      <PageContainer
-        title="git reset"
-        subtitle="Desfaça commits, limpe a staging area ou reverta o working directory — com precisão e segurança."
-        difficulty="intermediario"
-        timeToRead="14 min"
-      >
-        <p>
-          O <code>git reset</code> move o HEAD (e opcionalmente o branch atual) para um commit anterior. Dependendo do modo, pode ou não afetar a staging area e o working directory. É uma das ferramentas mais poderosas e potencialmente destrutivas do Git.
-        </p>
+export default function Reset() {
+  return (
+    <PageContainer
+      title="Reset e Revert"
+      subtitle="Desfazendo mudanças com cirurgia. A diferença entre reset, revert e checkout — e quando usar cada um sem perder trabalho."
+      difficulty="intermediario"
+      timeToRead="13 min"
+    >
+      <p>
+        Existem três comandos para "desfazer" no Git, e usá-los errado pode <strong>perder código</strong>. <code>reset</code> move o ponteiro do branch. <code>revert</code> cria commit novo que desfaz outro. <code>checkout/restore</code> mexe nos arquivos. Aqui você vai entender exatamente quando usar cada um.
+      </p>
 
-        <AlertBox type="danger" title="git reset é destrutivo em branches públicos">
-          Nunca use <code>git reset</code> em commits que já foram enviados para um repositório compartilhado. Use <code>git revert</code> em vez disso para desfazer de forma segura.
-        </AlertBox>
+      <AlertBox type="tip" title="Modelo mental">
+        Antes de qualquer "desfazer", pergunte: <strong>os commits já foram pushados?</strong> Se sim, use <code>revert</code>. Se não, use <code>reset</code>. Esse é 90% da decisão.
+      </AlertBox>
 
-        <h2>Os três modos do git reset</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
-          {[
-            { modo: "--soft", desc: "Move o HEAD para o commit anterior. Mudanças ficam na staging area (prontas para novo commit). Mais seguro.", uso: "Refazer o último commit", cor: "text-green-400" },
-            { modo: "--mixed (padrão)", desc: "Move o HEAD E limpa a staging area. Mudanças voltam para o working directory como não staged.", uso: "Desfazer staging, refazer commits", cor: "text-yellow-400" },
-            { modo: "--hard", desc: "Move o HEAD, limpa staging E descarta mudanças do working directory. Dados podem ser perdidos.", uso: "Descartar completamente mudanças indesejadas", cor: "text-destructive" },
-          ].map((item) => (
-            <div key={item.modo} className="p-4 border border-border rounded-xl bg-card">
-              <code className={"font-bold text-base mb-2 block " + item.cor}>{item.modo}</code>
-              <p className="text-xs text-muted-foreground mb-2">{item.desc}</p>
-              <p className="text-xs"><strong>Uso ideal:</strong> {item.uso}</p>
-            </div>
-          ))}
-        </div>
+      <h2>git reset — três variantes</h2>
+      <CodeBlock
+        title="--soft, --mixed, --hard"
+        language="bash"
+        code={`# Estado inicial:
+# - Working dir: seus arquivos editados
+# - Staging:     o que você deu git add
+# - HEAD:        o último commit
 
-        <h2>Exemplos práticos</h2>
-        <CodeBlock
-          title="git reset --soft — refazendo commits"
-          code={`# Desfazer o último commit, mantendo mudanças staged
-  git reset --soft HEAD~1
+# --soft: só MOVE o ponteiro do branch
+git reset --soft HEAD~1
+# - Working dir: INALTERADO
+# - Staging:     INALTERADO (com mudanças do commit "desfeito" no stage)
+# - HEAD:        recuou 1 commit
 
-  # Agora você pode:
-  git status  # mudanças estão staged
-  git commit -m "nova mensagem melhorada"
+# --mixed (★ padrão): move ponteiro + ESVAZIA staging
+git reset HEAD~1
+git reset --mixed HEAD~1
+# - Working dir: INALTERADO
+# - Staging:     limpo (mudanças voltam ao "modified")
+# - HEAD:        recuou 1 commit
 
-  # Caso de uso: você commitou mas quer mudar a mensagem
-  # (alternativa: git commit --amend)
+# --hard: move ponteiro + ESVAZIA staging + RESETA working dir
+git reset --hard HEAD~1
+# - Working dir: PERDE mudanças (volta exatamente ao commit-alvo)
+# - Staging:     limpo
+# - HEAD:        recuou 1 commit
+# ⚠️  DESTRUTIVO — mudanças não commitadas SOMEM
+`}
+      />
 
-  # Combinar 3 últimos commits em um
-  git reset --soft HEAD~3
-  git commit -m "feat: implementa sistema de notificações"`}
-        />
+      <h2>Casos práticos por cenário</h2>
 
-        <CodeBlock
-          title="git reset --mixed — limpando staging"
-          code={`# Desfazer git add (mais comum)
-  git reset HEAD src/app.js
-  # equivale a: git restore --staged src/app.js
+      <h3>1. "Esqueci de adicionar um arquivo no último commit"</h3>
+      <CodeBlock
+        title="commit --amend é o ideal"
+        language="bash"
+        code={`git add esquecido.ts
+git commit --amend --no-edit
+`}
+      />
 
-  # Desfazer o último commit, mudanças voltam para working dir
-  git reset HEAD~1  # --mixed é o padrão
+      <h3>2. "Fiz commit errado — quero refazer"</h3>
+      <CodeBlock
+        title="Soft reset"
+        language="bash"
+        code={`# Desfaz o último commit, deixa as mudanças no stage
+git reset --soft HEAD~1
 
-  # Desfazer múltiplos commits
-  git reset HEAD~3  # 3 commits atrás
+# Edite o que precisa, refaça o commit
+git commit -m "feat: mensagem corrigida"
+`}
+      />
 
-  # Após reset --mixed:
-  git status  # arquivos aparecem como "Changes not staged for commit"`}
-        />
+      <h3>3. "Commitei mas quero descartar TUDO desse commit"</h3>
+      <CodeBlock
+        title="Hard reset"
+        language="bash"
+        code={`# ⚠️  Você perde as mudanças daquele commit!
+git reset --hard HEAD~1
 
-        <CodeBlock
-          title="git reset --hard — descartando tudo"
-          code={`# Descartar TODAS as mudanças não commitadas
-  git reset --hard HEAD
+# Faça backup primeiro se houver dúvida
+git tag backup-$(date +%s)
+git reset --hard HEAD~1
+`}
+      />
 
-  # Voltar para um commit específico, descartando tudo depois
-  git reset --hard abc1234
+      <h3>4. "Quero voltar 5 commits atrás"</h3>
+      <CodeBlock
+        title="Por hash ou offset"
+        language="bash"
+        code={`# Por offset
+git reset --hard HEAD~5
 
-  # CUIDADO: isso apaga mudanças do working directory
-  # Mas ainda é recuperável via reflog (por ~30 dias):
-  git reflog
-  # HEAD@{1}: commit: o que você perdeu
-  git reset --hard HEAD@{1}  # recuperar!`}
-        />
+# Por hash exato
+git reset --hard abc1234
 
-        <h2>Reset vs Revert vs Restore</h2>
-        <div className="overflow-x-auto my-6">
-          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-3 text-left">Comando</th>
-                <th className="p-3 text-left">O que faz</th>
-                <th className="p-3 text-left">Seguro em público?</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ["git reset", "Move HEAD para trás — reescreve histórico", "❌ Não"],
-                ["git revert", "Cria novo commit que desfaz mudanças — histórico preservado", "✅ Sim"],
-                ["git restore", "Desfaz mudanças em arquivos individuais (não muda commits)", "✅ Sim (sem commits)"],
-                ["git restore --staged", "Remove arquivo da staging area sem alterar arquivo", "✅ Sim (sem commits)"],
-              ].map(([cmd, oque, seg], i) => (
-                <tr key={i} className="border-t border-border">
-                  <td className="p-3 font-mono text-primary text-xs">{cmd}</td>
-                  <td className="p-3 text-muted-foreground text-sm">{oque}</td>
-                  <td className="p-3 text-sm">{seg}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+# Por relação relativa
+git reset --hard origin/main         # iguala ao remoto
+git reset --hard ORIG_HEAD           # estado antes do último merge/rebase
+`}
+      />
 
-        <AlertBox type="success" title="Regra de ouro: use revert em branches públicos">
-          Se você precisa desfazer algo que já foi para o <code>main</code> ou está em um PR revisado por outros, use <code>git revert</code>. Ele cria um novo commit que desfaz o anterior, sem reescrever o histórico.
-        </AlertBox>
+      <h3>5. "Bagunçou tudo, quero voltar pro último estado limpo"</h3>
+      <CodeBlock
+        title="Reset hard + clean"
+        language="bash"
+        code={`# Volta arquivos ao último commit
+git reset --hard HEAD
 
-        <CodeBlock
-          title="Casos de uso do dia a dia"
-          code={`# Remover arquivo do stage (esqueceu de adicionar ao .gitignore)
-  git reset HEAD segredo.env
-  # ou modernamente:
-  git restore --staged segredo.env
+# Remove TAMBÉM arquivos não-rastreados
+git clean -fd
+# -f = force, -d = pastas
+# -n = dry-run (preview)
+# -x = inclui ignorados (.gitignore)
 
-  # Desfazer o último commit (mantendo mudanças)
-  git reset --soft HEAD~1
+# Tudo de uma vez
+git reset --hard && git clean -fdx
+`}
+      />
 
-  # Limpar TUDO e voltar ao estado limpo do main
-  git fetch origin
-  git reset --hard origin/main
+      <AlertBox type="danger" title="reset --hard + clean = NUCLEAR">
+        Essa combinação <strong>destrói absolutamente tudo</strong> que não está commitado, inclusive arquivos novos. Sempre faça <code>-n</code> antes do clean para preview, ou <code>git stash -u</code> se houver dúvida.
+      </AlertBox>
 
-  # Desfazer reset acidental (reflog ao resgate)
-  git reflog
-  git reset --hard HEAD@{2}`}
-        />
-      </PageContainer>
-    );
-  }
-  
+      <h2>Reset de arquivo específico</h2>
+      <CodeBlock
+        title="Apenas um arquivo"
+        language="bash"
+        code={`# Tirar do stage (não muda o working)
+git reset HEAD arquivo.ts
+git restore --staged arquivo.ts        # forma moderna
+
+# Restaurar arquivo do último commit (descarta edições)
+git checkout -- arquivo.ts
+git restore arquivo.ts                 # forma moderna
+
+# Restaurar de outro commit
+git checkout abc1234 -- arquivo.ts
+git restore --source=abc1234 arquivo.ts
+`}
+      />
+
+      <h2>git revert — desfazendo commits PUBLICADOS</h2>
+      <p>Quando o commit já foi pushado e outros já clonaram, você não pode reescrever. <code>revert</code> cria um <strong>commit novo</strong> que aplica as mudanças inversas.</p>
+
+      <CodeBlock
+        title="Revert básico"
+        language="bash"
+        code={`# Reverte o último commit
+git revert HEAD
+
+# Reverte um commit específico
+git revert abc1234
+
+# Reverte vários
+git revert HEAD~3..HEAD            # últimos 3
+git revert abc1234 def5678         # múltiplos hashes
+
+# Reverter sem commit automático (deixa stage para você editar)
+git revert --no-commit abc1234
+git status        # mudanças no stage
+git commit -m "revert: ..."
+
+# Cancelar revert em andamento
+git revert --abort
+`}
+      />
+
+      <h2>Revert de merge commit</h2>
+      <CodeBlock
+        title="-m mainline"
+        language="bash"
+        code={`# Merge commit tem 2 pais — você precisa indicar qual manter
+git revert -m 1 <hash-do-merge>
+# -m 1 = pai 1 (geralmente main)
+# -m 2 = pai 2 (geralmente o branch que veio)
+
+# Ver os pais antes de decidir
+git show <hash-do-merge> --no-patch
+# parent: a1b2c3d (main)
+# parent: e5f6g7h (feature/x)
+`}
+      />
+
+      <AlertBox type="warning" title="Revert de merge é tricky">
+        Se você reverter um merge e depois quiser <strong>re-mergear</strong> a mesma feature, o Git vai pular as mudanças (acha que já foram aplicadas e revertidas). Solução: revert do revert, ou cherry-pick dos commits originais.
+      </AlertBox>
+
+      <h2>Diferença prática: reset vs revert</h2>
+      <CodeBlock
+        title="Cenário"
+        language="markdown"
+        code={`Histórico:
+  A───B───C───D───E ← main (HEAD)
+
+git reset --hard B          (modo destrutivo, branch local)
+  A───B ← main (HEAD)
+  ★ C, D, E somem do histórico (mas ficam no reflog ~30 dias)
+
+git revert D                (modo seguro, branch publicado)
+  A───B───C───D───E───D' ← main (HEAD)
+  ★ D' desfaz o que D fez. E continua intocado.
+`}
+      />
+
+      <h2>Revert vs reset — guia de decisão</h2>
+      <CodeBlock
+        title="Tabela"
+        language="markdown"
+        code={`Use RESET quando:
+  ✓ Branch é local (não pushado)
+  ✓ Você quer reescrever o histórico
+  ✓ Erros pequenos (último commit, amend não basta)
+
+Use REVERT quando:
+  ✓ Commit JÁ FOI pushado e/ou outros têm
+  ✓ Branch é compartilhada (main, develop)
+  ✓ Você quer manter rastro do "isso foi desfeito"
+  ✓ Em produção, nunca arrisque histórico
+`}
+      />
+
+      <h2>Commit cirúrgico de revert</h2>
+      <CodeBlock
+        title="Reverter só PARTE de um commit"
+        language="bash"
+        code={`# Cenário: o commit X mudou 5 arquivos, você quer desfazer só 2
+
+git revert --no-commit X
+# Aplica todas as inversões no stage
+
+# Tira do stage as inversões dos arquivos que você QUER manter desfeitos
+git reset HEAD arquivo3.ts arquivo4.ts arquivo5.ts
+git restore arquivo3.ts arquivo4.ts arquivo5.ts
+
+# Comita só o revert dos 2 arquivos
+git commit -m "revert: desfaz parte de X (arquivos 1 e 2)"
+`}
+      />
+
+      <h2>Recuperando após reset --hard "errado"</h2>
+      <CodeBlock
+        title="Reflog salva sua vida"
+        language="bash"
+        code={`# Ai não, fiz reset --hard e perdi 3 commits!
+
+git reflog
+# 1f2g3h4 HEAD@{0}: reset: moving to abc1234
+# 7i8j9k0 HEAD@{1}: commit: feat: ...      ← perdido!
+# 5l6m7n8 HEAD@{2}: commit: fix: ...       ← perdido!
+# 3o4p5q6 HEAD@{3}: commit: refactor: ...  ← perdido!
+
+# Volta para o commit anterior ao reset
+git reset --hard HEAD@{1}
+
+# OU crie branch a partir do estado anterior
+git switch -c salvos HEAD@{1}
+`}
+      />
+
+      <p>Detalhes em <Link href="/reflog">Reflog</Link> e <Link href="/recuperacao">Recuperação</Link>.</p>
+
+      <h2>Cheat-sheet</h2>
+      <CodeBlock
+        title="Reset, revert, restore"
+        language="bash"
+        code={`# RESET (move ponteiro)
+git reset --soft HEAD~1            # só ponteiro (mantém stage e working)
+git reset HEAD~1                   # ponteiro + esvazia stage
+git reset --hard HEAD~1            # tudo (PERDE mudanças)
+git reset --hard origin/main       # iguala ao remoto
+
+# REVERT (commit novo)
+git revert HEAD                    # desfaz último
+git revert abc1234                 # desfaz commit X
+git revert -m 1 <merge-hash>       # desfaz merge
+git revert --no-commit X           # sem commit automático
+git revert --abort                 # cancelar
+
+# RESTORE (modifica arquivos)
+git restore arquivo.ts             # descarta edição
+git restore --staged arquivo.ts    # tira do stage
+git restore --source=X arquivo.ts  # de outro commit
+
+# CLEAN (remove untracked)
+git clean -n                       # preview
+git clean -fd                      # remove
+git clean -fdx                     # inclui ignorados
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/reflog">Reflog</Link> — sua rede de segurança</li>
+        <li><Link href="/recuperacao">Recuperação de Desastres</Link> — quando reset deu errado</li>
+        <li><Link href="/cherry-pick">Cherry-pick</Link> — pegar commits sem merge</li>
+        <li><Link href="/stash">Stash</Link> — guardar antes de resetar</li>
+      </ul>
+    </PageContainer>
+  );
+}

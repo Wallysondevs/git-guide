@@ -1,183 +1,284 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function Clone() {
-    return (
-      <PageContainer
-        title="git clone"
-        subtitle="Baixe repositórios completos com todo o histórico, branches e tags em um único comando."
-        difficulty="iniciante"
-        timeToRead="10 min"
-      >
-        <p>
-          O <code>git clone</code> cria uma cópia completa de um repositório remoto na sua máquina local, incluindo todo o histórico de commits, branches e tags. É o ponto de partida para trabalhar em qualquer projeto existente.
-        </p>
+export default function Clone() {
+  return (
+    <PageContainer
+      title="Clone"
+      subtitle="Bem mais que copiar arquivos — clone tem flags para clones rasos, sparse, parciais e bare. Essencial para repos grandes."
+      difficulty="iniciante"
+      timeToRead="11 min"
+    >
+      <p>
+        <code>git clone</code> faz três coisas em um comando: cria a pasta, baixa o repositório completo e configura <code>origin</code>. Mas tem flags poderosas que mudam radicalmente o comportamento — e podem reduzir um clone de 4GB para 200MB.
+      </p>
 
-        <h2>Clonando um repositório</h2>
-        <CodeBlock
-          title="Formas de clonar"
-          code={`# Clonar via HTTPS (mais simples, pede senha)
-  git clone https://github.com/usuario/projeto.git
+      <AlertBox type="tip" title="Para repos grandes">
+        Combine <code>--filter=blob:none</code> + <code>--no-checkout</code> + <code>sparse-checkout</code> para clonar só o que você precisa. Pode ser 10-100x mais rápido em monorepos.
+      </AlertBox>
 
-  # Clonar via SSH (recomendado, sem senha após configurar chave)
-  git clone git@github.com:usuario/projeto.git
+      <h2>Clone básico</h2>
+      <CodeBlock
+        title="Variações simples"
+        language="bash"
+        code={`# Clone padrão (HTTPS)
+git clone https://github.com/usuario/repo.git
 
-  # Clonar em um diretório com nome diferente
-  git clone https://github.com/usuario/projeto.git meu-projeto
+# Via SSH (recomendado)
+git clone git@github.com:usuario/repo.git
 
-  # Clonar em um diretório específico
-  git clone https://github.com/usuario/projeto.git /home/user/projetos/meu-app`}
-        />
+# Em uma pasta com nome diferente
+git clone https://github.com/usuario/repo.git minha-pasta
 
-        <h2>Opções essenciais de clone</h2>
-        <div className="overflow-x-auto my-6">
-          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-3 text-left">Opção</th>
-                <th className="p-3 text-left">Efeito</th>
-                <th className="p-3 text-left">Quando usar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ["--depth 1", "Clona apenas o commit mais recente", "CI/CD, Docker builds, leitura rápida"],
-                ["--branch nome", "Clona e faz checkout de um branch específico", "Quando só precisa de um branch"],
-                ["--single-branch", "Não baixa histórico de outros branches", "Combinado com --branch para economizar"],
-                ["--bare", "Sem working tree (só .git)", "Servidor Git, mirrors"],
-                ["--mirror", "Clone completo incluindo refs de server-side", "Backup e mirrors completos"],
-                ["--recurse-submodules", "Inicializa submódulos automaticamente", "Projetos com git submodules"],
-                ["--shallow-since=data", "Histórico a partir de uma data", "Histórico parcial com contexto temporal"],
-              ].map(([opt, efeito, quando], i) => (
-                <tr key={i} className="border-t border-border">
-                  <td className="p-3 font-mono text-primary text-xs">{opt}</td>
-                  <td className="p-3 text-muted-foreground text-sm">{efeito}</td>
-                  <td className="p-3 text-sm">{quando}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+# Em uma pasta específica do sistema
+git clone git@github.com:usuario/repo.git ~/projetos/repo
+`}
+      />
 
-        <CodeBlock
-          title="Clones especializados"
-          code={`# Clone raso — só o histórico mais recente (muito mais rápido)
-  git clone --depth 1 https://github.com/usuario/projeto.git
+      <h2>Clone raso (shallow)</h2>
+      <p>Baixa apenas os últimos N commits — economiza muita banda e disco em repos com longa história.</p>
 
-  # Clone de branch específico sem outros branches
-  git clone --branch develop --single-branch https://github.com/usuario/projeto.git
+      <CodeBlock
+        title="--depth"
+        language="bash"
+        code={`# Só o último commit (perfeito para CI/builds)
+git clone --depth 1 https://github.com/usuario/repo.git
 
-  # Clone sem working tree (para servidores Git)
-  git clone --bare https://github.com/usuario/projeto.git projeto.git
+# Últimos 50 commits
+git clone --depth 50 https://github.com/usuario/repo.git
 
-  # Clone com submódulos incluídos
-  git clone --recurse-submodules https://github.com/usuario/projeto.git
+# Combinado com branch específica
+git clone --depth 1 --branch v1.5.0 https://github.com/usuario/repo.git
 
-  # Converter clone raso em clone completo depois
-  git fetch --unshallow`}
-        />
+# Aprofundar depois (se precisar de mais histórico)
+git fetch --depth 100
+git fetch --unshallow      # baixa o resto, vira clone normal
+`}
+      />
 
-        <AlertBox type="info" title="Clone raso (shallow clone) para CI/CD">
-          <code>--depth 1</code> é excelente para pipelines de CI/CD onde você só precisa do código mais recente. Um repositório com 10 anos de histórico pode ter centenas de MB — o clone raso baixa apenas MB. Para converter para clone completo depois: <code>git fetch --unshallow</code>.
-        </AlertBox>
+      <AlertBox type="warning" title="Limitações de shallow clones">
+        Shallow clones <strong>não podem fazer alguns rebases</strong> ou ver blame antigo. Para CI/CD onde você só quer build & test, é perfeito. Para desenvolvimento, prefira clone completo.
+      </AlertBox>
 
-        <h2>O que acontece após o clone</h2>
-        <CodeBlock
-          title="Explorando o repositório clonado"
-          code={`# Entre no diretório criado
-  cd projeto
+      <h2>Clone parcial — partial clone</h2>
+      <p>Mais novo e mais flexível que shallow: baixa <strong>só metadata</strong>, e pega arquivos sob demanda.</p>
 
-  # O remoto 'origin' foi configurado automaticamente
-  git remote -v
-  # origin  https://github.com/usuario/projeto.git (fetch)
-  # origin  https://github.com/usuario/projeto.git (push)
+      <CodeBlock
+        title="--filter"
+        language="bash"
+        code={`# Sem nenhum blob (arquivo) — só commits e árvores
+git clone --filter=blob:none https://github.com/usuario/repo.git
 
-  # Todos os branches remotos estão disponíveis
-  git branch -a
-  # * main
-  #   remotes/origin/HEAD -> origin/main
-  #   remotes/origin/develop
-  #   remotes/origin/feature/login
+# Sem blobs maiores que 1MB
+git clone --filter=blob:limit=1m https://github.com/usuario/repo.git
 
-  # Fazer checkout de um branch remoto
-  git switch develop
-  # Branch 'develop' set up to track remote branch 'develop' from 'origin'.
+# Sem árvores (lazier ainda)
+git clone --filter=tree:0 https://github.com/usuario/repo.git
 
-  # Ver histórico
-  git log --oneline -10`}
-        />
+# O Git baixa cada arquivo automaticamente quando você acessa
+# (com checkout, log -p, blame, etc.)
+`}
+      />
 
-        <h2>Clonando repositórios privados</h2>
-        <CodeBlock
-          title="Clone com autenticação"
-          code={`# Via HTTPS com Personal Access Token (GitHub)
-  git clone https://TOKEN@github.com/usuario/repo-privado.git
+      <h2>Sparse checkout — só algumas pastas</h2>
+      <p>Em monorepos, você pode ter 50 projetos mas só trabalhar em 1. <strong>Sparse checkout</strong> faz o working directory mostrar só o que você quer.</p>
 
-  # Via SSH (recomendado para repos privados)
-  # Primeiro configure a chave SSH:
-  ssh-keygen -t ed25519 -C "seu@email.com"
-  cat ~/.ssh/id_ed25519.pub  # Adicione no GitHub → Settings → SSH keys
+      <CodeBlock
+        title="Sparse checkout moderno"
+        language="bash"
+        code={`# Clone sem checkout
+git clone --no-checkout --filter=blob:none https://github.com/empresa/monorepo.git
+cd monorepo
 
-  # Depois clone normalmente via SSH
-  git clone git@github.com:usuario/repo-privado.git
+# Habilitar sparse-checkout
+git sparse-checkout init --cone
 
-  # Salvar credenciais HTTPS para não digitar sempre
-  git config --global credential.helper store
-  # Na próxima vez que pedir senha, salva automaticamente`}
-        />
+# Definir pastas a baixar
+git sparse-checkout set apps/web libs/shared
 
-        <h2>Protocolo SSH vs HTTPS</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-          <div className="p-4 border border-border rounded-xl bg-card">
-            <h4 className="font-bold mb-2 mt-0 border-0">SSH</h4>
-            <ul className="text-sm space-y-1 text-muted-foreground">
-              <li>✅ Sem senha após configurar chave</li>
-              <li>✅ Mais seguro para uso diário</li>
-              <li>✅ Funciona com 2FA no GitHub</li>
-              <li>❌ Requer configuração inicial</li>
-              <li>❌ Pode ser bloqueado em firewalls corporativos</li>
-            </ul>
-          </div>
-          <div className="p-4 border border-border rounded-xl bg-card">
-            <h4 className="font-bold mb-2 mt-0 border-0">HTTPS</h4>
-            <ul className="text-sm space-y-1 text-muted-foreground">
-              <li>✅ Funciona em qualquer rede</li>
-              <li>✅ Configuração imediata</li>
-              <li>✅ Não requer chave SSH</li>
-              <li>❌ Pede token/senha frequentemente</li>
-              <li>❌ Menos conveniente para uso diário</li>
-            </ul>
-          </div>
-        </div>
+# Agora faça o checkout
+git checkout main
 
-        <h2>Solução de problemas comuns</h2>
-        <CodeBlock
-          title="Erros frequentes e soluções"
-          code={`# Erro: Repository not found
-  # → Verifique URL, caso, e se tem acesso ao repo
+# Ver o que está em sparse
+git sparse-checkout list
 
-  # Erro: Permission denied (publickey)
-  # → Configure chave SSH ou use HTTPS com token
-  ssh -T git@github.com  # Testa conexão SSH
+# Adicionar pasta extra depois
+git sparse-checkout add apps/api
 
-  # Erro: SSL certificate problem
-  git clone -c http.sslVerify=false URL  # Temporário
-  git config --global http.sslVerify false  # Global (cuidado)
+# Voltar a clonar tudo
+git sparse-checkout disable
+`}
+      />
 
-  # Clone muito lento — use shallow
-  git clone --depth 1 URL
+      <h2>Clone bare — sem working directory</h2>
+      <CodeBlock
+        title="Para servidores"
+        language="bash"
+        code={`# Clone bare (só o conteúdo do .git/)
+git clone --bare git@github.com:user/repo.git
+# Cria pasta repo.git/ com HEAD, config, objects, refs
 
-  # Clonar apenas uma pasta específica (sparse checkout)
-  git clone --filter=blob:none --sparse URL
-  cd projeto
-  git sparse-checkout set src/components`}
-        />
+# Mirror — bare + todas as refs (branches, tags, notes)
+git clone --mirror git@github.com:user/repo.git
+# Útil para backups e migração de servidor
+`}
+      />
 
-        <AlertBox type="success" title="Dica: use SSH para projetos nos quais você contribui regularmente">
-          Configure uma vez e esqueça — sem digitar senha em cada push. Para repositórios que você só lê (como dependências ou referências), HTTPS com clone raso é mais rápido e simples.
-        </AlertBox>
-      </PageContainer>
-    );
-  }
-  
+      <p>Detalhes em <Link href="/repositorios">Criando Repositórios</Link>.</p>
+
+      <h2>Clone com submódulos</h2>
+      <CodeBlock
+        title="--recurse-submodules"
+        language="bash"
+        code={`# Clone + inicializa submódulos em um comando
+git clone --recurse-submodules https://github.com/user/repo.git
+
+# Equivalente em 3 passos
+git clone https://github.com/user/repo.git
+cd repo
+git submodule update --init --recursive
+
+# Em paralelo (mais rápido se tem vários submódulos)
+git clone --recurse-submodules -j 8 https://github.com/user/repo.git
+`}
+      />
+
+      <p>Veja <Link href="/submodulos">Submódulos</Link> para o guia completo.</p>
+
+      <h2>Branch específica e single-branch</h2>
+      <CodeBlock
+        title="Mais economia"
+        language="bash"
+        code={`# Clonar checkando uma branch específica (mas baixa tudo)
+git clone --branch feature/x https://github.com/user/repo.git
+
+# Clonar SÓ uma branch (ignora as outras completamente)
+git clone --single-branch --branch main https://github.com/user/repo.git
+
+# Combo de máxima economia: 1 commit, 1 branch
+git clone --depth 1 --single-branch --branch main https://github.com/user/repo.git
+`}
+      />
+
+      <h2>Clone com Git LFS</h2>
+      <CodeBlock
+        title="Arquivos grandes"
+        language="bash"
+        code={`# Por padrão, --filter já baixa LFS sob demanda
+git clone --filter=blob:none https://github.com/user/repo.git
+
+# Para baixar todos os LFS de uma vez
+git lfs install
+git lfs pull
+
+# Para CLONAR sem baixar nenhum binário LFS
+GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/user/repo.git
+
+# Depois, baixar só os que você precisa
+git lfs pull --include "assets/*"
+`}
+      />
+
+      <p>Detalhes em <Link href="/lfs">Git LFS</Link>.</p>
+
+      <h2>Clone via local filesystem</h2>
+      <CodeBlock
+        title="Repositórios locais"
+        language="bash"
+        code={`# Clone de pasta local (cria hardlinks para economizar disco)
+git clone /caminho/para/repo /caminho/destino
+
+# Forçar cópia em vez de hardlink (se vai mexer em ambos)
+git clone --no-hardlinks /caminho/origem /caminho/destino
+
+# Via file://
+git clone file:///caminho/para/repo
+`}
+      />
+
+      <h2>Templates e configs no clone</h2>
+      <CodeBlock
+        title="Customizando clones"
+        language="bash"
+        code={`# Pular execução de hooks no clone (útil em CI)
+git clone --no-hardlinks --template /dev/null repo
+
+# Aplicar config local específica
+git clone -c http.sslVerify=false https://...
+git clone -c user.email="ci@empresa.com" https://...
+
+# Clone via proxy
+HTTPS_PROXY=http://proxy:8080 git clone https://...
+`}
+      />
+
+      <h2>Casos práticos</h2>
+
+      <h3>1. Clone para CI (otimizado)</h3>
+      <CodeBlock
+        title="GitHub Actions / GitLab CI"
+        language="bash"
+        code={`# O mais rápido possível — só o commit que vai testar
+git clone --depth 1 --single-branch --branch \$BRANCH \\
+  --filter=blob:none --no-tags \\
+  https://github.com/empresa/repo.git
+`}
+      />
+
+      <h3>2. Clone para investigar histórico</h3>
+      <CodeBlock
+        title="Sem economia, mas otimizado"
+        language="bash"
+        code={`# Tudo, mas com background fetch para acelerar
+git clone --filter=blob:none https://github.com/user/repo.git
+# Os blobs vêm sob demanda quando você dá log -p, blame, etc.
+`}
+      />
+
+      <h3>3. Clone de um monorepo gigante (Linux kernel, Chromium)</h3>
+      <CodeBlock
+        title="Sparse + partial"
+        language="bash"
+        code={`# Clone vazio
+git clone --filter=blob:none --no-checkout \\
+  https://github.com/torvalds/linux.git
+cd linux
+
+# Só os subsystems que te interessam
+git sparse-checkout init --cone
+git sparse-checkout set drivers/net/wireless include/net
+
+# Checkout
+git checkout master
+`}
+      />
+
+      <h2>Cheat-sheet</h2>
+      <CodeBlock
+        title="Comandos de clone"
+        language="bash"
+        code={`git clone <url>                        # padrão
+git clone <url> <pasta>                # pasta customizada
+git clone --depth 1 <url>              # shallow (só último)
+git clone --branch <ref> <url>         # branch ou tag específica
+git clone --single-branch <url>        # ignora outras branches
+git clone --filter=blob:none <url>     # partial (sem arquivos)
+git clone --no-checkout <url>          # sem extrair arquivos
+git clone --bare <url>                 # sem working directory
+git clone --mirror <url>               # bare + todas refs
+git clone --recurse-submodules <url>   # com submódulos
+git clone -c key=value <url>           # config local
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/remotos">Repositórios Remotos</Link> — gerencie origin e upstream</li>
+        <li><Link href="/submodulos">Submódulos</Link> — repos dentro de repos</li>
+        <li><Link href="/lfs">Git LFS</Link> — para projetos com binários grandes</li>
+      </ul>
+    </PageContainer>
+  );
+}

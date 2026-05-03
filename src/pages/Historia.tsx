@@ -1,159 +1,122 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function Historia() {
-    return (
-      <PageContainer
-        title="Histórico do Git"
-        subtitle="Explore, filtre e visualize o histórico de commits com git log e ferramentas relacionadas."
-        difficulty="iniciante"
-        timeToRead="12 min"
-      >
-        <p>
-          O <code>git log</code> é a janela para o histórico do projeto. Saber filtrar, formatar e navegar por esse histórico é essencial para entender mudanças, encontrar bugs e compreender o contexto de cada decisão.
-        </p>
+export default function Historia() {
+  return (
+    <PageContainer
+      title="O que é Git"
+      subtitle="Por que o Git existe, como ele pensa e o que torna ele diferente de tudo que veio antes."
+      difficulty="iniciante"
+      timeToRead="8 min"
+    >
+      <p>
+        <strong>Git</strong> é um sistema de controle de versão distribuído criado em 2005 por <strong>Linus Torvalds</strong> — o mesmo do kernel Linux. Ele nasceu de uma necessidade prática: o BitKeeper (usado no kernel) deixou de ser gratuito, e nenhum sistema existente atendia aos requisitos de velocidade, integridade e descentralização que o Linux exigia.
+      </p>
 
-        <h2>git log — formatos e filtros</h2>
-        <CodeBlock
-          title="Variações mais úteis do git log"
-          code={`# Log padrão (verbose)
-  git log
+      <AlertBox type="tip" title="TL;DR — em uma frase">
+        Git é uma <strong>máquina de tirar snapshots</strong> do seu projeto, indexados por um hash criptográfico, que pode ser sincronizada com qualquer cópia de qualquer lugar — sem servidor central obrigatório.
+      </AlertBox>
 
-  # Uma linha por commit
-  git log --oneline
+      <h2>O problema que o Git resolve</h2>
+      <p>
+        Antes do Git, a maior parte do mundo usava SVN ou CVS — sistemas <em>centralizados</em>, onde todo commit precisava falar com um servidor. Isso significava: lentidão, dependência de rede, branches caros e merges sofríveis. O Git inverteu isso: <strong>cada clone é um repositório completo</strong>, com todo o histórico, e operações são locais.
+      </p>
 
-  # Com gráfico de branches
-  git log --oneline --graph --decorate --all
+      <h2>Como o Git pensa: snapshots, não diffs</h2>
+      <p>
+        Esta é a virada de chave conceitual mais importante. SVN/CVS armazenam <em>diferenças</em> entre versões. O Git armazena <strong>fotografias inteiras</strong> do projeto (deduplicadas via hash). Cada commit é um snapshot completo da árvore de arquivos.
+      </p>
 
-  # Limitar quantidade de commits
-  git log -10  # últimos 10
-  git log -1   # último commit (equivale a git show)
+      <CodeBlock
+        title="Visualizando a estrutura interna"
+        language="bash"
+        code={`# Cada commit aponta para uma árvore (snapshot) e seus pais
+git cat-file -p HEAD
+# tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+# parent 7c54f9e2...
+# author Você <voce@exemplo.com> 1730000000 -0300
+# committer Você <voce@exemplo.com> 1730000000 -0300
+#
+# feat: adiciona login
+`}
+      />
 
-  # Por autor
-  git log --author="João"
-  git log --author="joao@email.com"
+      <h2>Os 3 estados de um arquivo</h2>
+      <p>O modelo mental fundamental do Git:</p>
+      <ul>
+        <li><strong>Working directory</strong> — seus arquivos como você os vê no disco.</li>
+        <li><strong>Staging area (index)</strong> — o que está preparado para o próximo commit.</li>
+        <li><strong>Repositório (.git)</strong> — o histórico permanente de snapshots.</li>
+      </ul>
 
-  # Por data
-  git log --since="2024-01-01"
-  git log --after="1 week ago"
-  git log --before="2024-06-01"
-  git log --since="2 weeks ago" --until="1 week ago"
+      <CodeBlock
+        title="O fluxo dos 3 estados"
+        language="bash"
+        code={`# editar arquivo  →  working directory (modified)
+git add arquivo.js          # → staging area (staged)
+git commit -m "msg"         # → repositório (.git/objects)
+`}
+      />
 
-  # Por mensagem
-  git log --grep="feat:"
-  git log --grep="login" -i  # case insensitive
+      <h2>Por que distribuído importa</h2>
+      <ul>
+        <li><strong>Funciona offline</strong> — você commita, faz branch, vê histórico, tudo sem internet.</li>
+        <li><strong>Backup automático</strong> — cada clone é uma cópia completa do repositório.</li>
+        <li><strong>Branches baratos</strong> — criar um branch é só escrever 41 bytes em um arquivo.</li>
+        <li><strong>Sem ponto único de falha</strong> — qualquer clone pode virar o "central".</li>
+      </ul>
 
-  # Commits que afetaram um arquivo específico
-  git log -- src/auth.js
-  git log --follow -- src/auth.js  # rastreia renames`}
-        />
+      <h2>Hashes SHA-1: integridade por design</h2>
+      <p>
+        Cada objeto no Git (commit, árvore, blob) é identificado por um hash SHA-1 (40 caracteres hex). Mudar um único byte muda o hash. Isso significa que <strong>é matematicamente impossível</strong> alterar o histórico sem que apareça.
+      </p>
 
-        <h2>Formatos customizados de log</h2>
-        <CodeBlock
-          title="Formatos avançados"
-          code={`# Formato colorido com graph (o famoso 'git lg')
-  git log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+      <CodeBlock
+        title="O hash é o identificador"
+        language="bash"
+        code={`git log --oneline -3
+# a1b2c3d (HEAD -> main) feat: adiciona login
+# 9f8e7d6 fix: corrige cálculo de desconto
+# 5e4f3a2 chore: setup inicial
 
-  # Placeholders disponíveis:
-  # %h  = SHA abreviado
-  # %H  = SHA completo
-  # %s  = assunto (primeira linha da mensagem)
-  # %b  = corpo da mensagem
-  # %an = nome do autor
-  # %ae = email do autor
-  # %ar = data relativa (ex: "3 hours ago")
-  # %ad = data absoluta
-  # %d  = refs (branches, tags)
-  # %Cred %Cgreen %Cblue %Creset = cores
+# Você pode usar prefixos do hash (mínimo 4 chars, geralmente 7-8 são únicos)
+git show a1b2c3d
+`}
+      />
 
-  # Apenas datas e commits
-  git log --format="%ad %h %s" --date=short
+      <AlertBox type="note" title="SHA-1 vs SHA-256">
+        O Git já suporta SHA-256 desde a versão 2.29 (<code>git init --object-format=sha256</code>), mas SHA-1 ainda é o padrão por compatibilidade. Para repositórios pessoais e da maioria das empresas, SHA-1 é mais que suficiente.
+      </AlertBox>
 
-  # Estatísticas por arquivo
-  git log --stat
+      <h2>O que Git NÃO é</h2>
+      <ul>
+        <li><strong>Não é GitHub.</strong> GitHub é uma plataforma de hospedagem; Git funciona perfeitamente sem ele (GitLab, Bitbucket, ou só local).</li>
+        <li><strong>Não é backup completo.</strong> Branches não-publicados moram só na sua máquina.</li>
+        <li><strong>Não é bom para arquivos binários grandes.</strong> Para isso veja <Link href="/lfs">Git LFS</Link>.</li>
+        <li><strong>Não rastreia diretórios vazios.</strong> Convencionalmente coloca-se um <code>.gitkeep</code>.</li>
+      </ul>
 
-  # Patches completos
-  git log -p  # verbose!`}
-        />
+      <h2>Linha do tempo</h2>
+      <CodeBlock
+        title="Marcos da história"
+        language="markdown"
+        code={`2005-04 — Linus inicia o Git em ~10 dias após perda do BitKeeper
+2005-06 — kernel do Linux migra oficialmente para Git
+2008-04 — GitHub é lançado, popularizando o Git globalmente
+2014    — Git ultrapassa SVN como VCS mais usado no mundo
+2020    — Suporte experimental a SHA-256 (Git 2.29)
+2024+   — Sparse checkout, partial clone, scalar — escala de monorepo
+`}
+      />
 
-        <h2>Explorando mudanças específicas</h2>
-        <CodeBlock
-          title="git show e git diff no histórico"
-          code={`# Ver detalhes de um commit específico
-  git show abc1234
-  git show HEAD    # último commit
-  git show HEAD~2  # 2 commits atrás
-
-  # Ver apenas os arquivos mudados em um commit
-  git show --name-only abc1234
-  git show --name-status abc1234  # com M/A/D
-
-  # Diferença entre dois commits
-  git diff abc1234..def5678
-  git diff v1.0..v2.0
-
-  # Diferença em arquivo específico
-  git diff main..feature/login -- src/app.js
-
-  # Quem mudou uma linha específica (git blame)
-  git blame src/app.js
-  git blame -L 10,20 src/app.js  # apenas linhas 10-20`}
-        />
-
-        <h2>Buscando no histórico</h2>
-        <CodeBlock
-          title="git log -S e -G — busca por conteúdo"
-          code={`# Encontrar quando uma string foi adicionada/removida
-  git log -S "calcularDesconto"
-  git log -S "senha123" --all  # em todos os branches (segurança!)
-
-  # Buscar por regex no conteúdo dos diffs
-  git log -G "function.*login"
-
-  # Buscar por arquivo
-  git log --all --full-history -- "**/login.js"
-
-  # Combinar filtros
-  git log -S "bug" --author="Maria" --since="1 month ago"
-
-  # Encontrar commits que introduziram/removeram função
-  git log --pickaxe-regex -S "function calcularImposto"`}
-        />
-
-        <AlertBox type="success" title="Alias para log visual — configure uma vez, use sempre">
-          Adicione ao seu <code>.gitconfig</code>: <code>lg = log --oneline --graph --decorate --all</code>. O comando <code>git lg</code> vai se tornar seu comando mais usado para visualizar o estado de todos os branches de uma forma clara.
-        </AlertBox>
-
-        <h2>Navegando entre commits</h2>
-        <div className="overflow-x-auto my-6">
-          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-3 text-left">Referência</th>
-                <th className="p-3 text-left">Significa</th>
-                <th className="p-3 text-left">Exemplo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ["HEAD", "Commit atual", "git show HEAD"],
-                ["HEAD~1 ou HEAD^", "1 commit antes", "git diff HEAD~1"],
-                ["HEAD~3", "3 commits antes", "git reset HEAD~3"],
-                ["abc1234", "SHA específico", "git show abc1234"],
-                ["main@{yesterday}", "Estado de ontem", "git diff main@{yesterday}"],
-                ["v1.0.0", "Tag específica", "git log v1.0.0..HEAD"],
-              ].map(([ref, sig, ex], i) => (
-                <tr key={i} className="border-t border-border">
-                  <td className="p-3 font-mono text-primary text-sm">{ref}</td>
-                  <td className="p-3 text-muted-foreground text-sm">{sig}</td>
-                  <td className="p-3 font-mono text-xs">{ex}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </PageContainer>
-    );
-  }
-  
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/instalacao">Instalação e Setup</Link> — configure o Git na sua máquina</li>
+        <li><Link href="/primeiros-passos">Primeiros Passos</Link> — seu primeiro repositório em 5 minutos</li>
+        <li><Link href="/staging">Staging Area</Link> — entenda o conceito mais característico do Git</li>
+      </ul>
+    </PageContainer>
+  );
+}

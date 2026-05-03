@@ -1,151 +1,335 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function Reflog() {
-    return (
-      <PageContainer
+export default function Reflog() {
+  return (
+    <PageContainer
+      title="Reflog"
+      subtitle="O histórico secreto de TUDO que aconteceu localmente. A rede de segurança que recupera commits 'perdidos' por reset, rebase ou checkout."
+      difficulty="intermediario"
+      timeToRead="10 min"
+    >
+      <p>
+        O <strong>reflog</strong> é uma <em>caixa preta</em>: cada vez que <code>HEAD</code> ou um branch se move (commit, checkout, reset, rebase, merge), o Git registra. Tudo isso fica gravado por <strong>30 a 90 dias</strong>, mesmo que os commits não estejam mais em nenhum branch. Isso significa que <strong>quase nada se perde de verdade</strong> no Git.
+      </p>
+
+      <AlertBox type="tip" title="Mantra do Git">
+        "Se você commitou pelo menos uma vez, você pode recuperar." O reflog é a razão. Apaga branch, reseta hard, rebaseia errado — tudo fica gravado.
+      </AlertBox>
+
+      <h2>O comando básico</h2>
+      <CodeBlock
         title="git reflog"
-        subtitle="O histórico secreto do Git — recupere commits, branches e trabalho que parecem perdidos."
-        difficulty="avancado"
-        timeToRead="12 min"
-      >
-        <p>
-          O <code>git reflog</code> (reference log) registra cada movimento do HEAD — cada commit, checkout, merge, rebase, reset que você fez. É o mecanismo de recuperação de desastres do Git: trabalho que parece perdido geralmente está aqui.
-        </p>
+        language="bash"
+        code={`git reflog
+# a1b2c3d HEAD@{0}: commit: feat: nova feature
+# 7p8q9r0 HEAD@{1}: rebase finished: returning to refs/heads/main
+# 5l6m7n8 HEAD@{2}: rebase: feat: ...
+# 3o4p5q6 HEAD@{3}: checkout: moving from feature to main
+# 1m2n3o4 HEAD@{4}: pull --rebase: ...
 
-        <AlertBox type="success" title="O Git raramente apaga dados de verdade">
-          Commits "perdidos" por reset --hard, rebase, ou branch deletado ainda existem na object store do Git por pelo menos 30 dias (padrão). O reflog te ajuda a encontrá-los.
-        </AlertBox>
+# Mostra:
+# - hash do commit
+# - referência (HEAD@{N})
+# - tipo da operação
+# - mensagem/contexto
 
-        <h2>Visualizando o reflog</h2>
-        <CodeBlock
-          title="Lendo o reflog"
-          code={`# Ver o reflog do HEAD
-  git reflog
-  # Saída:
-  # abc1234 (HEAD -> main) HEAD@{0}: commit: feat: adiciona login
-  # def5678 HEAD@{1}: merge feature/auth: Merge made by the 'ort' strategy.
-  # ghi9012 HEAD@{2}: checkout: moving from feature/auth to main
-  # jkl3456 HEAD@{3}: reset: moving to HEAD~2
-  # mno7890 HEAD@{4}: commit: wip: trabalho em progresso
+# Reflog de um branch específico
+git reflog show feature/x
+git reflog feature/x
 
-  # Ver reflog de um branch específico
-  git reflog main
-  git reflog feature/login
+# Com formato customizado
+git reflog --pretty=format:'%h %gd %gs %s' --date=relative
+`}
+      />
 
-  # Ver reflog com datas
-  git reflog --date=iso
+      <h2>Notação HEAD@{N}</h2>
+      <CodeBlock
+        title="Formas de referenciar"
+        language="bash"
+        code={`HEAD@{0}     ← onde você está agora
+HEAD@{1}     ← onde estava antes
+HEAD@{2}     ← anterior a isso
+...
 
-  # Formato mais legível
-  git reflog --pretty=format:"%h %ar %gs"`}
-        />
+# Por tempo (não índice)
+HEAD@{1.hour.ago}
+HEAD@{yesterday}
+HEAD@{2.weeks.ago}
+HEAD@{2026-03-15.10:00:00}
 
-        <h2>Recuperando commits perdidos</h2>
-        <CodeBlock
-          title="Cenário 1: reset --hard acidental"
-          code={`# Você fez:
-  git reset --hard HEAD~3
-  # Agora seus 3 últimos commits "sumiram"
+# Por nome de branch
+main@{1}     ← onde main estava antes
+feature@{0}  ← onde feature está agora
 
-  # 1. Ver o reflog para encontrá-los
-  git reflog
-  # abc1234 HEAD@{0}: reset: moving to HEAD~3
-  # def5678 HEAD@{1}: commit: feat: formulário de contato  ← você quer este
-  # ghi9012 HEAD@{2}: commit: feat: validação de email
-  # jkl3456 HEAD@{3}: commit: feat: campo de telefone
+# Para usar:
+git show HEAD@{2}
+git diff HEAD HEAD@{1}
+git checkout HEAD@{3}
+git reset --hard HEAD@{1}
+`}
+      />
 
-  # 2. Restaurar o estado anterior ao reset
-  git reset --hard def5678
-  # OU criar um branch no commit perdido
-  git branch recuperado def5678
-  git switch recuperado`}
-        />
+      <h2>Cenários de recuperação</h2>
 
-        <CodeBlock
-          title="Cenário 2: branch deletado acidentalmente"
-          code={`# Você deletou um branch sem fazer merge
-  git branch -D feature/minha-feature
-  # Deleted branch feature/minha-feature (was abc1234).
+      <h3>1. "Resetei hard e perdi commits!"</h3>
+      <CodeBlock
+        title="Recuperando reset --hard"
+        language="bash"
+        code={`# Você fez:
+git reset --hard HEAD~3      # ⚠️ perdeu 3 commits
 
-  # 1. Usar o SHA impresso na mensagem de delete
-  git branch feature/minha-feature abc1234
+# Solução
+git reflog
+# 1f2g3h4 HEAD@{0}: reset: moving to HEAD~3
+# 7i8j9k0 HEAD@{1}: commit: feat: ...     ← perdido
+# 5l6m7n8 HEAD@{2}: commit: fix: ...      ← perdido
+# 3o4p5q6 HEAD@{3}: commit: refactor: ... ← perdido
 
-  # 2. OU encontrar via reflog
-  git reflog
-  # abc1234 HEAD@{5}: commit: feat: funcionalidade incrível
+# Volte para o estado anterior ao reset
+git reset --hard HEAD@{1}
 
-  # 3. Recriar o branch
-  git branch feature/minha-feature abc1234
-  git switch feature/minha-feature`}
-        />
+# OU crie um branch novo do estado perdido
+git switch -c salvos HEAD@{1}
+`}
+      />
 
-        <CodeBlock
-          title="Cenário 3: rebase deu errado"
-          code={`# Rebase transformou histórico de forma inesperada
-  git rebase main  # resultado ruim
+      <h3>2. "Apaguei um branch que tinha commits!"</h3>
+      <CodeBlock
+        title="Recuperando branch deletado"
+        language="bash"
+        code={`# Você fez:
+git branch -D feature/importante
+# Deleted branch feature/importante (was a1b2c3d)
 
-  # Encontrar estado antes do rebase no reflog
-  git reflog
-  # abc1234 HEAD@{0}: rebase (finish): returning to refs/heads/feature
-  # def5678 HEAD@{1}: rebase (pick): último commit bom
-  # ...
-  # ghi9012 HEAD@{8}: checkout: moving from main to feature  ← antes do rebase
+# Solução: o hash apareceu no warning. Crie branch novo:
+git switch -c feature/importante a1b2c3d
 
-  # Voltar ao estado pré-rebase
-  git reset --hard ghi9012
-  # Branch restaurado exatamente como estava antes`}
-        />
+# Se você não capturou o hash, procure no reflog
+git reflog | grep feature/importante
+# OU encontre commits órfãos
+git fsck --lost-found
+git log --all --oneline | grep "feat: o que era da feature"
+`}
+      />
 
-        <h2>Reflog por referência</h2>
-        <CodeBlock
-          title="Sintaxe de referência do reflog"
-          code={`# HEAD@{N} = N movimentos atrás
-  git checkout HEAD@{1}   # estado de 1 operação atrás
-  git diff HEAD@{0} HEAD@{3}  # diferença entre agora e 3 ops atrás
+      <h3>3. "Rebase deu ruim, quero voltar atrás"</h3>
+      <CodeBlock
+        title="Recuperando rebase"
+        language="bash"
+        code={`# Após rebase mal-sucedido
+git reflog
+# a1b2c3d HEAD@{0}: rebase finished
+# 7p8q9r0 HEAD@{1}: rebase: feat: ...
+# 5l6m7n8 HEAD@{2}: rebase: ...
+# c3d4e5f HEAD@{3}: feat: estado ANTES do rebase ★
 
-  # main@{N} = N movimentos atrás no branch main
-  git show main@{5}
+# Volte para antes do rebase
+git reset --hard c3d4e5f
+git reset --hard HEAD@{3}
 
-  # Tempo relativo
-  git show main@{2.hours.ago}
-  git show HEAD@{yesterday}
-  git diff HEAD@{1.week.ago} HEAD
+# Truque: ORIG_HEAD aponta para o estado pré-rebase
+git reset --hard ORIG_HEAD
+`}
+      />
 
-  # Listar commits desde uma data
-  git log main@{2024-01-01}..main`}
-        />
+      <h3>4. "Stashe drop por engano!"</h3>
+      <CodeBlock
+        title="Recuperando stash dropped"
+        language="bash"
+        code={`# Você fez:
+git stash drop stash@{0}     # oops!
 
-        <h2>Limpeza e expiração do reflog</h2>
-        <div className="overflow-x-auto my-6">
-          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-3 text-left">Configuração</th>
-                <th className="p-3 text-left">Padrão</th>
-                <th className="p-3 text-left">Significado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ["gc.reflogExpire", "90 dias", "Entradas acessíveis expiram em 90 dias"],
-                ["gc.reflogExpireUnreachable", "30 dias", "Commits inacessíveis expiram em 30 dias"],
-                ["core.logAllRefUpdates", "true", "Ativa/desativa o reflog (não desative!)"],
-              ].map(([conf, pad, sig], i) => (
-                <tr key={i} className="border-t border-border">
-                  <td className="p-3 font-mono text-primary text-xs">{conf}</td>
-                  <td className="p-3 text-yellow-400 text-sm">{pad}</td>
-                  <td className="p-3 text-muted-foreground text-sm">{sig}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+# Procure no reflog (stashes têm refs próprias)
+git fsck --unreachable | grep commit
+# unreachable commit a1b2c3d
+# unreachable commit 7p8q9r0
 
-        <AlertBox type="warning" title="git gc pode apagar dados do reflog">
-          O comando <code>git gc</code> (garbage collection) aplica as políticas de expiração. Entradas com mais de 30 dias (inacessíveis) podem ser apagadas permanentemente. Se você perdeu algo, procure <em>antes</em> de rodar gc.
-        </AlertBox>
-      </PageContainer>
-    );
-  }
-  
+# Inspecione cada um
+git show a1b2c3d
+git show 7p8q9r0
+
+# Achou? Recupere
+git stash apply a1b2c3d
+git checkout -b recovered a1b2c3d
+`}
+      />
+
+      <h3>5. "Fiz force-push errado e o remoto perdeu commits"</h3>
+      <CodeBlock
+        title="Recuperando do reflog LOCAL"
+        language="bash"
+        code={`# Os commits perdidos no remoto ainda estão no SEU reflog local
+# (desde que você os tinha em algum momento)
+
+git reflog
+# Ache o estado anterior
+git push origin <hash-do-estado-bom>:main --force-with-lease
+
+# Se foi outro dev que fez force-push, peça pra ele recuperar do reflog DELE
+# Se ninguém tem mais — perdido (a menos que tenha CI/Reflog server)
+`}
+      />
+
+      <h2>Reflog vs log</h2>
+      <CodeBlock
+        title="Diferença fundamental"
+        language="markdown"
+        code={`git log
+  → mostra o histórico LINEAR a partir de HEAD
+  → segue a árvore de commits (parents)
+  → visão "histórica"
+
+git reflog
+  → mostra o histórico de OPERAÇÕES locais
+  → cronológico, em ordem que aconteceram
+  → inclui commits órfãos (sem branch apontando)
+  → visão "operacional" / debug
+`}
+      />
+
+      <h2>Inspecionando reflog específico</h2>
+      <CodeBlock
+        title="Por ref"
+        language="bash"
+        code={`# Reflog do HEAD (padrão)
+git reflog
+git reflog HEAD
+
+# Reflog de um branch
+git reflog main
+git reflog feature/x
+
+# Reflog do stash
+git reflog stash
+
+# Reflog de uma tag
+git reflog v1.0.0
+
+# Mostrar TUDO
+git reflog --all
+`}
+      />
+
+      <h2>Configurando expiração</h2>
+      <CodeBlock
+        title="Quanto tempo o reflog guarda"
+        language="bash"
+        code={`# Padrões:
+# - Refs alcançáveis: 90 dias
+# - Refs não-alcançáveis: 30 dias
+
+git config --global gc.reflogExpire "90 days"
+git config --global gc.reflogExpireUnreachable "30 days"
+
+# AUMENTAR (mais segurança, mais disco)
+git config --global gc.reflogExpire "1 year"
+git config --global gc.reflogExpireUnreachable "90 days"
+
+# Nunca expirar (CUIDADO — repo cresce)
+git config --global gc.reflogExpire never
+git config --global gc.reflogExpireUnreachable never
+`}
+      />
+
+      <h2>Limpando o reflog (raro)</h2>
+      <CodeBlock
+        title="Force expire"
+        language="bash"
+        code={`# Expirar entries antigas (segue regras de gc.reflogExpire)
+git reflog expire --expire=now --all
+git reflog expire --expire-unreachable=now --all
+
+# Forçar GC para limpar objetos órfãos
+git gc --prune=now
+
+# ⚠️  Depois disso, recuperação fica MUITO mais difícil
+# Use só se realmente precisa de espaço
+`}
+      />
+
+      <AlertBox type="danger" title="Limpar reflog é irreversível">
+        Após <code>reflog expire</code> + <code>gc --prune=now</code>, commits órfãos somem para SEMPRE. Faça apenas em repos onde você tem certeza de não precisar de recovery.
+      </AlertBox>
+
+      <h2>git fsck — encontrando ovos perdidos</h2>
+      <CodeBlock
+        title="Quando reflog não basta"
+        language="bash"
+        code={`# Lista commits e árvores não-alcançáveis (órfãos)
+git fsck --unreachable
+git fsck --lost-found
+# unreachable commit a1b2c3d
+# unreachable blob 7p8q9r0
+# unreachable tree 5l6m7n8
+
+# Inspecionar cada commit órfão
+for hash in $(git fsck --no-reflogs --unreachable | grep commit | awk '{print $3}'); do
+  echo "──── $hash ────"
+  git show --stat "$hash" | head -5
+  echo ""
+done
+
+# Recuperar criando branch
+git switch -c recuperado a1b2c3d
+`}
+      />
+
+      <h2>Workflow defensivo: tag antes de operações arriscadas</h2>
+      <CodeBlock
+        title="Backup antes de reset/rebase"
+        language="bash"
+        code={`# Antes de rebase grande
+git tag backup-pre-rebase
+git rebase -i HEAD~50
+
+# Se der ruim
+git reset --hard backup-pre-rebase
+git tag -d backup-pre-rebase
+
+# Truque: alias automatizado
+git config --global alias.safe-rebase '!f() { \\
+  git tag "backup-$(date +%s)" && \\
+  git rebase "$@"; \\
+}; f'
+`}
+      />
+
+      <h2>Cheat-sheet</h2>
+      <CodeBlock
+        title="Reflog essencial"
+        language="bash"
+        code={`git reflog                      # ver tudo
+git reflog show <branch>        # de um branch
+git reflog --all                # todas as refs
+
+# Recuperação
+git reset --hard HEAD@{N}       # volta N operações atrás
+git reset --hard ORIG_HEAD      # antes do último merge/rebase
+git switch -c novo HEAD@{N}     # cria branch do estado anterior
+
+# Encontrar órfãos
+git fsck --lost-found
+git fsck --unreachable
+
+# Configuração
+git config gc.reflogExpire "1 year"
+git config gc.reflogExpireUnreachable "90 days"
+
+# Limpar (com CUIDADO)
+git reflog expire --expire=now --all
+git gc --prune=now
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/recuperacao">Recuperação de Desastres</Link> — guia completo</li>
+        <li><Link href="/reset">Reset</Link> — reflog é o "antídoto"</li>
+        <li><Link href="/manutencao">Manutenção</Link> — gc, prune e como tudo funciona</li>
+      </ul>
+    </PageContainer>
+  );
+}

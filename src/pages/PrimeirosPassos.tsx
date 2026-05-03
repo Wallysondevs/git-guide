@@ -1,169 +1,218 @@
 import { PageContainer } from "@/components/layout/PageContainer";
 import { CodeBlock } from "@/components/ui/CodeBlock";
 import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
 export default function PrimeirosPassos() {
   return (
     <PageContainer
       title="Primeiros Passos"
-      subtitle="Aprenda o fluxo básico do Git: criar um repositório, fazer alterações e registrá-las com commits."
+      subtitle="Do diretório vazio ao primeiro commit em 5 minutos. O ciclo fundamental que você vai repetir mil vezes."
       difficulty="iniciante"
-      timeToRead="12 min"
+      timeToRead="10 min"
     >
       <p>
-        Agora que o Git está instalado e configurado, vamos criar nosso primeiro repositório e entender o fluxo básico de trabalho: modificar arquivos → preparar mudanças → commitar.
+        Aqui você vai aprender o <strong>ciclo básico do Git</strong>: criar repositório → editar arquivo → adicionar ao stage → commitar. Esses 4 passos são 80% do que você faz no dia a dia.
       </p>
 
-      <h2>Criando seu Primeiro Repositório</h2>
-      <CodeBlock
-        title="Iniciando um repositório do zero"
-        code={`# Crie uma pasta para o projeto
-mkdir meu-projeto
-cd meu-projeto
-
-# Inicializa o repositório Git
-git init
-
-# O Git cria uma pasta oculta '.git' que guarda todo o histórico
-ls -la  # Você verá a pasta .git`}
-      />
-
-      <AlertBox type="info" title="O que é a pasta .git?">
-        A pasta <code>.git</code> contém tudo que o Git precisa: histórico de commits, branches, configurações locais e muito mais. Nunca delete essa pasta ou você perderá todo o histórico do repositório.
+      <AlertBox type="tip" title="Pré-requisitos">
+        Tenha o Git instalado e seu nome/email configurados. Se não tiver, volte para <Link href="/instalacao">Instalação e Setup</Link>.
       </AlertBox>
 
-      <h2>O Fluxo Básico do Git</h2>
-      <p>
-        O fluxo de trabalho no Git segue sempre o mesmo padrão:
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
-        <div className="p-4 border border-border rounded-xl bg-primary/5 text-center">
-          <div className="text-2xl mb-2">✏️</div>
-          <h4 className="font-bold mb-2 border-0 mt-0">1. Modificar</h4>
-          <p className="text-sm text-muted-foreground">Edite, crie ou delete arquivos no seu diretório de trabalho.</p>
-        </div>
-        <div className="p-4 border border-border rounded-xl bg-primary/5 text-center">
-          <div className="text-2xl mb-2">📦</div>
-          <h4 className="font-bold mb-2 border-0 mt-0">2. Preparar (Stage)</h4>
-          <p className="text-sm text-muted-foreground">Selecione quais mudanças vão no próximo commit com <code>git add</code>.</p>
-        </div>
-        <div className="p-4 border border-border rounded-xl bg-primary/5 text-center">
-          <div className="text-2xl mb-2">💾</div>
-          <h4 className="font-bold mb-2 border-0 mt-0">3. Commitar</h4>
-          <p className="text-sm text-muted-foreground">Salve permanentemente as mudanças no histórico com <code>git commit</code>.</p>
-        </div>
-      </div>
+      <h2>1. Crie um repositório</h2>
+      <p>Existem dois caminhos: começar do zero (<code>git init</code>) ou clonar um existente (<code>git clone</code>).</p>
 
       <CodeBlock
-        title="Seu primeiro commit"
-        code={`# Crie um arquivo
-echo "# Meu Projeto" > README.md
+        title="Do zero — git init"
+        language="bash"
+        code={`# Criar pasta e entrar nela
+mkdir meu-projeto && cd meu-projeto
 
-# Veja o status do repositório
-git status
+# Inicializar repositório Git
+git init
+# Initialized empty Git repository in /home/voce/meu-projeto/.git/
 
-# Adicione o arquivo à staging area
+# Verificar — agora existe uma pasta .git oculta
+ls -la
+# .  ..  .git
+`}
+      />
+
+      <CodeBlock
+        title="De um repositório existente — git clone"
+        language="bash"
+        code={`# Clonar via HTTPS
+git clone https://github.com/usuario/repositorio.git
+
+# Clonar via SSH (recomendado se você tem chave configurada)
+git clone git@github.com:usuario/repositorio.git
+
+# Clonar em uma pasta com nome diferente
+git clone https://github.com/usuario/repositorio.git minha-pasta
+
+# Clonar só a versão mais recente (mais rápido para repos grandes)
+git clone --depth 1 https://github.com/usuario/repositorio.git
+`}
+      />
+
+      <h2>2. Crie um arquivo</h2>
+      <CodeBlock
+        title="Primeiro arquivo do projeto"
+        language="bash"
+        code={`echo "# Meu Projeto" > README.md
+echo "console.log('hello git')" > app.js
+
+ls
+# README.md  app.js
+`}
+      />
+
+      <h2>3. Verifique o status</h2>
+      <p><code>git status</code> é o comando que você mais vai usar — mostra o que mudou, o que está staged e o que está untracked.</p>
+
+      <CodeBlock
+        title="git status"
+        language="bash"
+        code={`git status
+# On branch main
+#
+# No commits yet
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#         README.md
+#         app.js
+#
+# nothing added to commit but untracked files present
+`}
+      />
+
+      <h2>4. Adicione ao staging</h2>
+      <CodeBlock
+        title="git add — preparando para o commit"
+        language="bash"
+        code={`# Adicionar um arquivo específico
 git add README.md
 
-# Verifique o status novamente
-git status
-
-# Faça o primeiro commit
-git commit -m "Adiciona README inicial"
-
-# Veja o histórico de commits
-git log`}
-      />
-
-      <h2>Entendendo o git status</h2>
-      <p>
-        O comando <code>git status</code> é seu melhor amigo. Ele mostra o estado atual do repositório: quais arquivos foram modificados, quais estão na staging area e quais não estão sendo rastreados.
-      </p>
-
-      <CodeBlock
-        title="Interpretando o git status"
-        code={`$ git status
-On branch main
-Changes to be committed:
-  (use "git restore --staged <file>..." to unstage)
-        new file:   README.md        # Na staging area
-
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git restore <file>..." to discard changes in working directory)
-        modified:   app.js            # Modificado, mas não staged
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-        temp.txt                      # Arquivo novo, não rastreado`}
-      />
-
-      <h2>Adicionando Arquivos</h2>
-      <CodeBlock
-        title="Diferentes formas de usar git add"
-        code={`# Adicionar um arquivo específico
-git add arquivo.txt
-
 # Adicionar vários arquivos
-git add arquivo1.txt arquivo2.js
+git add README.md app.js
 
-# Adicionar todos os arquivos modificados e novos
+# Adicionar TUDO que mudou (cuidado — adiciona até arquivos novos)
 git add .
 
-# Adicionar todos os arquivos com uma extensão
-git add *.js
+# Adicionar interativamente (escolhe pedaço por pedaço)
+git add -p
 
-# Adicionar de forma interativa (escolhe linha a linha)
-git add -p`}
+# Ver o que está staged
+git status
+`}
       />
 
-      <h2>Fazendo Commits</h2>
-      <CodeBlock
-        title="Fazendo o commit"
-        code={`# Commit simples com mensagem
-git commit -m "Descrição breve do que foi feito"
-
-# Commit com mensagem mais detalhada (abre o editor)
-git commit
-
-# Adicionar todos os arquivos JÁ RASTREADOS e commitar de uma vez
-# (não inclui arquivos novos/não rastreados)
-git commit -am "Corrige bug no formulário de login"
-
-# Alterar a mensagem do último commit (antes de fazer push)
-git commit --amend -m "Nova mensagem corrigida"`}
-      />
-
-      <AlertBox type="warning" title="Boas Mensagens de Commit">
-        Uma boa mensagem de commit deve explicar <strong>o quê</strong> e <strong>por quê</strong> foi feito, não como. Use o imperativo: "Adiciona", "Corrige", "Remove", "Refatora" ao invés de "Adicionado", "Corrigi".
+      <AlertBox type="warning" title="Cuidado com git add .">
+        <code>git add .</code> adiciona <strong>tudo</strong>, incluindo arquivos que talvez você não queira (logs, builds, secrets). Sempre rode <code>git status</code> antes de commitar e configure um bom <Link href="/gitignore">.gitignore</Link>.
       </AlertBox>
 
-      <h2>Vendo o Histórico</h2>
+      <h2>5. Faça o commit</h2>
       <CodeBlock
-        title="Navegando pelo histórico"
+        title="git commit"
+        language="bash"
+        code={`# Commit com mensagem inline
+git commit -m "feat: setup inicial do projeto"
+
+# Saída esperada:
+# [main (root-commit) a1b2c3d] feat: setup inicial do projeto
+#  2 files changed, 2 insertions(+)
+#  create mode 100644 README.md
+#  create mode 100644 app.js
+`}
+      />
+
+      <h2>6. Veja o histórico</h2>
+      <CodeBlock
+        title="git log"
+        language="bash"
         code={`# Histórico completo
 git log
 
-# Histórico resumido (uma linha por commit)
+# Versão compacta — uma linha por commit
 git log --oneline
 
-# Histórico com gráfico de branches
+# Com gráfico ASCII de branches
 git log --oneline --graph --all
 
-# Últimos 5 commits
-git log -5
-
-# Commits de um autor específico
-git log --author="Seu Nome"
-
-# Commits que modificaram um arquivo
-git log -- arquivo.txt`}
+# Últimos 5 commits formatados
+git log -5 --pretty=format:"%h %an: %s"
+`}
       />
 
-      <AlertBox type="success" title="Parabéns!">
-        Você já sabe o fluxo básico do Git: <code>git add</code> → <code>git commit</code> → <code>git log</code>. Isso é suficiente para trabalhar em projetos pessoais. Nas próximas seções, aprenderemos sobre branches, colaboração e recursos avançados.
+      <h2>O ciclo completo, de novo</h2>
+      <CodeBlock
+        title="Seu fluxo diário"
+        language="bash"
+        code={`# 1. Veja o que mudou
+git status
+git diff
+
+# 2. Adicione as mudanças que quer commitar
+git add arquivo1.js arquivo2.js
+# ou: git add -p   (interativo, recomendado)
+
+# 3. Confirme com mensagem clara
+git commit -m "fix: corrige cálculo de desconto"
+
+# 4. Envie para o remoto (se houver)
+git push
+`}
+      />
+
+      <h2>Desfazendo erros comuns</h2>
+      <CodeBlock
+        title="Cenários frequentes"
+        language="bash"
+        code={`# Adicionei um arquivo errado ao stage
+git restore --staged arquivo-errado.js
+
+# Quero descartar mudanças não commitadas em um arquivo
+git restore arquivo.js
+# ⚠️  isso APAGA suas mudanças, sem volta
+
+# Esqueci de adicionar um arquivo no último commit
+git add esquecido.js
+git commit --amend --no-edit
+
+# Errei a mensagem do último commit
+git commit --amend -m "mensagem corrigida"
+`}
+      />
+
+      <AlertBox type="danger" title="Cuidado com --amend após push">
+        Use <code>--amend</code> só em commits que <strong>ainda não foram pushados</strong>. Se já foram, você reescreve o histórico e pode quebrar o trabalho de outros.
       </AlertBox>
+
+      <h2>Cheat-sheet do iniciante</h2>
+      <CodeBlock
+        title="Os 10 comandos que resolvem 90% dos casos"
+        language="bash"
+        code={`git init                  # criar repo
+git clone <url>           # baixar repo existente
+git status                # ver o que mudou
+git diff                  # ver as mudanças linha a linha
+git add <arquivo>         # preparar para commit
+git add -p                # adicionar pedaço a pedaço (interativo)
+git commit -m "msg"       # commitar
+git log --oneline         # ver histórico
+git push                  # enviar para remoto
+git pull                  # baixar mudanças do remoto
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/status">Status e Diff</Link> — entenda o que cada estado significa</li>
+        <li><Link href="/staging">Staging Area</Link> — o conceito mais característico do Git</li>
+        <li><Link href="/commits">Fazendo Commits</Link> — escreva mensagens que fazem sentido</li>
+        <li><Link href="/branches">Branches</Link> — trabalhe em múltiplas coisas em paralelo</li>
+      </ul>
     </PageContainer>
   );
 }

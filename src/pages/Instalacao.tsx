@@ -1,154 +1,224 @@
 import { PageContainer } from "@/components/layout/PageContainer";
 import { CodeBlock } from "@/components/ui/CodeBlock";
 import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
 export default function Instalacao() {
   return (
     <PageContainer
-      title="Instalação e Configuração"
-      subtitle="Como instalar o Git em Windows, macOS e Linux e configurar seu ambiente pela primeira vez."
+      title="Instalação e Setup"
+      subtitle="Instale o Git em qualquer sistema e faça a configuração inicial que você só faz uma vez na vida."
       difficulty="iniciante"
       timeToRead="10 min"
     >
       <p>
-        Antes de começar a usar o Git, você precisa instalá-lo no seu sistema e fazer a configuração inicial. Esta configuração é feita uma única vez e identifica você em todos os seus commits.
+        Em 5 minutos você terá o Git instalado, identidade configurada e pronto para clonar ou criar repositórios. Esta configuração inicial é a base de tudo — vale a pena fazer com calma.
       </p>
 
-      <h2>Instalando no Windows</h2>
-      <p>
-        A forma mais simples de instalar o Git no Windows é baixar o instalador oficial do site <strong>git-scm.com</strong>. O instalador inclui o <strong>Git Bash</strong>, um terminal Unix-like para Windows.
-      </p>
-      <CodeBlock
-        title="Windows — via winget (recomendado)"
-        language="powershell"
-        code={`# Instalar via Windows Package Manager (winget)
-winget install --id Git.Git -e --source winget
+      <AlertBox type="tip" title="Versão recomendada">
+        Use sempre a versão mais recente do Git (≥ 2.40). Versões antigas têm comportamento diferente para <code>git pull</code>, branches padrão e segurança.
+      </AlertBox>
 
-# Verificar a instalação
-git --version`}
+      <h2>Linux</h2>
+      <CodeBlock
+        title="Instalação por distro"
+        language="bash"
+        code={`# Debian / Ubuntu / Mint
+sudo apt update && sudo apt install -y git
+
+# Fedora / RHEL / Rocky
+sudo dnf install -y git
+
+# Arch / Manjaro / EndeavourOS
+sudo pacman -S --needed git
+
+# openSUSE
+sudo zypper install git
+
+# Verificar instalação
+git --version
+# git version 2.46.0
+`}
       />
-      <CodeBlock
-        title="Windows — via Chocolatey"
-        language="powershell"
-        code={`# Se você tem o Chocolatey instalado
-choco install git
 
-# Ou via Scoop
-scoop install git`}
-      />
-
-      <h2>Instalando no macOS</h2>
+      <h2>macOS</h2>
       <CodeBlock
-        title="macOS — via Homebrew (recomendado)"
-        code={`# Instalar via Homebrew
+        title="Três caminhos no Mac"
+        language="bash"
+        code={`# Opção 1 — Xcode Command Line Tools (mais simples)
+xcode-select --install
+
+# Opção 2 — Homebrew (recomendado, sempre atualizado)
 brew install git
 
-# Verificar a instalação
+# Opção 3 — instalador oficial
+# https://git-scm.com/download/mac
+
 git --version
-
-# Alternativa: instalar as Xcode Command Line Tools
-# (já inclui o Git)
-xcode-select --install`}
+`}
       />
 
-      <h2>Instalando no Linux</h2>
+      <h2>Windows</h2>
       <CodeBlock
-        title="Linux — Distribuições baseadas em Debian/Ubuntu"
-        code={`# Atualizar lista de pacotes e instalar
-sudo apt update
-sudo apt install git
+        title="Três caminhos no Windows"
+        language="bash"
+        code={`# Opção 1 — instalador oficial Git for Windows (inclui Git Bash)
+# https://git-scm.com/download/win
 
-# Verificar
-git --version`}
-      />
-      <CodeBlock
-        title="Linux — Arch Linux / Manjaro"
-        code={`# Instalar via pacman
-sudo pacman -S git`}
-      />
-      <CodeBlock
-        title="Linux — Fedora / RHEL / CentOS"
-        code={`# Fedora
-sudo dnf install git
+# Opção 2 — winget (Windows 11 / 10 com App Installer)
+winget install --id Git.Git -e --source winget
 
-# RHEL/CentOS
-sudo yum install git`}
+# Opção 3 — Scoop / Chocolatey
+scoop install git
+choco install git
+
+git --version
+`}
       />
 
-      <h2>Configuração Inicial</h2>
-      <p>
-        Após instalar o Git, você precisa configurar seu nome e e-mail. Essas informações são gravadas em cada commit que você fizer, identificando o autor da mudança.
-      </p>
-
-      <AlertBox type="warning" title="Obrigatório">
-        A configuração de nome e e-mail é obrigatória. O Git não permite fazer commits sem essas informações.
+      <AlertBox type="note" title="Git Bash no Windows">
+        O instalador oficial do Windows inclui o <strong>Git Bash</strong> — um terminal estilo Unix que é muito mais agradável que o CMD ou PowerShell para usar Git. Recomendado.
       </AlertBox>
 
+      <h2>Configuração inicial obrigatória</h2>
+      <p>Toda instalação nova precisa destas 3 configurações antes do primeiro commit:</p>
+
       <CodeBlock
-        title="Configuração global (recomendado)"
-        code={`# Seu nome completo
+        title="Identidade — quem é você"
+        language="bash"
+        code={`# Nome e email aparecem em CADA commit que você fizer
 git config --global user.name "Seu Nome Completo"
+git config --global user.email "voce@exemplo.com"
 
-# Seu e-mail (use o mesmo do GitHub/GitLab)
-git config --global user.email "seu@email.com"
-
-# Definir o editor padrão (VS Code, Vim, Nano...)
-git config --global core.editor "code --wait"   # VS Code
-git config --global core.editor "nano"           # Nano
-git config --global core.editor "vim"            # Vim
-
-# Definir o branch padrão como 'main' (padrão moderno)
-git config --global init.defaultBranch main`}
+# Se você usa GitHub e quer privacidade, use o email noreply do GitHub:
+# git config --global user.email "12345+seu-user@users.noreply.github.com"
+`}
       />
 
-      <h2>Níveis de Configuração</h2>
-      <p>
-        O Git tem três níveis de configuração, do mais específico para o mais geral:
-      </p>
-      <ul>
-        <li><code>--local</code> — só afeta o repositório atual (<code>.git/config</code>)</li>
-        <li><code>--global</code> — afeta todos os repositórios do usuário (<code>~/.gitconfig</code>)</li>
-        <li><code>--system</code> — afeta todos os usuários do sistema</li>
-      </ul>
+      <CodeBlock
+        title="Branch padrão e editor"
+        language="bash"
+        code={`# Nome do branch inicial em novos repositórios (padrão moderno: main)
+git config --global init.defaultBranch main
+
+# Editor para mensagens de commit, rebase interativo, etc.
+git config --global core.editor "code --wait"   # VS Code
+git config --global core.editor "nvim"          # Neovim
+git config --global core.editor "nano"          # Nano (mais simples)
+
+# Quebra de linha (importante em equipes mistas Win/Linux/Mac)
+git config --global core.autocrlf input    # Linux/macOS
+git config --global core.autocrlf true     # Windows
+`}
+      />
 
       <CodeBlock
-        title="Visualizando e editando configurações"
-        code={`# Ver todas as configurações ativas
-git config --list
+        title="Comportamento do pull e merge"
+        language="bash"
+        code={`# Sem isso, git pull dá warning toda vez (a partir do Git 2.27)
+git config --global pull.rebase false      # merge (padrão seguro)
+# OU
+git config --global pull.rebase true       # rebase (histórico linear)
 
-# Ver uma configuração específica
-git config user.name
-git config user.email
+# Push só do branch atual — evita push acidental de tudo
+git config --global push.default simple
+git config --global push.autoSetupRemote true   # cria upstream automático
+`}
+      />
 
-# Ver de onde cada configuração vem
+      <h2>Verificando sua configuração</h2>
+      <CodeBlock
+        title="Inspecionar configs"
+        language="bash"
+        code={`# Listar todas as configs ativas (e em qual arquivo estão)
 git config --list --show-origin
 
-# Abrir o arquivo de configuração global no editor
-git config --global --edit`}
+# Ver uma config específica
+git config user.email
+git config --get user.name
+
+# Editar manualmente o arquivo global (~/.gitconfig)
+git config --global --edit
+`}
       />
 
-      <h2>Configurações Recomendadas</h2>
+      <h2>Configurações úteis (opcionais mas recomendadas)</h2>
       <CodeBlock
-        title="Configurações extras úteis"
-        code={`# Colorir a saída do Git (já ativo por padrão em versões modernas)
+        title="Quality of life"
+        language="bash"
+        code={`# Cores no terminal
 git config --global color.ui auto
 
-# Configurar o comportamento do 'git pull'
-# 'rebase' é mais limpo que 'merge' para pulls
-git config --global pull.rebase false
+# Mostrar status enxuto e útil
+git config --global status.short true
+git config --global status.branch true
 
-# Salvar credenciais (para não digitar senha toda hora)
-git config --global credential.helper store     # Linux/Mac
-git config --global credential.helper manager  # Windows
+# Diff melhor (com palavras em vez de linhas inteiras)
+git config --global diff.algorithm histogram
 
-# Mostrar o branch no prompt do terminal
-# (adicione ao seu .bashrc ou .zshrc)
-# PS1='[\\u@\\h \\W$(git branch --show-current)]\\ '`}
+# Auto-corrige typos (espera 1.5s antes de aceitar)
+git config --global help.autocorrect 15
+
+# Reusar resoluções de conflito (mágica para rebases longos)
+git config --global rerere.enabled true
+
+# Pruna refs deletados ao fazer fetch
+git config --global fetch.prune true
+`}
       />
 
-      <AlertBox type="success" title="Pronto para usar!">
-        Com o Git instalado e configurado, você já pode criar seu primeiro repositório. Vá para a próxima seção e aprenda os primeiros passos.
+      <h2>Configuração SSH (recomendado para GitHub/GitLab)</h2>
+      <CodeBlock
+        title="Gerar chave SSH ed25519"
+        language="bash"
+        code={`# Gerar par de chaves (mais seguro e rápido que RSA)
+ssh-keygen -t ed25519 -C "voce@exemplo.com"
+# Aperte Enter para localização padrão (~/.ssh/id_ed25519)
+# Defina uma senha (opcional mas recomendado)
+
+# Iniciar agente SSH e adicionar a chave
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+
+# Copiar chave pública para colar no GitHub/GitLab
+cat ~/.ssh/id_ed25519.pub
+# ssh-ed25519 AAAAC3Nz... voce@exemplo.com
+
+# Testar conexão com GitHub
+ssh -T git@github.com
+# Hi seu-usuario! You've successfully authenticated...
+`}
+      />
+
+      <AlertBox type="warning" title="HTTPS vs SSH">
+        Se você usar HTTPS, vai digitar usuário/token a cada push. Com SSH, autentica uma vez e esquece. Para máquinas pessoais, prefira <strong>SSH</strong>. Para CI/servidores, use tokens HTTPS.
       </AlertBox>
+
+      <h2>Cheat-sheet de configuração inicial</h2>
+      <CodeBlock
+        title="Copy-paste para máquina nova"
+        language="bash"
+        code={`git config --global user.name "Seu Nome"
+git config --global user.email "voce@exemplo.com"
+git config --global init.defaultBranch main
+git config --global pull.rebase false
+git config --global push.autoSetupRemote true
+git config --global core.editor "nano"
+git config --global color.ui auto
+git config --global rerere.enabled true
+git config --global fetch.prune true
+
+ssh-keygen -t ed25519 -C "voce@exemplo.com"
+cat ~/.ssh/id_ed25519.pub   # cole no GitHub Settings → SSH Keys
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/primeiros-passos">Primeiros Passos</Link> — crie seu primeiro repositório agora</li>
+        <li><Link href="/configuracao">Configurações Avançadas</Link> — aliases, includes condicionais e mais</li>
+        <li><Link href="/signing">Assinatura GPG/SSH</Link> — verifique seus commits no GitHub</li>
+      </ul>
     </PageContainer>
   );
 }

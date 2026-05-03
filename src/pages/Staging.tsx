@@ -1,151 +1,269 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-  import { CodeBlock } from "@/components/ui/CodeBlock";
-  import { AlertBox } from "@/components/ui/AlertBox";
+import { CodeBlock } from "@/components/ui/CodeBlock";
+import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
-  export default function Staging() {
-    return (
-      <PageContainer
-        title="Staging Area"
-        subtitle="O índice do Git — como preparar commits precisos usando a área de staging."
-        difficulty="iniciante"
-        timeToRead="12 min"
-      >
-        <p>
-          A staging area (também chamada de "índice" ou "index") é uma camada intermediária entre o working directory e os commits. Ela permite que você prepare exatamente o que vai entrar no próximo commit, com precisão cirúrgica.
-        </p>
+export default function Staging() {
+  return (
+    <PageContainer
+      title="Staging Area"
+      subtitle="O conceito mais característico do Git e por que ele te dá superpoderes que nenhum outro VCS oferece."
+      difficulty="iniciante"
+      timeToRead="11 min"
+    >
+      <p>
+        A <strong>staging area</strong> (também chamada <em>index</em>) é o que separa o Git de quase todos os outros sistemas de controle de versão. Ela é uma área intermediária entre seus arquivos editados e o histórico permanente — um <strong>rascunho do próximo commit</strong>.
+      </p>
 
-        <h2>Os três estados de um arquivo no Git</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
-          {[
-            { estado: "Working Directory", icone: "📝", desc: "Onde você edita os arquivos. Mudanças aqui são 'unstaged' — o Git sabe que mudaram mas não vai incluir no próximo commit.", cmd: "git diff" },
-            { estado: "Staging Area", icone: "📋", desc: "Mudanças preparadas para o próximo commit. Você decide explicitamente o que vai aqui. 'Staged' ou 'indexed'.", cmd: "git diff --staged" },
-            { estado: "Repositório", icone: "🔒", desc: "Commits permanentes. Uma vez aqui, o conteúdo está salvo no histórico e pode ser recuperado a qualquer momento.", cmd: "git log" },
-          ].map((item) => (
-            <div key={item.estado} className="p-4 border border-border rounded-xl bg-card text-center">
-              <div className="text-3xl mb-2">{item.icone}</div>
-              <h4 className="font-bold mb-1 mt-0 border-0 text-sm">{item.estado}</h4>
-              <p className="text-xs text-muted-foreground mb-2">{item.desc}</p>
-              <code className="text-xs text-primary">{item.cmd}</code>
-            </div>
-          ))}
-        </div>
+      <AlertBox type="tip" title="Por que isso importa">
+        Sem staging, todo commit seria "tudo o que mudou desde o último". Com staging, você compõe commits com cirurgia: <strong>esta linha sim, aquela não, este arquivo agora, o resto depois</strong>.
+      </AlertBox>
 
-        <h2>Adicionando à staging area</h2>
-        <CodeBlock
-          title="git add — formas de usar"
-          code={`# Adicionar arquivo específico
-  git add src/auth.js
+      <h2>O modelo dos 3 estados</h2>
+      <CodeBlock
+        title="A jornada de um arquivo"
+        language="markdown"
+        code={`     [ Working Directory ]    ← você edita aqui
+              ↓ git add
+     [   Staging Area    ]    ← rascunho do próximo commit
+              ↓ git commit
+     [   Repositório      ]    ← histórico permanente (.git/objects)
 
-  # Adicionar múltiplos arquivos
-  git add src/auth.js src/user.js
+Para voltar:
+- git restore <arquivo>             → working ← staging (descarta edição)
+- git restore --staged <arquivo>    → staging ← working (unstage)
+- git checkout <hash> -- <arquivo>  → working ← repositório
+`}
+      />
 
-  # Adicionar pasta inteira
-  git add src/components/
+      <h2>Adicionando ao stage</h2>
+      <CodeBlock
+        title="git add — variações"
+        language="bash"
+        code={`# Arquivo específico
+git add src/auth.ts
 
-  # Adicionar tudo (tracked + untracked)
-  git add .
-  git add -A  # equivalente — inclui deletados
+# Múltiplos arquivos
+git add src/auth.ts src/login.ts
 
-  # Adicionar APENAS arquivos tracked (não novos)
-  git add -u
+# Todos os arquivos modificados E novos da pasta atual
+git add .
 
-  # Adicionar interativamente — escolher hunks
-  git add -p src/app.js
-  git add --patch src/app.js  # equivalente`}
-        />
+# Todos os tracked modificados (NÃO inclui novos)
+git add -u
+git add --update
 
-        <AlertBox type="info" title="git add -p — o comando mais importante que você não usa">
-          O modo interativo (<code>-p</code>) permite adicionar partes específicas de um arquivo — não o arquivo inteiro. Essencial para criar commits atômicos quando você fez múltiplas mudanças no mesmo arquivo.
-        </AlertBox>
+# Tudo do projeto inteiro (de qualquer subpasta)
+git add -A
+git add --all
 
-        <h2>Staging interativo — modo patch</h2>
-        <CodeBlock
-          title="Comandos do modo patch (git add -p)"
-          code={`# Iniciar modo interativo
-  git add -p src/app.js
+# Por padrão de glob
+git add "src/**/*.ts"
+git add "*.md"
+`}
+      />
 
-  # O Git mostra cada "hunk" (trecho de mudança) e pergunta:
-  # Stage this hunk [y,n,q,a,d,s,e,?]?
-  #
-  # y = sim, adicionar este hunk
-  # n = não, pular este hunk
-  # q = sair, não adicionar mais nada
-  # a = adicionar todos os hunks restantes
-  # d = pular todos os hunks restantes no arquivo
-  # s = dividir hunk em partes menores
-  # e = editar o hunk manualmente
-  # ? = ajuda
+      <h2>O modo interativo — o superpoder</h2>
+      <p>O modo <code>-p</code> (patch) divide cada arquivo em "hunks" e te pergunta um por um o que adicionar. <strong>Mude sua vida com isso.</strong></p>
 
-  # Após selecionar os hunks desejados:
-  git status   # ver o que está staged
-  git diff     # ver o que ficou fora (unstaged)
-  git diff --staged  # ver o que vai no commit`}
-        />
+      <CodeBlock
+        title="git add -p"
+        language="bash"
+        code={`git add -p src/auth.ts
+# diff --git a/src/auth.ts b/src/auth.ts
+# @@ -10,3 +10,5 @@
+#  function login(user) {
+# +  console.log('debug', user)   ← não quero este
+#    return verify(user)
+# +  // TODO: rate limit          ← este sim
+#  }
+# Stage this hunk [y,n,q,a,d,s,e,?]?
+#
+# y = sim
+# n = não
+# q = sair
+# a = sim para este e todos os próximos do arquivo
+# d = não para este e todos os próximos do arquivo
+# s = SPLIT em hunks menores ★
+# e = EDIT manualmente (escolhe linha por linha) ★
+# ? = ajuda
+`}
+      />
 
-        <h2>Desfazendo staging</h2>
-        <CodeBlock
-          title="Removendo arquivos da staging area"
-          code={`# Remover arquivo específico da staging area
-  git restore --staged src/app.js
-  # Mantém as mudanças no working directory — apenas desfaz o git add
+      <AlertBox type="note" title="Split e Edit são ouro">
+        Quando o hunk é grande demais, aperte <code>s</code> para dividi-lo. Quando ainda assim ficar misturado, <code>e</code> abre seu editor para escolher LINHA POR LINHA o que stage.
+      </AlertBox>
 
-  # Remover tudo da staging area
-  git restore --staged .
+      <h2>Removendo do stage (unstage)</h2>
+      <CodeBlock
+        title="git restore --staged"
+        language="bash"
+        code={`# Tirar um arquivo do stage (mantém edições no working)
+git restore --staged src/auth.ts
 
-  # Sintaxe antiga (ainda funciona)
-  git reset HEAD src/app.js
+# Tirar tudo
+git restore --staged .
 
-  # Ver diferença entre staged e working directory
-  git diff src/app.js           # working dir vs staged
-  git diff --staged src/app.js  # staged vs último commit`}
-        />
+# Forma antiga (ainda funciona em scripts/CI)
+git reset HEAD src/auth.ts
 
-        <h2>Inspecionando a staging area</h2>
-        <CodeBlock
-          title="Verificando o que está staged"
-          code={`# Ver status resumido
-  git status
-  git status -s  # formato curto (M = modified, A = added, ?? = untracked)
+# Tirar do stage interativamente
+git reset -p
+`}
+      />
 
-  # Ver diff das mudanças staged
-  git diff --staged
-  git diff --cached  # sinônimo de --staged
+      <h2>Vendo o que está staged</h2>
+      <CodeBlock
+        title="Inspecionando o índice"
+        language="bash"
+        code={`# Diff do que está no stage vs último commit
+git diff --staged
+git diff --cached       # mesmo comando
 
-  # Ver lista de arquivos staged
-  git diff --staged --name-only
+# Lista os arquivos que estão no stage
+git diff --staged --name-only
 
-  # Ver estatísticas (quantas linhas)
-  git diff --staged --stat
+# Estatísticas do que vai no próximo commit
+git diff --staged --stat
 
-  # Ver o conteúdo exato que vai no commit
-  git show :src/app.js  # versão staged do arquivo`}
-        />
+# Mostra o conteúdo exato de um arquivo no índice
+git show :src/auth.ts
+`}
+      />
 
-        <h2>Workflow típico com staging</h2>
-        <CodeBlock
-          title="Criando commits atômicos com staging"
-          code={`# Você editou auth.js (correção de bug) e user.js (nova feature)
-  # Quer criar dois commits separados
+      <h2>Casos práticos do dia a dia</h2>
 
-  # Commit 1: correção de bug em auth.js
-  git add src/auth.js
-  git commit -m "fix: corrige validação de token expirado"
+      <h3>Cenário 1: misturei 2 features no mesmo arquivo</h3>
+      <CodeBlock
+        title="Separando em 2 commits"
+        language="bash"
+        code={`# Você editou login.ts com bugfix + nova feature, sem querer
+git add -p login.ts
+# Aceite só os hunks do bugfix (y/n hunk a hunk)
+git commit -m "fix: corrige timeout no login"
 
-  # Commit 2: nova feature em user.js
-  git add src/user.js
-  git commit -m "feat: adiciona campo de preferências do usuário"
+# Agora os hunks restantes (a feature) ainda estão no working
+git add login.ts
+git commit -m "feat: adiciona MFA opcional"
+`}
+      />
 
-  # Ou com staging interativo para o mesmo arquivo:
-  git add -p src/utils.js  # seleciona apenas o trecho do bugfix
-  git commit -m "fix: corrige cálculo de data"
-  git add src/utils.js     # adiciona o resto (nova feature)
-  git commit -m "feat: adiciona formatação de data relativa"`}
-        />
+      <h3>Cenário 2: descartar mudanças não commitadas</h3>
+      <CodeBlock
+        title="git restore"
+        language="bash"
+        code={`# Descartar edições de um arquivo (volta ao último commit)
+git restore src/auth.ts
 
-        <AlertBox type="success" title="A staging area é seu rascunho antes do commit">
-          Pense na staging area como preparar um e-mail antes de enviar. Você monta tudo, revisa, ajusta — e só então commita. Use <code>git diff --staged</code> sempre antes de commitar para confirmar que o que vai no commit é exatamente o que você quer.
-        </AlertBox>
-      </PageContainer>
-    );
-  }
-  
+# Descartar TUDO no working directory
+git restore .
+
+# Restaurar um arquivo de outro commit
+git restore --source=HEAD~3 src/legado.ts
+
+# Restaurar tanto staging quanto working
+git restore --staged --worktree src/auth.ts
+`}
+      />
+
+      <AlertBox type="danger" title="git restore é destrutivo">
+        <code>git restore arquivo</code> apaga edições <strong>sem confirmação e sem volta</strong> (não vai pro reflog). Tenha certeza antes de usar. Em caso de dúvida, prefira <code>git stash</code>.
+      </AlertBox>
+
+      <h3>Cenário 3: arquivos novos que ainda não quero rastrear</h3>
+      <CodeBlock
+        title="Untracked vs ignored"
+        language="bash"
+        code={`# Adicione ao .gitignore para o Git parar de avisar
+echo "config.local.json" >> .gitignore
+git add .gitignore
+git commit -m "chore: ignora config local"
+
+# Para um arquivo já trackeado: pare de rastrear sem apagar
+git rm --cached config.json
+echo "config.json" >> .gitignore
+git commit -m "chore: remove config do tracking"
+`}
+      />
+
+      <h3>Cenário 4: um arquivo enorme demais — quero excluir do commit que estou prestes a fazer</h3>
+      <CodeBlock
+        title="Excluindo padrões do add"
+        language="bash"
+        code={`# Adicionar tudo EXCETO certos arquivos
+git add . ':!*.log' ':!dist/'
+
+# Equivalente com --pathspec
+git add . ':(exclude)dist/' ':(exclude,glob)*.log'
+`}
+      />
+
+      <h2>O índice por dentro</h2>
+      <CodeBlock
+        title="Inspecionando .git/index"
+        language="bash"
+        code={`# Lista o conteúdo completo do índice
+git ls-files --stage
+# 100644 a1b2c3d... 0    src/auth.ts
+# 100644 e5f6g7h... 0    src/login.ts
+# (modo)  (hash)   (estágio) (caminho)
+
+# Estágio 0 = normal
+# Estágios 1, 2, 3 = conflito de merge (base, ours, theirs)
+
+# Esvaziar completamente o índice (sem tocar working)
+git rm -r --cached .
+
+# Re-adicionar tudo (útil após mudar .gitignore)
+git add .
+`}
+      />
+
+      <h2>Padrão profissional: micro-commits</h2>
+      <p>Use a staging area para fazer commits <strong>pequenos, atômicos e bem delimitados</strong>. Cada commit deve representar UMA mudança lógica — não um "salvo do dia".</p>
+
+      <CodeBlock
+        title="Bom vs ruim"
+        language="diff"
+        code={`# ❌ Ruim
+- "muitas coisas"
+- "wip"
+- "fix tudo"
+
+# ✅ Bom
++ "feat(auth): adiciona MFA via TOTP"
++ "fix(auth): timeout aumentado para 30s"
++ "refactor(auth): extrai validação para módulo"
++ "test(auth): cobre cenário de token expirado"
+`}
+      />
+
+      <h2>Cheat-sheet</h2>
+      <CodeBlock
+        title="Comandos da staging area"
+        language="bash"
+        code={`git add <arquivo>           # ao stage
+git add -p                  # interativo (★)
+git add -A                  # tudo do projeto
+git add -u                  # só tracked modificados
+
+git restore --staged <f>    # remove do stage
+git restore <f>             # descarta edição (cuidado!)
+
+git diff                    # working vs stage
+git diff --staged           # stage vs último commit
+git ls-files --stage        # ver índice cru
+
+git rm --cached <f>         # parar de rastrear sem apagar
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/commits">Fazendo Commits</Link> — agora que você sabe stagear, escreva commits exemplares</li>
+        <li><Link href="/stash">Stash</Link> — guarde mudanças sem commitar</li>
+        <li><Link href="/reset">Reset e Revert</Link> — desfazendo commits que já existem</li>
+      </ul>
+    </PageContainer>
+  );
+}

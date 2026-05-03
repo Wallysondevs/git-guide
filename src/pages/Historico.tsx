@@ -1,149 +1,280 @@
 import { PageContainer } from "@/components/layout/PageContainer";
 import { CodeBlock } from "@/components/ui/CodeBlock";
 import { AlertBox } from "@/components/ui/AlertBox";
+import { Link } from "wouter";
 
 export default function Historico() {
   return (
     <PageContainer
       title="Histórico de Commits"
-      subtitle="Como navegar, filtrar e entender o histórico completo do seu projeto com git log."
-      difficulty="iniciante"
-      timeToRead="10 min"
+      subtitle="git log é uma máquina do tempo. Veja como interrogar o histórico para encontrar QUANDO, QUEM e POR QUE."
+      difficulty="intermediario"
+      timeToRead="14 min"
     >
       <p>
-        O histórico de commits é a memória do seu projeto. Com <code>git log</code> e seus inúmeros modificadores, você pode encontrar qualquer informação sobre o passado do seu código.
+        Um repositório com 5 anos pode ter dezenas de milhares de commits. <code>git log</code> é a ferramenta para encontrar agulhas no palheiro: o commit que introduziu o bug, quem mudou aquela linha, qual foi a última versão estável.
       </p>
 
-      <h2>git log — Básico</h2>
+      <AlertBox type="tip" title="Configuração que muda tudo">
+        Configure um alias <code>git lg</code> para <code>log --oneline --graph --decorate --all</code>. Você nunca mais vai usar <code>git log</code> "puro".
+      </AlertBox>
+
+      <h2>git log — o básico</h2>
       <CodeBlock
-        title="Visualizando o histórico"
-        code={`# Histórico completo (pressione Q para sair)
+        title="Variações fundamentais"
+        language="bash"
+        code={`# Histórico completo (verboso)
 git log
 
-# Uma linha por commit (mais compacto)
+# Uma linha por commit
 git log --oneline
+# a1b2c3d (HEAD -> main, origin/main) feat: adiciona login
+# e5f6g7h fix: corrige timeout
+# 9i0j1k2 chore: bump deps
 
-# Com gráfico ASCII de branches e merges
-git log --oneline --graph --all
+# Com gráfico de branches
+git log --graph --oneline --decorate --all
 
 # Últimos N commits
 git log -5
-git log -10 --oneline`}
+git log -n 5
+`}
       />
 
-      <h2>Formatando a Saída do git log</h2>
+      <h2>Filtrando o histórico</h2>
       <CodeBlock
-        title="Formatos customizados"
-        code={`# Formato compacto com cores
-git log --pretty=format:"%h %an %ar - %s"
-
-# %h = hash curto, %an = nome do autor
-# %ar = data relativa, %s = assunto do commit
-
-# Formato bonito para terminal
-git log --oneline --decorate --graph --all
-
-# Formato com data completa
-git log --format="%C(yellow)%h%Creset %C(green)%ad%Creset %s %C(red)[%an]%Creset" --date=short`}
-      />
-
-      <h2>Filtrando o Histórico</h2>
-      <CodeBlock
-        title="Filtros poderosos do git log"
+        title="Por autor, data, mensagem"
+        language="bash"
         code={`# Por autor
-git log --author="João Silva"
+git log --author="Maria"
+git log --author="@empresa.com"
+
+# Por mensagem (regex)
+git log --grep="fix"
+git log --grep="^feat\\|^fix" --extended-regexp
 
 # Por data
-git log --after="2024-01-01"
-git log --before="2024-12-31"
-git log --after="2024-01-01" --before="2024-06-30"
-
-# Últimas 2 semanas
 git log --since="2 weeks ago"
-
-# Por mensagem de commit (usa regex)
-git log --grep="fix"
-git log --grep="feat:" --oneline
-
-# Por conteúdo do código (busca no diff)
-git log -S "nomeDaFuncao"    # commits que adicionaram/removeram
-git log -G "padrão regex"   # commits cujo diff bate com regex
-
-# Por arquivo
-git log -- src/app.js
-git log -- "*.css"
+git log --since="2025-01-01" --until="2025-06-30"
+git log --since=yesterday
 
 # Combinando filtros
-git log --author="Maria" --after="2024-01-01" --oneline`}
+git log --author="Maria" --since="1 month ago" --grep="auth"
+`}
       />
 
-      <h2>Navegando entre Commits</h2>
+      <h2>Filtrando por arquivo / código</h2>
       <CodeBlock
-        title="Acessando versões antigas"
-        code={`# Ver o conteúdo de um commit específico
-git show abc1234
+        title="Pickaxe — encontrando código que sumiu"
+        language="bash"
+        code={`# Histórico de mudanças em um arquivo
+git log -- src/auth.ts
 
-# Ver um arquivo em uma versão específica
-git show abc1234:src/app.js
+# Quem ESCREVEU/REMOVEU determinada string
+git log -S "rateLimit" -- src/auth.ts
+# ★ pickaxe: encontra o commit que adicionou ou removeu a string
 
-# Checkout temporário para um commit antigo (detached HEAD)
-git checkout abc1234
+# Mesma coisa, mas com regex
+git log -G "rate.?limit" --pickaxe-regex
 
-# Voltar para o branch atual
-git checkout main   # ou git switch main`}
+# Renomeações? Siga o arquivo no histórico
+git log --follow src/auth.ts
+
+# Mostra também o conteúdo (diff) de cada commit que mexeu
+git log -p src/auth.ts
+
+# Só os commits que mudaram entre N1 e N2 linhas
+git log -L 10,30:src/auth.ts
+`}
       />
 
-      <AlertBox type="warning" title="Detached HEAD">
-        Quando você faz checkout de um commit (não um branch), entra no estado "detached HEAD". Você pode ver o código antigo, mas qualquer commit feito aqui se perderá quando você voltar ao branch. Crie um branch se quiser trabalhar a partir desse ponto.
+      <AlertBox type="note" title="Pickaxe é mágico para investigação">
+        <code>git log -S "stringQueSumiu"</code> encontra o commit exato que removeu (ou adicionou) aquela string. Isso resolve em 5 segundos investigações que sem isso levariam horas.
       </AlertBox>
 
-      <h2>Comparando Versões</h2>
+      <h2>Formatos customizados</h2>
       <CodeBlock
-        title="Diferenças entre commits e branches"
-        code={`# Diferença entre dois commits
-git diff abc1234 def5678
+        title="--pretty=format"
+        language="bash"
+        code={`# Formato customizado
+git log --pretty=format:"%h | %an | %ar | %s"
+# a1b2c3d | Maria | 2 hours ago | feat: adiciona login
 
-# Diferença entre dois branches
-git diff main feature/nova-funcionalidade
+# Placeholders úteis:
+# %h  hash curto      %H  hash longo
+# %an autor (nome)    %ae email
+# %ar data relativa   %ad data absoluta
+# %s  subject         %b  body
+# %D  refs (branches/tags)
+# %G? estado de assinatura
 
-# Diferença entre branch atual e remoto
-git diff main origin/main
-
-# Ver quais arquivos mudaram entre dois commits
-git diff --name-only abc1234 def5678
-
-# Estatísticas de mudanças
-git diff --stat abc1234 def5678`}
+# Formatos pré-definidos
+git log --pretty=oneline
+git log --pretty=short
+git log --pretty=full
+git log --pretty=fuller
+`}
       />
 
-      <h2>git bisect — Encontrando Bugs</h2>
-      <p>
-        O <code>git bisect</code> usa busca binária para encontrar em qual commit um bug foi introduzido.
-      </p>
+      <h2>Estatísticas</h2>
       <CodeBlock
-        title="Encontrando qual commit introduziu um bug"
-        code={`# Inicia o bisect
+        title="O quanto cada commit muda"
+        language="bash"
+        code={`# Resumo de arquivos por commit
+git log --stat
+
+# Stat compacto
+git log --shortstat
+# 3 files changed, 27 insertions(+), 4 deletions(-)
+
+# Ranking de contribuidores
+git shortlog -sn
+git shortlog -sne          # com email
+git shortlog -sn --since="1 year ago"
+
+# Quem mais mexeu em um arquivo
+git shortlog -sn -- src/auth.ts
+
+# Linhas adicionadas/removidas por autor
+git log --author="Maria" --pretty=tformat: --numstat | \\
+  awk '{ a += $1; r += $2 } END { print "+"a, "-"r }'
+`}
+      />
+
+      <h2>Comparando branches</h2>
+      <CodeBlock
+        title="O que diverge"
+        language="bash"
+        code={`# Commits em feature que NÃO estão em main
+git log main..feature
+
+# Commits em main que NÃO estão em feature
+git log feature..main
+
+# Commits que existem em UM dos dois mas não no outro (XOR)
+git log main...feature --left-right
+# < a1b2c3d feat: feature commit
+# > e5f6g7h fix: main commit
+
+# Commits em feature desde que ela divergiu de main
+git log main...feature --left-right --oneline
+
+# Visualizando lado a lado
+git log --graph --oneline main feature
+`}
+      />
+
+      <h2>Visualização avançada</h2>
+      <CodeBlock
+        title="Gráficos bonitos"
+        language="bash"
+        code={`# O comando "git lg" essencial
+git log --graph --pretty=format:'%C(yellow)%h%Creset %C(cyan)%ad%Creset %C(green)%an%Creset %s %C(red)%d%Creset' --abbrev-commit --date=relative --all
+
+# Salve como alias
+git config --global alias.lg "log --graph --pretty=format:'%C(yellow)%h%Creset %C(cyan)%ad%Creset %C(green)%an%Creset %s %C(red)%d%Creset' --abbrev-commit --date=relative --all"
+
+# Agora basta:
+git lg
+git lg -20
+
+# GUI nativa do Git
+gitk --all
+git gui
+`}
+      />
+
+      <h2>Procurando bugs no tempo</h2>
+      <CodeBlock
+        title="Quando algo quebrou?"
+        language="bash"
+        code={`# Mostra o último commit que mexeu numa linha específica
+git log -L 10,15:src/auth.ts
+
+# Quem mudou cada linha do arquivo (com hash de commit)
+git blame src/auth.ts
+
+# Blame de um intervalo
+git blame -L 50,80 src/auth.ts
+
+# Para investigação binária — veja Bisect
 git bisect start
-
-# Marca o commit atual como ruim (tem o bug)
-git bisect bad
-
-# Marca um commit antigo onde estava funcionando como bom
-git bisect good v1.0.0    # ou use um hash
-
-# O Git vai checkout um commit intermediário
-# Teste se o bug existe e marque:
-git bisect good    # ou
-git bisect bad
-
-# Continue até o Git identificar o commit problemático
-# Ao terminar:
-git bisect reset`}
+`}
       />
 
-      <AlertBox type="info" title="Dica: Aliases para git log">
-        Crie aliases para seus formatos favoritos de log. Por exemplo: <code>git config --global alias.lg "log --oneline --graph --all"</code>. Depois use apenas <code>git lg</code>.
-      </AlertBox>
+      <p>Para encontrar bugs por busca binária no histórico, veja <Link href="/bisect">git bisect</Link>.</p>
+
+      <h2>Casos práticos</h2>
+
+      <h3>1. "Quem foi que mudou esta linha e por quê?"</h3>
+      <CodeBlock
+        title="Investigação completa"
+        language="bash"
+        code={`# 1. Descubra qual commit mudou a linha
+git blame -L 42,42 src/auth.ts
+# a1b2c3d (Maria 2025-08-12) function login(user, opts = {}) {
+
+# 2. Veja o commit completo
+git show a1b2c3d
+
+# 3. Veja o contexto (commits ao redor)
+git log -5 a1b2c3d
+`}
+      />
+
+      <h3>2. "O que entrou na release v1.5.0?"</h3>
+      <CodeBlock
+        title="Entre tags"
+        language="bash"
+        code={`# Tudo entre 2 versões
+git log v1.4.0..v1.5.0 --oneline
+
+# Só features e fixes (assumindo Conventional Commits)
+git log v1.4.0..v1.5.0 --oneline --grep="^feat\\|^fix"
+
+# Agrupado por autor
+git shortlog v1.4.0..v1.5.0
+`}
+      />
+
+      <h3>3. "Estou desde quando trabalhando neste branch?"</h3>
+      <CodeBlock
+        title="Idade do branch"
+        language="bash"
+        code={`# Primeiro commit ÚNICO da branch
+git log main..HEAD --reverse --oneline | head -1
+
+# Quanto tempo desde o ancestral comum?
+git log -1 --format=%ar $(git merge-base main HEAD)
+# 6 days ago
+`}
+      />
+
+      <h2>Cheat-sheet</h2>
+      <CodeBlock
+        title="Os essenciais"
+        language="bash"
+        code={`git log --oneline --graph --all --decorate    # gráfico bonito
+git log -10                                   # últimos 10
+git log --author="Maria"                      # por autor
+git log --since="1 week ago"                  # por data
+git log --grep="fix"                          # por mensagem
+git log -S "string"                           # pickaxe
+git log -p arquivo                            # com diff
+git log --follow arquivo                      # segue renames
+git log main..feature                         # diverge
+git shortlog -sn                              # ranking de autores
+git blame arquivo                             # quem fez cada linha
+git show <hash>                               # commit completo
+`}
+      />
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><Link href="/bisect">Bisect</Link> — busca binária por bugs no histórico</li>
+        <li><Link href="/reflog">Reflog</Link> — o histórico secreto que salva sua vida</li>
+        <li><Link href="/tags">Tags e Versões</Link> — marque pontos importantes</li>
+      </ul>
     </PageContainer>
   );
 }
