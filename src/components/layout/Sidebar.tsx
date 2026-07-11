@@ -1,12 +1,16 @@
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
+import { GitLogo } from "@/components/ui/GitLogo";
+import { COURSE_MODULES, getProgress } from "@/lib/course";
 import {
   BookOpen, GitBranch, GitCommit, GitMerge, GitPullRequest,
   Terminal, HardDrive, Shield, Settings, FileText,
   Network, History, X, Package, Code, FolderOpen, Key,
   Globe, Zap, Wrench, ChevronRight, RotateCcw, Tag,
   Upload, Download, Copy, Search, Layers, Archive,
-  GitFork, Lock, ShieldCheck, FileCode, RefreshCw, HardDriveDownload, Scale
+  GitFork, Lock, ShieldCheck, FileCode, RefreshCw, HardDriveDownload, Scale,
+  CheckCircle2, Circle
 } from "lucide-react";
 
 const NAVIGATION = [
@@ -114,6 +118,11 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const [location] = useLocation();
+  const [completed, setCompleted] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setCompleted(getProgress());
+  }, [location]); // atualiza ao navegar
 
   return (
     <>
@@ -133,7 +142,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
           <div className="flex items-center justify-between mb-8">
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/5 border border-primary/30 flex items-center justify-center group-hover:scale-105 transition-transform shadow-lg shadow-primary/20">
-                <GitBranch className="w-5 h-5 text-primary" strokeWidth={2.5} />
+                <GitLogo className="w-5 h-5 text-primary" />
                 <div className="absolute inset-0 rounded-xl bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
               </div>
               <div>
@@ -151,32 +160,38 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
           </div>
 
           <nav className="space-y-6">
-            {NAVIGATION.map((section, idx) => (
+            {COURSE_MODULES.map((section, idx) => (
               <div key={idx}>
-                <h4 className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.12em] mb-2 px-3 mt-0 border-0 pb-0">
+                <h4 className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.12em] mb-2 px-3">
                   {section.title}
                 </h4>
                 <ul className="space-y-0.5 list-none pl-0">
-                  {section.items.map((item, i) => {
+                  {section.lessons.map((item, i) => {
                     const isActive = location === item.path;
-                    const Icon = item.icon;
+                    const isCompleted = completed.has(item.id);
                     return (
-                      <li key={i} className="pl-0 before:hidden">
+                      <li key={i}>
                         <Link
                           href={item.path}
                           onClick={() => setIsOpen(false)}
                           className={cn(
-                            "relative flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[13px] transition-all duration-150",
+                            "relative flex items-center gap-2 px-3 py-1.5 rounded-md text-[13px] transition-all duration-150",
                             isActive
                               ? "bg-primary/10 text-primary font-semibold"
+                              : isCompleted
+                              ? "text-primary/80"
                               : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                           )}
                         >
                           {isActive && (
-                            <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
+                            <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r bg-primary" />
                           )}
-                          <Icon className={cn("w-3.5 h-3.5 shrink-0", isActive ? "text-primary" : "opacity-60")} strokeWidth={isActive ? 2.5 : 2} />
-                          <span className="truncate">{item.label}</span>
+                          {isCompleted ? (
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-primary" strokeWidth={2.5} />
+                          ) : (
+                            <Circle className="w-3.5 h-3.5 shrink-0 opacity-30" />
+                          )}
+                          <span className="truncate">{item.title}</span>
                           {isActive && <ChevronRight className="w-3 h-3 ml-auto text-primary shrink-0" />}
                         </Link>
                       </li>

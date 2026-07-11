@@ -4,6 +4,7 @@ import { useHashLocation } from "wouter/use-hash-location";
 
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { LessonNav } from "@/components/ui/LessonNav";
 
 const Home = lazy(() => import("@/pages/Home"));
 const Historia = lazy(() => import("@/pages/Historia"));
@@ -77,10 +78,11 @@ function Layout({ children }: { children: React.ReactNode }) {
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <div className="flex-1 lg:pl-72 flex flex-col min-w-0 transition-all duration-300">
         <Header onMenuClick={() => setIsSidebarOpen(true)} />
-        <main className="flex-1">
+        <main className="flex-1 pb-16">
           <Suspense fallback={<PageFallback />}>{children}</Suspense>
         </main>
       </div>
+      <LessonNav />
     </div>
   );
 }
